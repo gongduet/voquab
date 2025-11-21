@@ -2,8 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-// Google Translate API
-const TRANSLATE_API_KEY = import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY || 'AIzaSyABljNcVe3bqnnjJUwyMvDBz2XwjtOrBp8'
+// Google Translate API - Get from environment variable
+const TRANSLATE_API_KEY = import.meta.env.VITE_GOOGLE_TRANSLATE_API_KEY
+
+// Validate API key is set
+if (!TRANSLATE_API_KEY) {
+  console.warn('Warning: VITE_GOOGLE_TRANSLATE_API_KEY is not set. Word translations will not work.')
+}
 
 // Translation cache
 const translationCache = new Map()
