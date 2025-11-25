@@ -1,7 +1,7 @@
 # VOQUAB DEVELOPMENT NOTES
 
 **Purpose:** Living document updated by Claude Code tracking current work, decisions, and issues
-**Last Updated:** November 12, 2025 - Phase 3C: Admin Dashboard - Common Word Management
+**Last Updated:** November 24, 2025 - Phase 3C: Admin Dashboard Complete + Frequency Column Fix
 **Updated By:** Claude Code CLI
 
 ---
@@ -155,6 +155,83 @@
 - Session-based auth (clears on browser close)
 - No audit log of who marked what
 - **For production:** Consider implementing proper admin roles via Supabase Auth
+
+---
+
+### Critical Bug Fix: Admin Dashboard Performance ✅ RESOLVED
+**Date:** November 24, 2025
+**Problem:** "Bad Request" / URL Too Long error when loading admin common words page
+**Root Cause:** AdminCommonWords.jsx used complex batching logic with runtime JOINs to vocabulary_occurrences table. When fetching frequencies for 1000+ words, the `.in('vocab_id', [array of 1000 IDs])` created URLs exceeding HTTP limits.
+
+**Solution Implemented:**
+1. **Database Migration** (`migrations/add-frequency-column.sql`)
+   - Added `frequency INTEGER DEFAULT 0` column to vocabulary table
+   - Populated frequencies with one-time COUNT from vocabulary_occurrences
+   - Created descending index `idx_vocabulary_frequency` for fast sorting
+   - Added column documentation comment
+
+2. **Simplified AdminCommonWords.jsx** (lines 38-61)
+   - BEFORE: 40+ lines of batching, occurrence counting, frequency mapping, merging, sorting
+   - AFTER: Single query selecting frequency column directly
+   ```javascript
+   const { data: vocabData } = await supabase
+     .from('vocabulary')
+     .select('vocab_id, lemma, english_definition, part_of_speech, is_stop_word, frequency')
+     .eq('language_code', 'es')
+     .order('frequency', { ascending: false })
+   ```
+   - Performance: O(n) batching → O(1) single query
+   - URL length: 1000+ IDs → Simple ORDER BY query
+
+**Benefits:**
+- ✅ Eliminates URL length issues entirely
+- ✅ Dramatically faster page load (single query vs. multiple batches)
+- ✅ Simpler, more maintainable code (40 lines → 20 lines)
+- ✅ Pre-calculated frequencies available for future features
+- ✅ Database-indexed for optimal sorting performance
+
+**Files Created:**
+- ✅ `migrations/add-frequency-column.sql` - Database migration with frequency column
+
+**Files Modified:**
+- ✅ `src/pages/AdminCommonWords.jsx` - Simplified to use frequency column
+
+**Migration Status:** ✅ Applied successfully in Supabase (confirmed by user)
+
+---
+
+### Git Commits - Phase 3C Complete
+**Commit 1:** `c0d9d3f` - "feat: Phase 3A/3B/3C - Learning transparency, celebrations, and admin tools"
+- Phase 3A: WordStatusCard transparency component
+- Phase 3A: Time gate UI feedback in flashcards
+- Phase 3A: Word selection logging with rationale
+- Phase 3B: LevelUpCelebration component with confetti
+- Phase 3B: Detailed mastery change logging
+- Phase 3C: Admin dashboard with password protection
+- Phase 3C: AdminCommonWords management interface
+- Phase 3C: Stop word filtering across all learning flows
+- Phase 3C: Database migration for is_stop_word column
+
+**Commit 2:** `4619d75` - "fix: Add frequency column to vocabulary table"
+- Performance fix for admin dashboard URL length issue
+- Added pre-calculated frequency column
+- Simplified AdminCommonWords.jsx query logic
+- Eliminated batching complexity
+
+**Status:** ✅ Both commits staged locally, ready to push to GitHub
+
+---
+
+### Next: Phase 3D (Proposed)
+**Potential Features:**
+- Export stop words list for backup/sharing
+- Bulk import stop words from CSV/JSON
+- Admin analytics: Most marked/unmarked words
+- Stop word history/audit log
+- Multiple stop word presets (beginner, intermediate, advanced)
+- AI-suggested common words based on corpus analysis
+
+**Priority:** TBD - Awaiting user direction
 
 ---
 
