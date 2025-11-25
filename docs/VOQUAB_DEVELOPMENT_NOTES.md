@@ -1,16 +1,317 @@
 # VOQUAB DEVELOPMENT NOTES
 
 **Purpose:** Living document updated by Claude Code tracking current work, decisions, and issues
-**Last Updated:** November 12, 2025 - Card counter display fix
+**Last Updated:** November 12, 2025 - Phase 3C: Admin Dashboard - Common Word Management
 **Updated By:** Claude Code CLI
 
 ---
 
 ## CURRENT WORK STATUS
 
-### Active Phase: Phase 3 - Daily Package System (In Progress)
-**Started:** November 9, 2025  
-**Target Completion:** November 12-13, 2025
+### Active Phase: Phase 3C - Admin Dashboard - Common Word Management ✅ COMPLETED
+**Started:** November 12, 2025
+**Completed:** November 12, 2025
+
+**Objective:** Create admin interface to mark common/stop words that shouldn't appear in learning sessions.
+
+**Stages Completed:**
+- ✅ Stage 1: Database migration (is_stop_word column)
+- ✅ Stage 2: Admin.jsx with password protection
+- ✅ Stage 3: AdminCommonWords.jsx word management interface
+- ✅ Stage 4: Updated word selection to filter stop words
+- ✅ Stage 5: Added admin routes to App.jsx
+- ✅ Stage 6: Configured admin password in .env
+
+**Features Implemented:**
+
+1. **Database Schema** (`migrations/add-stop-words-system.sql`)
+   - Added `is_stop_word BOOLEAN DEFAULT FALSE` to vocabulary table
+   - Added `admin_notes TEXT` for internal documentation
+   - Created index `idx_vocabulary_stop_words` for efficient filtering
+   - Comments documenting purpose and usage
+
+2. **Admin Dashboard** (`src/pages/Admin.jsx`)
+   - Password protection using `VITE_ADMIN_PASSWORD` from .env
+   - Session-based authentication (stored in sessionStorage)
+   - Tab navigation for different admin functions
+   - Logout functionality
+   - Future-ready for additional admin sections (Users, Content, etc.)
+   - Clean UI with welcome screen and section cards
+
+3. **Common Words Management** (`src/pages/AdminCommonWords.jsx`)
+   - **Table Display:**
+     - Shows all vocabulary sorted by frequency (times_in_book DESC)
+     - Columns: Word | English | Frequency | Part of Speech | Stop Word? | Actions
+     - Hover highlighting for better UX
+   - **Individual Actions:**
+     - Toggle button: "Mark as Stop" / "Unmark"
+     - Color-coded status badges (red=stop, green=active)
+     - Instant UI update on toggle
+   - **Bulk Actions:**
+     - "Mark Top 50" button
+     - "Mark Top 100" button
+     - "Mark Top 200" button
+     - Confirmation dialog before bulk operations
+     - Refresh button to reload data
+   - **Filters:**
+     - Search by word or definition
+     - Filter: All Words | Active Words Only | Stop Words Only
+     - Minimum frequency filter (show words above X occurrences)
+   - **Stats Display:**
+     - Total Words count
+     - Stop Words count (red)
+     - Active Learning Words count (green)
+   - **Frequency Calculation:**
+     - Queries `vocabulary_occurrences` table
+     - Builds frequency map in JavaScript
+     - Merges with vocabulary data
+     - Accurate counts without needing `times_in_book` column
+
+4. **Word Selection Filtering** (Stop words excluded from learning)
+   - **PackageSelection.jsx:248** - Added `.eq('is_stop_word', false)` to beginner package query
+   - **Flashcards.jsx:544** - Added `.eq('is_stop_word', false)` to default vocabulary query
+   - **Flashcards.jsx:765** - Added `.eq('is_stop_word', false)` to chapter progress query
+   - Stop words no longer appear in:
+     - Daily packages (all types)
+     - Flashcard sessions
+     - New word selection
+     - Chapter progress calculations
+
+5. **Routing** (`src/App.jsx`)
+   - Added admin route imports (Admin, AdminCommonWords)
+   - Added nested routing:
+     ```jsx
+     <Route path="/admin" element={<Admin />}>
+       <Route path="common-words" element={<AdminCommonWords />} />
+     </Route>
+     ```
+   - No ProtectedRoute wrapper (Admin handles its own auth)
+
+6. **Environment Configuration** (`.env`)
+   - Added `VITE_ADMIN_PASSWORD=voquab_admin_2025`
+   - Password can be changed by updating .env
+   - Must restart dev server after changing password
+
+**Technical Implementation:**
+- Password stored in sessionStorage (cleared on logout or browser close)
+- Supabase queries with proper filtering
+- Frequency counting via JavaScript Map (no DB schema changes needed)
+- Responsive grid layout for stats cards
+- Bulk operations use SQL IN clause for efficiency
+- Real-time UI updates after toggle operations
+
+**Files Created:**
+- ✅ `migrations/add-stop-words-system.sql` - Database migration
+- ✅ `src/pages/Admin.jsx` - Password-protected dashboard
+- ✅ `src/pages/AdminCommonWords.jsx` - Word management interface
+
+**Files Modified:**
+- ✅ `src/App.jsx` - Added admin routes
+- ✅ `src/pages/PackageSelection.jsx` - Filter stop words in beginner package
+- ✅ `src/pages/Flashcards.jsx` - Filter stop words in all vocabulary queries
+- ✅ `.env` - Added VITE_ADMIN_PASSWORD
+
+**Usage Instructions:**
+1. **Apply Migration:**
+   - Go to Supabase Dashboard → SQL Editor
+   - Run `migrations/add-stop-words-system.sql`
+   - Verify with: `SELECT * FROM vocabulary WHERE is_stop_word = TRUE`
+
+2. **Access Admin Dashboard:**
+   - Navigate to `/admin`
+   - Enter password: `voquab_admin_2025` (or value from .env)
+   - Click "Common Words" tab
+
+3. **Mark Common Words:**
+   - Common Spanish words to mark as stop words:
+     - Articles: el, la, los, las, un, una, unos, unas
+     - Prepositions: de, a, en, con, por, para, sin
+     - Pronouns: yo, tú, él, ella, nosotros, vosotros, ellos, me, te, se, le, lo
+     - Conjunctions: y, o, pero, porque, que
+     - Common verbs: es, son, está, están, hay
+   - Use bulk actions for efficiency (Mark Top 100)
+   - Or toggle individually for precise control
+
+4. **Verify Filtering:**
+   - Create a new package after marking stop words
+   - Verify marked words don't appear in package
+   - Check flashcard sessions exclude stop words
+   - Common words should be filtered from all learning activities
+
+**Status:** ✅ Code complete, compiled successfully, ready to test in browser
+
+**Testing Instructions:**
+1. Start dev server: `npm run dev`
+2. Apply database migration in Supabase Dashboard
+3. Navigate to `http://localhost:5173/admin`
+4. Enter password: `voquab_admin_2025`
+5. Go to "Common Words" tab
+6. Mark top 100 words as stop words
+7. Create a new package
+8. Verify stop words don't appear
+
+**Known Limitations:**
+- Password is simple (no hashing, stored in .env)
+- Session-based auth (clears on browser close)
+- No audit log of who marked what
+- **For production:** Consider implementing proper admin roles via Supabase Auth
+
+---
+
+### Previous Phase: Phase 3B - Level-Up Celebrations ✅ COMPLETED
+**Started:** November 12, 2025
+**Completed:** November 12, 2025
+
+**Objective:** Add visual celebration feedback when users advance mastery levels (e.g., Level 3 → Level 4).
+
+**Stages Completed:**
+- ✅ Stage 1: Created LevelUpCelebration component with confetti animation
+- ✅ Stage 2: Added detailed mastery logging for debugging
+- ✅ Stage 3: Integrated level-up detection in handleDifficulty()
+- ✅ Stage 4: Connected celebration display to flashcard workflow
+
+**Features Implemented:**
+
+1. **LevelUpCelebration Component** (`src/components/LevelUpCelebration.jsx`)
+   - Animated modal with confetti particles (30 pieces, random colors/timing)
+   - Old level → New level transition display
+   - Level labels: New → Introduced → Recognizing → Learning → Familiar → Known → Strong → Mastered → Expert → Native → Perfect
+   - Motivational messages based on new level achieved
+   - Auto-dismiss after 3 seconds with manual "Continue" button
+   - CSS animations: fade-in, scale-up, confetti fall with rotation
+   - Non-blocking overlay (click to dismiss)
+
+2. **Detailed Mastery Logging** (`src/pages/Flashcards.jsx`)
+   - Console logs mastery change details for every review
+   - Format:
+     ```
+     🎯 MASTERY CHANGE DETAILS:
+     ============================================================
+     Word: "el fracaso"
+     Difficulty Response: easy
+     Before: { mastery: 38, level: 3 }
+     Time gate met?: true
+     Points to add: +10
+     After: { mastery: 48, level: 4 }
+     🎆 LEVEL UP! 3 → 4
+     ============================================================
+     ```
+   - Critical for debugging time gate issues
+   - Verifies mastery points are actually being applied
+
+3. **Level-Up Detection Logic** (`src/pages/Flashcards.jsx:1038-1086`)
+   - Calculates `oldLevel = Math.floor(oldMasteryLevel / 10)` BEFORE mastery change
+   - Calculates `newLevel = Math.floor(newMasteryLevel / 10)` AFTER mastery change
+   - Compares levels: `if (newLevel > oldLevel)`
+   - Triggers celebration by setting `levelUpData` state
+   - Passes old level, new level, and word data to celebration component
+
+4. **Integration Points:**
+   - State: `const [levelUpData, setLevelUpData] = useState(null)`
+   - Trigger: `handleDifficulty()` after mastery calculation
+   - Display: Conditional render at end of component (after badges)
+   - Close handler: `onClose={() => setLevelUpData(null)}`
+
+**Technical Implementation:**
+- Confetti animation using CSS `@keyframes fall` with random delays and durations
+- Level transition uses pulse animation for emphasis
+- Motivational messages map to levels 1-10
+- 3-second auto-dismiss timer with cleanup on unmount
+- Gradient background from amber to orange for warmth
+
+**Files Modified:**
+- ✅ `src/components/LevelUpCelebration.jsx` - New component
+- ✅ `src/pages/Flashcards.jsx` - Import, state, detection logic, render
+
+**Critical Verification Added:**
+- Before/after mastery logging ensures time gate is working correctly
+- If mastery doesn't increase when "Mastery Ready" + Easy/Medium, console will show:
+  - Time gate status (met/blocked)
+  - Expected points (+10 for Easy, +6 for Medium, +3 for Hard)
+  - Actual mastery before/after
+- This allows immediate debugging if time gate logic fails
+
+**Status:** ✅ Code complete, compiled successfully, ready to test in browser
+
+**Testing Instructions:**
+1. Open browser DevTools → Console
+2. Review a "Mastery Ready" word (WordStatusCard will show)
+3. Click "Easy" (+10 points) or "Medium" (+6 points)
+4. Console should show:
+   - "Time gate met?: true"
+   - Points added
+   - Mastery increase
+   - "🎆 LEVEL UP!" if threshold crossed
+5. Level-up celebration modal should appear with confetti
+6. Auto-dismisses after 3 seconds or click "Continue"
+
+**Known Edge Cases Handled:**
+- Level 0 → 1 (first level-up from new word)
+- Multiple level jumps (e.g., 0 → 2 if +20 points somehow)
+- Level 10 achievement (Perfect mastery message)
+- Rapid consecutive level-ups (each shows separately)
+
+---
+
+### Previous Phase: Phase 3A - Flashcard Transparency & Time-Gated Mastery ✅ COMPLETED
+**Started:** November 12, 2025
+**Completed:** November 12, 2025
+
+**Objective:** Add visual feedback to flashcards so users understand WHY they're reviewing each word and see time gate enforcement in action.
+
+**Stages Completed:**
+- ✅ Stage 1: Created WordStatusCard component (src/components/WordStatusCard.jsx)
+- ✅ Stage 2: Integrated time gate feedback UI in Flashcards.jsx
+- ✅ Stage 3: Added word selection logging with detailed rationale
+
+**Features Implemented:**
+
+1. **WordStatusCard Component** (`src/components/WordStatusCard.jsx`)
+   - Displays current state: Mastery level (0-10 with labels), Health bar (0-100), Total reviews
+   - Shows word category: 🆕 New Word, ⚡ URGENT - Health Critical, 🎯 Mastery Ready, 💪 Health Building
+   - Explains what this review does: Time gate status, mastery gain eligibility, health boost
+   - Shows next milestone: Points to next level or health to restore
+   - Collapsible design (starts expanded, user can minimize)
+   - Color-coded by urgency (red=critical, orange=low, yellow=medium, green=good, blue=mastery, purple=new)
+
+2. **Time Gate UI Feedback** (`src/pages/Flashcards.jsx`)
+   - Displays time gate message when mastery gain is blocked
+   - Shows countdown: "Wait 4 hours for mastery gain (health still improves!)"
+   - Auto-dismisses after 8 seconds
+   - Amber-colored alert box with clock icon
+   - Reassures user that health boost still applied
+
+3. **Word Selection Logging** (`src/utils/priorityCalculations.js`)
+   - Console logs top 10 selected words with detailed rationale
+   - Shows why each word was selected (icon + explanation)
+   - Examples:
+     - 🆕 New word - First encounter to establish baseline
+     - ⚡ URGENT - Critical health (15/100), needs immediate rescue
+     - 🎯 Mastery ready - Can gain progress toward next level
+     - 💊 Low health (35/100), needs restoration
+     - 🔁 Struggling word - Failed in recent sessions
+     - 📖 High-frequency word - Important to master
+   - Displays health, mastery, and review count for each word
+
+**Files Modified:**
+- ✅ `src/components/WordStatusCard.jsx` - New component
+- ✅ `src/pages/Flashcards.jsx` - Import WordStatusCard, display component, time gate message UI
+- ✅ `src/utils/priorityCalculations.js` - Added getSelectionReason() function and logging
+
+**Technical Implementation:**
+- Uses existing `calculateCurrentHealth()` from healthCalculations.js
+- Uses existing `checkTimeGate()` from timeGateCalculations.js
+- Mastery level labels: New → Introduced → Recognizing → Learning → Familiar → Known → Strong → Mastered → Expert → Native → Perfect
+- Health color thresholds: <20 red, <40 orange, <60 yellow, <80 green, ≥80 bright green
+- Time gate message stored in state, cleared after 8 seconds with setTimeout
+
+**Status:** ✅ Code complete, compiled successfully, ready to test in browser
+
+---
+
+### Previous Phase: Phase 3 - Daily Package System ✅ COMPLETED
+**Started:** November 9, 2025
+**Completed:** November 12, 2025
 
 **Stages Completed:**
 - ✅ Stage 1-2: Database schema (user_packages, package_words, user_waypoints)
@@ -23,7 +324,6 @@
 - ✅ Stage 11: Flashcard-package integration with waypoint mini-decks
 - ✅ Stage 12: Real-time waypoint progress tracking
 
-**Current Stage:** Testing & Migration Application
 **Status:** Code complete, ready for browser testing. Pending database migrations.
 
 ---

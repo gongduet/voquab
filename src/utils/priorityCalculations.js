@@ -114,6 +114,18 @@ export function selectCardsForSession(words, count = 25, options = {}) {
   // Select top N cards
   const selectedCards = scoredWords.slice(0, count)
 
+  // LOG SELECTION RATIONALE FOR TOP 10 CARDS
+  console.log('\n📊 WORD SELECTION RATIONALE (Top 10):')
+  console.log('=' .repeat(60))
+  selectedCards.slice(0, 10).forEach((card, index) => {
+    const reason = getSelectionReason(card)
+    console.log(`${index + 1}. "${card.lemma}" (Priority: ${card.priority.totalScore})`)
+    console.log(`   ${reason.icon} ${reason.text}`)
+    console.log(`   Health: ${card.priority.currentHealth}/100 | Mastery: ${card.mastery_level || 0}/100 | Reviews: ${card.total_reviews || 0}`)
+    console.log('')
+  })
+  console.log('=' .repeat(60))
+
   // Shuffle to avoid predictability in card order
   // (User shouldn't know "first 7 cards are always critical")
   const shuffled = shuffleArray(selectedCards)
@@ -133,6 +145,80 @@ export function selectCardsForSession(words, count = 25, options = {}) {
   return {
     cards: shuffled,
     stats: stats
+  }
+}
+
+/**
+ * Get human-readable reason for why a word was selected
+ * @param {Object} card - Card with priority data
+ * @returns {Object} - { icon, text }
+ */
+function getSelectionReason(card) {
+  const health = card.priority.currentHealth
+  const mastery = card.mastery_level || 0
+  const reviews = card.total_reviews || 0
+  const breakdown = card.priority.breakdown
+
+  // Determine primary reason for selection
+  if (reviews === 0) {
+    return {
+      icon: '🆕',
+      text: 'New word - First encounter to establish baseline'
+    }
+  }
+
+  if (health < 20) {
+    return {
+      icon: '⚡',
+      text: `URGENT - Critical health (${Math.round(health)}/100), needs immediate rescue`
+    }
+  }
+
+  if (breakdown.criticalMultiplier === 1.5) {
+    return {
+      icon: '🚨',
+      text: `Critical health (<20), boosted priority by 50%`
+    }
+  }
+
+  if (breakdown.leechMultiplier === 1.3) {
+    return {
+      icon: '🔁',
+      text: `Struggling word - Failed in recent sessions, needs extra attention`
+    }
+  }
+
+  if (breakdown.masteryReady > 0) {
+    return {
+      icon: '🎯',
+      text: `Mastery ready - Can gain progress toward next level`
+    }
+  }
+
+  if (health < 40) {
+    return {
+      icon: '💊',
+      text: `Low health (${Math.round(health)}/100), needs restoration`
+    }
+  }
+
+  if (breakdown.frequency > 15) {
+    return {
+      icon: '📖',
+      text: `High-frequency word (appears ${card.times_in_book || 1}× in book), important to master`
+    }
+  }
+
+  if (breakdown.chapter >= 10) {
+    return {
+      icon: '📚',
+      text: `Early chapter word (Ch ${card.chapter_number || '?'}), foundational vocabulary`
+    }
+  }
+
+  return {
+    icon: '🔄',
+    text: `Maintenance review - Keep skills sharp (Health: ${Math.round(health)}, Mastery: ${mastery})`
   }
 }
 

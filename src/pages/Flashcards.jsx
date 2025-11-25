@@ -7,6 +7,8 @@ import { selectCardsForSession } from '../utils/priorityCalculations'
 import { calculateMasteryChange } from '../utils/timeGateCalculations'
 import { checkBadgesOnPackageComplete } from '../utils/badgeCalculations'
 import BadgeNotification from '../components/BadgeNotification'
+import WordStatusCard from '../components/WordStatusCard'
+import LevelUpCelebration from '../components/LevelUpCelebration'
 
 // Spanish stop words - ONLY super basic words that shouldn't be flashcards
 const STOP_WORDS = new Set([
@@ -59,6 +61,9 @@ export default function Flashcards() {
   const [currentWaypoint, setCurrentWaypoint] = useState(null)
   const [allWaypoints, setAllWaypoints] = useState([])
   const [waypointComplete, setWaypointComplete] = useState(false)
+
+  // Level-up celebration state
+  const [levelUpData, setLevelUpData] = useState(null) // { oldLevel, newLevel, word }
 
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -512,6 +517,7 @@ export default function Flashcards() {
       } else {
         // Default: Fetch random vocabulary with enhanced context
         // Step 1: Fetch vocabulary with sentence context and chapter info
+        // FILTER: Exclude stop words (common words like "el", "de", etc.)
         const { data, error: fetchError } = await supabase
           .from('vocabulary')
           .select(`
@@ -535,6 +541,7 @@ export default function Flashcards() {
             )
           `)
           .eq('language_code', 'es')
+          .eq('is_stop_word', false)  // EXCLUDE STOP WORDS
           .limit(200) // Fetch more to account for filtering
 
         if (fetchError) throw fetchError
@@ -750,11 +757,12 @@ export default function Flashcards() {
       for (const chapterId of chapterIds) {
         if (!chapterId) continue
 
-        // Get all vocab IDs for this chapter
+        // Get all vocab IDs for this chapter (excluding stop words)
         const { data: chapterWords } = await supabase
           .from('vocabulary')
           .select('vocab_id')
           .eq('chapter_id', chapterId)
+          .eq('is_stop_word', false)  // EXCLUDE STOP WORDS
 
         if (!chapterWords) continue
 
@@ -1030,6 +1038,10 @@ export default function Flashcards() {
       const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD format
       const now = new Date().toISOString()
 
+      // CALCULATE OLD MASTERY LEVEL (before change)
+      const oldMasteryLevel = existing?.mastery_level || 0
+      const oldLevel = Math.floor(oldMasteryLevel / 10)
+
       // CALCULATE MASTERY CHANGE WITH TIME GATE ENFORCEMENT
       const masteryResult = calculateMasteryChange(existing || {
         mastery_level: 0,
@@ -1039,10 +1051,41 @@ export default function Flashcards() {
       const newMasteryLevel = masteryResult.newMastery
       const masteryChange = masteryResult.masteryChange
       const timeGateBlocked = masteryResult.timeGateInfo.blocked || false
+      const newLevel = Math.floor(newMasteryLevel / 10)
 
-      // Log time gate info for debugging
+      // 🔍 DETAILED MASTERY LOGGING (for debugging)
+      console.log('\n🎯 MASTERY CHANGE DETAILS:')
+      console.log('=' .repeat(60))
+      console.log(`Word: "${currentCard.lemma}"`)
+      console.log(`Difficulty Response: ${difficulty}`)
+      console.log(`Before: { mastery: ${oldMasteryLevel}, level: ${oldLevel} }`)
+      console.log(`Time gate met?: ${!timeGateBlocked}`)
+      console.log(`Points to add: ${masteryChange > 0 ? '+' : ''}${masteryChange}`)
+      console.log(`After: { mastery: ${newMasteryLevel}, level: ${newLevel} }`)
+      if (newLevel > oldLevel) {
+        console.log(`🎆 LEVEL UP! ${oldLevel} → ${newLevel}`)
+      }
+      console.log('=' .repeat(60))
+
+      // Log time gate info and show to user if blocked
       if (masteryResult.timeGateInfo.message) {
         console.log('⏰ Time Gate:', masteryResult.timeGateInfo.message)
+        // Show message to user if time gate blocked mastery gain
+        if (timeGateBlocked) {
+          setTimeGateMessage(masteryResult.timeGateInfo.message)
+          // Clear message after 8 seconds
+          setTimeout(() => setTimeGateMessage(null), 8000)
+        }
+      }
+
+      // 🎆 DETECT LEVEL-UP and trigger celebration
+      if (newLevel > oldLevel) {
+        console.log(`🎉 Triggering level-up celebration: ${oldLevel} → ${newLevel}`)
+        setLevelUpData({
+          oldLevel: oldLevel,
+          newLevel: newLevel,
+          word: currentCard
+        })
       }
 
       // CALCULATE CURRENT HEALTH (before update)
@@ -1767,6 +1810,26 @@ export default function Flashcards() {
           </p>
         </div>
 
+        {/* Word Status Card - Shows why user is reviewing this word */}
+        <WordStatusCard word={currentCard} />
+
+        {/* Time Gate Message Display */}
+        {timeGateMessage && (
+          <div className="mb-4 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+            <div className="flex items-start gap-2">
+              <span className="text-lg">⏰</span>
+              <div className="flex-1">
+                <p className="text-sm font-serif text-amber-800">
+                  <span className="font-semibold">Time Gate Info:</span> {timeGateMessage}
+                </p>
+                <p className="text-xs font-serif text-amber-700 mt-1">
+                  Your health boost was still applied! ✅
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Flashcard */}
         <div className="perspective-1000 mb-8">
           <div
@@ -2016,6 +2079,16 @@ export default function Flashcards() {
       {/* Badge Notification */}
       {currentBadge && (
         <BadgeNotification badge={currentBadge} onClose={handleBadgeClose} />
+      )}
+
+      {/* Level-Up Celebration */}
+      {levelUpData && (
+        <LevelUpCelebration
+          oldLevel={levelUpData.oldLevel}
+          newLevel={levelUpData.newLevel}
+          word={levelUpData.word}
+          onClose={() => setLevelUpData(null)}
+        />
       )}
     </div>
   )

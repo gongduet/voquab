@@ -241,9 +241,11 @@ export default function PackageSelection() {
 
         // Query vocabulary directly (not user progress) - get first 30 words
         // These are the foundational words that appear early in the book
+        // FILTER: Exclude stop words (is_stop_word = false)
         const { data: chapter1Words, error: vocabError } = await supabase
           .from('vocabulary')
           .select('*')  // Get ALL columns to see what's available
+          .eq('is_stop_word', false)  // EXCLUDE STOP WORDS
           .limit(30)
 
         console.log('📚 Beginner words fetched:', chapter1Words)

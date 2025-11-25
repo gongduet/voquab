@@ -12,6 +12,8 @@ import Settings from './pages/Settings'
 import StyleTest from './pages/StyleTest'
 import PackageSelection from './pages/PackageSelection'
 import PackageView from './pages/PackageView'
+import Admin from './pages/Admin'
+import AdminCommonWords from './pages/AdminCommonWords'
 
 function App() {
   return (
@@ -93,6 +95,10 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Admin Routes (password-protected, no ProtectedRoute needed) */}
+          <Route path="/admin" element={<Admin />}>
+            <Route path="common-words" element={<AdminCommonWords />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
