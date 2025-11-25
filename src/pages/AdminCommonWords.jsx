@@ -40,41 +40,18 @@ export default function AdminCommonWords() {
       setLoading(true)
       setError(null)
 
-      // Step 1: Fetch all vocabulary
+      // Fetch all vocabulary with frequency already calculated
       const { data: vocabData, error: vocabError } = await supabase
         .from('vocabulary')
-        .select('vocab_id, lemma, english_definition, part_of_speech, is_stop_word, is_common_word, admin_notes')
+        .select('vocab_id, lemma, english_definition, part_of_speech, is_stop_word, is_common_word, admin_notes, frequency')
         .eq('language_code', 'es')
-        .order('lemma')
+        .order('frequency', { ascending: false })
 
       if (vocabError) throw vocabError
 
-      console.log(`Fetched ${vocabData.length} vocabulary words`)
+      console.log(`Fetched ${vocabData.length} vocabulary words with frequencies`)
 
-      // Step 2: Count occurrences for each word
-      const { data: occurrences, error: occError } = await supabase
-        .from('vocabulary_occurrences')
-        .select('vocab_id')
-        .in('vocab_id', vocabData.map(w => w.vocab_id))
-
-      if (occError) throw occError
-
-      // Step 3: Build frequency map
-      const frequencyMap = new Map()
-      occurrences.forEach(occ => {
-        frequencyMap.set(occ.vocab_id, (frequencyMap.get(occ.vocab_id) || 0) + 1)
-      })
-
-      // Step 4: Merge frequency data with vocabulary
-      const wordsWithFrequency = vocabData.map(word => ({
-        ...word,
-        frequency: frequencyMap.get(word.vocab_id) || 0
-      }))
-
-      // Step 5: Sort by frequency (highest first)
-      wordsWithFrequency.sort((a, b) => b.frequency - a.frequency)
-
-      setWords(wordsWithFrequency)
+      setWords(vocabData)
       setLoading(false)
     } catch (err) {
       console.error('Error fetching words:', err)
