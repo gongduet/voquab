@@ -148,10 +148,15 @@ When user reviews a word:
 
 | User Response | Mastery Change | Time Gate Required? | Requeue in Session? |
 |--------------|----------------|---------------------|---------------------|
-| **Don't Know** | -5 points | NO (always applies) | YES (reappear 3-7 cards later) |
-| **Hard** | +3 points | YES | NO |
-| **Medium** | +6 points | YES | NO |
+| **Don't Know** | -15 points | NO (always applies) | YES (reappear 3-5 cards later) |
+| **Hard** | Checkpoint regression* | YES | NO |
+| **Medium** | +0 points | YES | NO |
 | **Easy** | +10 points | YES | NO |
+
+*Hard checkpoint regression:
+- Level 5-10 (50-100 mastery) → Drop to Level 3 (mastery = 30)
+- Level 3-4 (30-49 mastery) → Drop to Level 2 (mastery = 20)
+- Level 1-2 (10-29 mastery) → Drop to Level 0 (mastery = 0)
 
 ### Time Gate Logic
 
@@ -202,10 +207,39 @@ Time since last correct review >= Time gate for current level
 
 ### Mastery Affects
 
-**1. Spaced Repetition Interval**
-- Higher mastery = longer intervals
-- Level 0-1: Review within hours
-- Level 7-10: Review after months
+**1. Spaced Repetition Intervals**
+
+Intervals are determined by mastery level and difficulty response:
+
+**Easy Response - Optimal SRS (Mastery-Based):**
+Based on current mastery level AFTER the +10 increase:
+- Level 0 (0-9): 1 day
+- Level 1 (10-19): 2 days
+- Level 2 (20-29): 4 days
+- Level 3 (30-39): 7 days
+- Level 4 (40-49): 14 days
+- Level 5 (50-59): 30 days
+- Level 6 (60-69): 60 days
+- Level 7 (70-79): 90 days
+- Level 8 (80-89): 120 days
+- Level 9-10 (90-100): 180 days
+
+**Medium Response - Reinforcement Intervals (Mastery-Based):**
+Shorter intervals than Easy to reinforce without mastery gain:
+- Mastery 0-19: 1 day
+- Mastery 20-39: 1-2 days (randomized)
+- Mastery 40-59: 2-4 days (randomized)
+- Mastery 60-79: 5-7 days (randomized)
+- Mastery 80-100: 7-10 days (randomized)
+
+**Hard Response - Practice Interval (Fixed):**
+- Always 1 day regardless of mastery level
+- Forces frequent practice after struggle
+- Combined with checkpoint regression creates effective remediation
+
+**Don't Know - Reset (Fixed):**
+- Re-queued immediately in current session
+- After session: uses Medium intervals based on new (reduced) mastery level
 
 **2. Chapter Unlocking**
 - Average mastery across chapter words
@@ -219,6 +253,32 @@ Time since last correct review >= Time gate for current level
 **4. Priority Scoring**
 - Words ready for mastery gain (time gate met) get priority boost
 - Encourages level-ups
+
+### Philosophy of Difficulty Ratings
+
+**The Four Responses Represent Different Learning States:**
+
+**Easy** = "I knew this instantly"
+- Mastery: +10 (confident progression)
+- Interval: Optimal SRS based on mastery level
+- Philosophy: Reward strong recall with proper spaced repetition
+
+**Medium** = "I got it right, but it took effort"
+- Mastery: +0 (maintenance, no inflation)
+- Interval: Shorter than Easy (reinforce without mastery gain)
+- Philosophy: Acknowledge adequate recall while maintaining realistic mastery
+
+**Hard** = "I struggled and barely got it"
+- Mastery: Checkpoint regression (significant setback)
+- Interval: 1 day (immediate practice)
+- Philosophy: Honest assessment that mastery wasn't as high as thought
+
+**Don't Know** = "I failed to recall"
+- Mastery: -15 (severe penalty)
+- Immediate: Must retry in current session
+- Philosophy: Cannot proceed without demonstrating recall
+
+This system prioritizes **honest self-assessment** over gaming. Medium acknowledges "I got it right" without inflating mastery unrealistically. Hard acknowledges genuine struggle with appropriate consequences.
 
 ---
 

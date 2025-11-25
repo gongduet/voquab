@@ -73,6 +73,24 @@ export function checkTimeGate(word) {
 }
 
 /**
+ * Calculate checkpoint regression for Hard responses
+ * @param {number} currentMastery - Current mastery level (0-100)
+ * @returns {number} New mastery level after regression
+ */
+function getHardCheckpointMastery(currentMastery) {
+  // Level 5-10 (50-100) → Drop to Level 3 (mastery = 30)
+  if (currentMastery >= 50) {
+    return 30
+  }
+  // Level 3-4 (30-49) → Drop to Level 2 (mastery = 20)
+  if (currentMastery >= 30) {
+    return 20
+  }
+  // Level 1-2 (10-29) → Drop to Level 0 (mastery = 0)
+  return 0
+}
+
+/**
  * Calculate mastery change with time gate enforcement
  *
  * @param {Object} word - Current word state
@@ -82,19 +100,23 @@ export function checkTimeGate(word) {
 export function calculateMasteryChange(word, difficulty) {
   const currentMastery = word.mastery_level || 0
 
-  // Mastery point values
+  // Mastery point changes based on difficulty
+  // Don't Know: -15 (significant regression, bypasses time gates)
+  // Hard: Checkpoint regression (calculated separately)
+  // Medium: +0 (maintenance, no mastery inflation)
+  // Easy: +10 (confident advancement)
   const masteryPoints = {
-    'dont-know': -5,
-    'hard': 3,
-    'medium': 6,
+    'dont-know': -15,
+    'hard': 0,      // Hard uses checkpoint regression instead
+    'medium': 0,
     'easy': 10
   }
 
   // "Don't Know" always applies (no time gate check)
   if (difficulty === 'dont-know') {
-    const newMastery = Math.max(0, currentMastery - 5)
+    const newMastery = Math.max(0, currentMastery - 15)
     return {
-      masteryChange: -5,
+      masteryChange: -15,
       newMastery: newMastery,
       timeGateInfo: {
         canGainMastery: true,
@@ -110,8 +132,19 @@ export function calculateMasteryChange(word, difficulty) {
 
   // If time gate met, apply mastery change
   if (timeGateInfo.canGainMastery) {
-    const masteryChange = masteryPoints[difficulty] || 0
-    const newMastery = Math.max(0, Math.min(100, currentMastery + masteryChange))
+    let newMastery
+    let masteryChange
+
+    if (difficulty === 'hard') {
+      // Hard uses checkpoint regression
+      newMastery = getHardCheckpointMastery(currentMastery)
+      masteryChange = newMastery - currentMastery
+    } else {
+      // Other difficulties use point-based changes
+      const points = masteryPoints[difficulty] || 0
+      newMastery = Math.max(0, Math.min(100, currentMastery + points))
+      masteryChange = points
+    }
 
     return {
       masteryChange,

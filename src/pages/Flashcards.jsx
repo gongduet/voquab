@@ -6,6 +6,7 @@ import { calculateCurrentHealth, getHealthBoost, applyHealthBoost } from '../uti
 import { selectCardsForSession } from '../utils/priorityCalculations'
 import { calculateMasteryChange } from '../utils/timeGateCalculations'
 import { checkBadgesOnPackageComplete } from '../utils/badgeCalculations'
+import { getEasyInterval, getMediumInterval, getHardInterval, getDontKnowInterval } from '../utils/masteryIntervals'
 import BadgeNotification from '../components/BadgeNotification'
 import WordStatusCard from '../components/WordStatusCard'
 import LevelUpCelebration from '../components/LevelUpCelebration'
@@ -46,6 +47,8 @@ export default function Flashcards() {
   const [totalReviews, setTotalReviews] = useState(0) // Total reviews (including re-queued)
   const [challengingWords, setChallengingWords] = useState([]) // Words that were difficult
   const [timeGateMessage, setTimeGateMessage] = useState(null) // Time gate feedback message
+  const [sessionReviews, setSessionReviews] = useState([]) // Detailed review data for session summary
+  const [showDetailedReview, setShowDetailedReview] = useState(false) // Expandable detailed review section
 
   // Package mode state
   const [packageId, setPackageId] = useState(null)
@@ -246,6 +249,7 @@ export default function Flashcards() {
           last_reviewed_at: userProgress?.last_reviewed_at || null,
           mastery_level: userProgress?.mastery_level || 0,
           total_reviews: userProgress?.total_reviews || 0,
+          correct_reviews: userProgress?.correct_reviews || 0,  // SRS interval calculation
           health: userProgress?.health || 100,
           failed_in_last_3_sessions: userProgress?.failed_in_last_3_sessions || false,
           // Package specific
@@ -357,6 +361,7 @@ export default function Flashcards() {
           last_reviewed_at: userProgress?.last_reviewed_at || null,
           mastery_level: userProgress?.mastery_level || 0,
           total_reviews: userProgress?.total_reviews || 0,
+          correct_reviews: userProgress?.correct_reviews || 0,  // SRS interval calculation
           health: userProgress?.health || 100,
           failed_in_last_3_sessions: userProgress?.failed_in_last_3_sessions || false,
           // Package specific
@@ -402,6 +407,7 @@ export default function Flashcards() {
             mastery_level,
             health,
             total_reviews,
+            correct_reviews,
             failed_in_last_3_sessions,
             vocabulary!inner(
               vocab_id,
@@ -488,6 +494,7 @@ export default function Flashcards() {
             last_reviewed_at: progress.last_reviewed_at || null,
             mastery_level: progress.mastery_level || 0,
             total_reviews: progress.total_reviews || 0,
+            correct_reviews: progress.correct_reviews || 0,  // SRS interval calculation
             // HEALTH SYSTEM (new!)
             health: progress.health || 100,
             failed_in_last_3_sessions: progress.failed_in_last_3_sessions || false,
@@ -1099,20 +1106,23 @@ export default function Flashcards() {
       const healthBoost = masteryResult.healthBoost
       const newHealth = applyHealthBoost(currentHealthData.health, healthBoost)
 
-      // Calculate review due date based on NEW mastery level
+      // Calculate next review interval based on NEW mastery level and difficulty
       let daysToAdd
-      if (newMasteryLevel < 20) {
-        daysToAdd = 0.5  // 12 hours - New words
-      } else if (newMasteryLevel < 50) {
-        daysToAdd = 1    // 1 day - Learning
-      } else if (newMasteryLevel < 80) {
-        daysToAdd = 3    // 3 days - Familiar
-      } else {
-        daysToAdd = 7    // 7 days - Mastered
+
+      if (difficulty === 'dont-know') {
+        daysToAdd = getDontKnowInterval(newMasteryLevel)
+      } else if (difficulty === 'hard') {
+        daysToAdd = getHardInterval()
+      } else if (difficulty === 'medium') {
+        daysToAdd = getMediumInterval(newMasteryLevel)
+      } else if (difficulty === 'easy') {
+        daysToAdd = getEasyInterval(newMasteryLevel)
       }
 
       const reviewDue = new Date()
       reviewDue.setDate(reviewDue.getDate() + daysToAdd)
+
+      console.log(`📅 INTERVAL: Mastery ${existing?.mastery_level || 0} → ${newMasteryLevel} (${difficulty}) → ${daysToAdd} days`)
 
       // Prepare review history entry (with health info + TIME GATE INFO)
       const reviewEntry = {
@@ -1210,6 +1220,42 @@ export default function Flashcards() {
             times_incorrect: isCorrect ? 0 : 1,
           }])
       }
+
+      // Track this review for session summary
+      setSessionReviews(prev => {
+        // Check if this word already reviewed in session
+        const existingIndex = prev.findIndex(r => r.vocab_id === currentCard.vocab_id)
+
+        if (existingIndex >= 0) {
+          // Word already reviewed - update attempts and final response
+          const updated = [...prev]
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            attempts: updated[existingIndex].attempts + 1,
+            finalDifficulty: difficulty,
+            masteryAfter: newMasteryLevel,
+            healthAfter: newHealth,
+            levelAfter: Math.floor(newMasteryLevel / 10),
+            nextReview: reviewDue
+          }
+          return updated
+        } else {
+          // First time reviewing this word
+          return [...prev, {
+            vocab_id: currentCard.vocab_id,
+            lemma: currentCard.lemma,
+            attempts: 1,
+            finalDifficulty: difficulty,
+            masteryBefore: currentCard.mastery_level || 0,
+            masteryAfter: newMasteryLevel,
+            healthBefore: currentHealthData.health,
+            healthAfter: newHealth,
+            levelBefore: Math.floor((currentCard.mastery_level || 0) / 10),
+            levelAfter: Math.floor(newMasteryLevel / 10),
+            nextReview: reviewDue
+          }]
+        }
+      })
 
       // SHOW TIME GATE MESSAGE TO USER (if blocked)
       if (timeGateBlocked && masteryResult.timeGateInfo.message) {
@@ -1591,6 +1637,27 @@ export default function Flashcards() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
 
+    // Helper functions for detailed review
+    const formatInterval = (nextReview) => {
+      if (!nextReview) return 'Unknown'
+      const now = new Date()
+      const reviewDate = new Date(nextReview)
+      const daysUntil = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24))
+
+      if (daysUntil <= 0) return 'Today'
+      if (daysUntil === 1) return 'Tomorrow'
+      if (daysUntil < 7) return `${daysUntil} days`
+      if (daysUntil < 30) return `${Math.round(daysUntil / 7)} weeks`
+      if (daysUntil < 365) return `${Math.round(daysUntil / 30)} months`
+      return `${Math.round(daysUntil / 365)} years`
+    }
+
+    const getLevelLabel = (level) => {
+      const labels = ['New', 'Beginner', 'Learning', 'Familiar', 'Practiced',
+                      'Intermediate', 'Proficient', 'Advanced', 'Expert', 'Master', 'Perfect']
+      return labels[level] || 'Unknown'
+    }
+
     return (
       <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center p-4">
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8">
@@ -1671,6 +1738,119 @@ export default function Flashcards() {
             </div>
           </div>
 
+          {/* Detailed Review Section */}
+          {sessionReviews.length > 0 && (
+            <div className="mb-8">
+              <button
+                onClick={() => setShowDetailedReview(!showDetailedReview)}
+                className="w-full flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200 hover:bg-blue-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">📋</span>
+                  <span className="font-serif font-bold text-blue-900">Detailed Review</span>
+                  <span className="text-sm text-blue-700">({sessionReviews.length} words)</span>
+                </div>
+                <span className="text-blue-700 text-xl">{showDetailedReview ? '▼' : '▶'}</span>
+              </button>
+
+              {showDetailedReview && (
+                <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Word</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Response</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Mastery</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Level</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Health</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Next Review</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {[...sessionReviews]
+                          .sort((a, b) => {
+                            // Sort by difficulty: dont-know > hard > medium > easy
+                            const difficultyOrder = { 'dont-know': 0, 'hard': 1, 'medium': 2, 'easy': 3 };
+                            const orderDiff = difficultyOrder[a.finalDifficulty] - difficultyOrder[b.finalDifficulty];
+                            if (orderDiff !== 0) return orderDiff;
+                            // Within same difficulty, sort by attempts (most first)
+                            return b.attempts - a.attempts;
+                          })
+                          .map(word => {
+                            const masteryChange = word.masteryAfter - word.masteryBefore;
+                            const healthChange = word.healthAfter - word.healthBefore;
+                            const levelChange = word.levelAfter - word.levelBefore;
+
+                            // Response emoji and label
+                            const responseDisplay = {
+                              'dont-know': { emoji: '❌', label: 'Don\'t Know', color: 'text-red-600 bg-red-50' },
+                              'hard': { emoji: '🤔', label: 'Hard', color: 'text-orange-600 bg-orange-50' },
+                              'medium': { emoji: '😐', label: 'Medium', color: 'text-yellow-600 bg-yellow-50' },
+                              'easy': { emoji: '😊', label: 'Easy', color: 'text-green-600 bg-green-50' }
+                            }[word.finalDifficulty];
+
+                            return (
+                              <tr key={word.vocab_id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 font-semibold text-gray-800">{word.lemma}</td>
+                                <td className="px-4 py-3">
+                                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${responseDisplay.color}`}>
+                                    {responseDisplay.emoji} {responseDisplay.label}
+                                    {word.attempts > 1 && ` ×${word.attempts}`}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-gray-600">{word.masteryBefore}</span>
+                                    <span className="text-gray-400">→</span>
+                                    <span className="font-semibold text-gray-800">{word.masteryAfter}</span>
+                                    <span className={`text-xs ml-1 ${
+                                      masteryChange > 0 ? 'text-green-600' :
+                                      masteryChange < 0 ? 'text-red-600' :
+                                      'text-gray-500'
+                                    }`}>
+                                      {masteryChange > 0 ? `+${masteryChange}` : masteryChange}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-gray-600">{word.levelBefore}</span>
+                                    <span className="text-gray-400">→</span>
+                                    <span className="font-semibold text-gray-800">{word.levelAfter}</span>
+                                    {levelChange > 0 && (
+                                      <span className="text-xs text-green-600 ml-1">🎉 +{levelChange}</span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-gray-600">{Math.round(word.healthBefore)}</span>
+                                    <span className="text-gray-400">→</span>
+                                    <span className="font-semibold text-gray-800">{Math.round(word.healthAfter)}</span>
+                                    <span className={`text-xs ml-1 ${
+                                      healthChange > 0 ? 'text-green-600' :
+                                      healthChange < 0 ? 'text-red-600' :
+                                      'text-gray-500'
+                                    }`}>
+                                      {healthChange > 0 ? `+${Math.round(healthChange)}` : Math.round(healthChange)}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 text-gray-700">
+                                  {formatInterval(word.nextReview)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Challenging Words */}
           {topChallenging.length > 0 && (
             <div className="mb-8 bg-orange-50 rounded-xl p-6 border border-orange-200">
@@ -1720,6 +1900,8 @@ export default function Flashcards() {
                 setReviewedCardIds(new Set())
                 setTotalReviews(0)
                 setChallengingWords([])
+                setSessionReviews([])
+                setShowDetailedReview(false)
                 fetchVocabulary(filterMode)
               }}
               className="w-full px-6 py-4 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors font-serif text-lg font-bold shadow-lg"
@@ -1982,45 +2164,68 @@ export default function Flashcards() {
         )}
 
         {/* Difficulty Buttons (only show when flipped) */}
-        {isFlipped && (
-          <div className="space-y-3 animate-fadeIn">
-            <div className="text-center mb-4">
-              <p className="text-sm text-gray-600 font-serif">How well did you know this word?</p>
+        {isFlipped && (() => {
+          // Calculate intervals for button labels based on mastery levels
+          const currentMastery = currentCard.mastery_level || 0
+          const projectedEasyMastery = Math.min(100, currentMastery + 10)
+
+          const dontKnowDays = getDontKnowInterval(Math.max(0, currentMastery - 15))
+          const hardDays = getHardInterval()
+          const mediumDays = getMediumInterval(currentMastery)
+          const easyDays = getEasyInterval(projectedEasyMastery)
+
+          function formatDays(days) {
+            if (days === 1) return '1 day'
+            if (days < 7) return `${days} days`
+            if (days < 14) return '1 week'
+            if (days < 30) return '2 weeks'
+            if (days < 60) return '1 month'
+            if (days < 90) return '2 months'
+            if (days < 120) return '3 months'
+            if (days < 180) return '4 months'
+            return '6 months'
+          }
+
+          return (
+            <div className="space-y-3 animate-fadeIn">
+              <div className="text-center mb-4">
+                <p className="text-sm text-gray-600 font-serif">How well did you know this word?</p>
+              </div>
+
+              <button
+                onClick={() => handleDifficulty('dont-know')}
+                className="w-full px-6 py-5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <div className="text-lg font-bold mb-1">😰 Don't Know</div>
+                <div className="text-xs opacity-90">I need to see this again → Try again in this session</div>
+              </button>
+
+              <button
+                onClick={() => handleDifficulty('hard')}
+                className="w-full px-6 py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <div className="text-lg font-bold mb-1">😅 Hard</div>
+                <div className="text-xs opacity-90">I got it, but it was difficult → {formatDays(hardDays)}</div>
+              </button>
+
+              <button
+                onClick={() => handleDifficulty('medium')}
+                className="w-full px-6 py-5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <div className="text-lg font-bold mb-1">😊 Medium</div>
+                <div className="text-xs opacity-90">I got it with some thought → {formatDays(mediumDays)}</div>
+              </button>
+
+              <button
+                onClick={() => handleDifficulty('easy')}
+                className="w-full px-6 py-5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <div className="text-lg font-bold mb-1">😄 Easy</div>
+                <div className="text-xs opacity-90">I knew this immediately → {formatDays(easyDays)}</div>
+              </button>
             </div>
-
-            <button
-              onClick={() => handleDifficulty('dont-know')}
-              className="w-full px-6 py-5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <div className="text-lg font-bold mb-1">😰 Don't Know</div>
-              <div className="text-xs opacity-90">I need to see this again → Returns in 3-5 cards</div>
-            </button>
-
-            <button
-              onClick={() => handleDifficulty('hard')}
-              className="w-full px-6 py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <div className="text-lg font-bold mb-1">😅 Hard</div>
-              <div className="text-xs opacity-90">I got it, but it was difficult → Review in 12 hours</div>
-            </button>
-
-            <button
-              onClick={() => handleDifficulty('medium')}
-              className="w-full px-6 py-5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <div className="text-lg font-bold mb-1">😊 Medium</div>
-              <div className="text-xs opacity-90">I got it with some thought → Review tomorrow</div>
-            </button>
-
-            <button
-              onClick={() => handleDifficulty('easy')}
-              className="w-full px-6 py-5 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all font-serif shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              <div className="text-lg font-bold mb-1">😄 Easy</div>
-              <div className="text-xs opacity-90">I knew this immediately → Review in 3 days</div>
-            </button>
-          </div>
-        )}
+          )
+        })()}
       </main>
 
       <style>{`
