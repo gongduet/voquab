@@ -1,0 +1,2900 @@
+{
+  "generated": "2025-12-06T14:20:19.277697",
+  "total_lemmas": 1800,
+  "total_issues": 306,
+  "by_type": {
+    "conjugation": 55,
+    "misspelling": 77,
+    "garbage": 81,
+    "variant": 88,
+    "duplicate": 5
+  },
+  "issues": [
+    {
+      "lemma": "la encontrara",
+      "issue_type": "conjugation",
+      "canonical_form": "encontrar",
+      "explanation": "contains conjugated verb form 'encontrara' (imperfect subjunctive), not a noun",
+      "confidence": 95,
+      "lemma_id": "9f35dc6d-eb9a-4d99-b63a-a797bd66374b",
+      "canonical_exists": true,
+      "canonical_id": "7d7b2e77-8e41-46da-8e7f-e8396159cfb7"
+    },
+    {
+      "lemma": "si (POS=SCONJ): \"yes\"",
+      "issue_type": "misspelling",
+      "canonical_form": "sí",
+      "explanation": "missing accent mark - 'si' without accent means 'if', 'sí' with accent means 'yes'",
+      "confidence": 99
+    },
+    {
+      "lemma": "patentar",
+      "issue_type": "misspelling",
+      "canonical_form": "patentar",
+      "explanation": "verb is correct but translation 'to patenting' is wrong - should be 'to patent'",
+      "confidence": 85,
+      "lemma_id": "ca4454d6-ba26-479e-aa9f-4721d3ceabbe",
+      "canonical_exists": true,
+      "canonical_id": "ca4454d6-ba26-479e-aa9f-4721d3ceabbe"
+    },
+    {
+      "lemma": "la poseerla",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a noun - appears to be verb 'poseer' with clitic pronoun 'la', not a dictionary entry",
+      "confidence": 95,
+      "lemma_id": "cc919d01-81c9-4717-b97d-84cdba88ef07",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "bridge",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "English word, not Spanish - should be 'bridge' or 'puente' depending on context",
+      "confidence": 90,
+      "lemma_id": "d930a15e-d0b4-439c-9d2c-f968b74b6e53",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "arizona",
+      "issue_type": "variant",
+      "canonical_form": "Arizona",
+      "explanation": "proper nouns should be capitalized",
+      "confidence": 98,
+      "lemma_id": "a813f183-1ef5-4bc7-b73b-d33f83ecf62f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "china",
+      "issue_type": "variant",
+      "canonical_form": "China",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 95,
+      "lemma_id": "16774290-9efd-4bd4-8a88-557dfd3d6429",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el largo",
+      "issue_type": "misspelling",
+      "canonical_form": "largo",
+      "explanation": "largo as noun meaning 'length' should be masculine singular without forced article, or this might be substantivized adjective",
+      "confidence": 80,
+      "lemma_id": "a56829bf-6f94-4814-ba13-fa48de39574f",
+      "canonical_exists": true,
+      "canonical_id": "f7b5d1df-fdab-4183-bebc-837cae31e1c3"
+    },
+    {
+      "lemma": "invariablemente",
+      "issue_type": "variant",
+      "canonical_form": "invariablemente",
+      "explanation": "POS tagged as ADJ but it's actually an adverb (ADV)",
+      "confidence": 95,
+      "lemma_id": "27c90a59-c71e-4eac-a162-5bca0c9217cd",
+      "canonical_exists": true,
+      "canonical_id": "27c90a59-c71e-4eac-a162-5bca0c9217cd"
+    },
+    {
+      "lemma": "ponerse",
+      "issue_type": "variant",
+      "canonical_form": "poner",
+      "explanation": "reflexive form with clitic pronoun, base verb is poner",
+      "confidence": 90,
+      "lemma_id": "79571eca-4be9-4116-a024-744b73f13638",
+      "canonical_exists": true,
+      "canonical_id": "fa932b62-5775-4c2e-b6d8-650c3e0651b0"
+    },
+    {
+      "lemma": "la llevármela",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a noun - this is a verbal phrase with clitic pronouns, not a dictionary entry",
+      "confidence": 99,
+      "lemma_id": "75da4189-fbb0-40fc-8800-737d95000f11",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "uno",
+      "issue_type": "variant",
+      "canonical_form": "uno",
+      "explanation": "tagged as DET but should be NUM - uno as determiner and numeral should be merged under numeral",
+      "confidence": 85,
+      "lemma_id": "e810cfb6-677e-443b-a0d0-22a443f489b1",
+      "canonical_exists": true,
+      "canonical_id": "e810cfb6-677e-443b-a0d0-22a443f489b1"
+    },
+    {
+      "lemma": "saber",
+      "issue_type": "variant",
+      "canonical_form": "saber",
+      "explanation": "saber is primarily a main verb, not auxiliary - POS tag should be VERB",
+      "confidence": 85,
+      "lemma_id": "d27e3bb3-f391-4483-a1d5-987d79892744",
+      "canonical_exists": true,
+      "canonical_id": "d27e3bb3-f391-4483-a1d5-987d79892744"
+    },
+    {
+      "lemma": "quien",
+      "issue_type": "variant",
+      "canonical_form": "quién",
+      "explanation": "missing accent mark - should be quién when used as interrogative/exclamatory pronoun",
+      "confidence": 90,
+      "lemma_id": "06e2544d-7e47-4185-9bb2-c80460d933d7",
+      "canonical_exists": true,
+      "canonical_id": "1fc8ba9e-dad2-4c4e-81ab-54d44d241515"
+    },
+    {
+      "lemma": "habitado",
+      "issue_type": "variant",
+      "canonical_form": "habitado",
+      "explanation": "this appears to be a past participle form rather than a pure adjective - could be conjugation issue",
+      "confidence": 75,
+      "lemma_id": "1330ac97-a3d7-48a5-83c3-4c63d440881b",
+      "canonical_exists": true,
+      "canonical_id": "1330ac97-a3d7-48a5-83c3-4c63d440881b"
+    },
+    {
+      "lemma": "la fuente (POS=ADJ, gender=F)",
+      "issue_type": "misspelling",
+      "canonical_form": "la fuente (POS=NOUN, gender=F)",
+      "explanation": "fuente is a noun meaning 'fountain/source', not an adjective",
+      "confidence": 99
+    },
+    {
+      "lemma": "sacar (POS=ADJ)",
+      "issue_type": "misspelling",
+      "canonical_form": "sacar (POS=VERB)",
+      "explanation": "sacar is a verb meaning 'to take out', not an adjective; translation also suggests conjugated form",
+      "confidence": 99
+    },
+    {
+      "lemma": "mío",
+      "issue_type": "variant",
+      "canonical_form": "mío",
+      "explanation": "possessive pronouns are typically listed without gender/number variants, but this masculine singular form is acceptable as canonical",
+      "confidence": 85,
+      "lemma_id": "0ce69224-d12b-442a-826f-096e7ab060c0",
+      "canonical_exists": true,
+      "canonical_id": "0ce69224-d12b-442a-826f-096e7ab060c0"
+    },
+    {
+      "lemma": "perdido",
+      "issue_type": "variant",
+      "canonical_form": "perdido",
+      "explanation": "past participle used as adjective - canonical form is acceptable but derived from perder",
+      "confidence": 80,
+      "lemma_id": "656db04f-7064-4c73-9857-a2847e573e43",
+      "canonical_exists": true,
+      "canonical_id": "656db04f-7064-4c73-9857-a2847e573e43"
+    },
+    {
+      "lemma": "muerto",
+      "issue_type": "variant",
+      "canonical_form": "muerto",
+      "explanation": "past participle used as adjective - canonical form is acceptable but derived from morir",
+      "confidence": 80,
+      "lemma_id": "a6342d97-0117-4c77-aad9-a3724952af88",
+      "canonical_exists": true,
+      "canonical_id": "a6342d97-0117-4c77-aad9-a3724952af88"
+    },
+    {
+      "lemma": "gramático",
+      "issue_type": "variant",
+      "canonical_form": "gramatical",
+      "explanation": "gramático as adjective meaning 'grammatical' should be 'gramatical'; gramático is the noun form",
+      "confidence": 85,
+      "lemma_id": "87e0893c-1efe-481b-990b-46dcaf4fad02",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "ocaber",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish verb, likely OCR/processing error",
+      "confidence": 95,
+      "lemma_id": "9601314d-55ba-43a5-a7c3-f9e1043f5feb",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "bueno (POS=INTJ)",
+      "issue_type": "variant",
+      "canonical_form": "bueno",
+      "explanation": "bueno as interjection should be merged with bueno as adjective - same lemma, different POS usage",
+      "confidence": 85
+    },
+    {
+      "lemma": "gran",
+      "issue_type": "variant",
+      "canonical_form": "grande",
+      "explanation": "apocopated form of grande, should use full masculine singular form",
+      "confidence": 95,
+      "lemma_id": "99ce3312-59ea-4d76-8d04-ca323f59e57c",
+      "canonical_exists": true,
+      "canonical_id": "3024f802-6c1c-4583-b29c-89e44c58cef1"
+    },
+    {
+      "lemma": "el agua",
+      "issue_type": "variant",
+      "canonical_form": "agua",
+      "explanation": "uses masculine article but noun is feminine, should be listed without article",
+      "confidence": 90,
+      "lemma_id": "820976b7-1afe-4b87-852c-dc9ae4cb440c",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "dormido",
+      "issue_type": "variant",
+      "canonical_form": "dormir",
+      "explanation": "past participle used as adjective, but derives from verb dormir",
+      "confidence": 85,
+      "lemma_id": "264d4c41-2ca8-47f4-ab6b-dc6846aebd28",
+      "canonical_exists": true,
+      "canonical_id": "fb81d33a-1699-4ae0-b70b-199c745476b7"
+    },
+    {
+      "lemma": "pronunciado",
+      "issue_type": "variant",
+      "canonical_form": "pronunciar",
+      "explanation": "past participle form, verb should be listed as infinitive pronunciar",
+      "confidence": 95,
+      "lemma_id": "bcbe422f-881a-4d54-90c1-01e5111cf136",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el vez",
+      "issue_type": "misspelling",
+      "canonical_form": "la vez",
+      "explanation": "vez is feminine noun, should be 'la vez' not 'el vez'",
+      "confidence": 99,
+      "lemma_id": "59fc18a7-0a6d-4ce2-be11-722ac344f19e",
+      "canonical_exists": true,
+      "canonical_id": "525354b8-3393-4f7c-b253-4b28b5290f9f"
+    },
+    {
+      "lemma": "cómo",
+      "issue_type": "variant",
+      "canonical_form": "cómo",
+      "explanation": "POS should be ADV (adverb) not PRON (pronoun)",
+      "confidence": 90,
+      "lemma_id": "0fc09763-7553-4668-a6f6-69ad5a54b3fc",
+      "canonical_exists": true,
+      "canonical_id": "0fc09763-7553-4668-a6f6-69ad5a54b3fc"
+    },
+    {
+      "lemma": "has",
+      "issue_type": "conjugation",
+      "canonical_form": "haber",
+      "explanation": "conjugated form (2nd person singular present) of haber",
+      "confidence": 99,
+      "lemma_id": "357944dd-4de0-41a8-ba20-09e9360b97f1",
+      "canonical_exists": true,
+      "canonical_id": "74500e09-9b1f-432a-9dd4-d0df98320e2f"
+    },
+    {
+      "lemma": "el serio",
+      "issue_type": "misspelling",
+      "canonical_form": null,
+      "explanation": "serio is an adjective meaning 'serious', not a noun meaning 'seriously'",
+      "confidence": 95,
+      "lemma_id": "533eee8b-ae7c-4210-abec-a5c06440702b",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "muchachito",
+      "issue_type": "variant",
+      "canonical_form": "muchacho",
+      "explanation": "diminutive form of muchacho, and should be POS=NOUN not ADJ",
+      "confidence": 90,
+      "lemma_id": "e461f4da-f3c6-4f46-9bb7-34bbfa0ee8ef",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el duda",
+      "issue_type": "misspelling",
+      "canonical_form": "la duda",
+      "explanation": "duda is feminine, should be 'la duda' not 'el duda'",
+      "confidence": 99,
+      "lemma_id": "cdffebaf-1049-46a8-8a61-2cf92f128e11",
+      "canonical_exists": true,
+      "canonical_id": "f500b1fd-a26d-4fcc-bc4a-36ae9521ae19"
+    },
+    {
+      "lemma": "el ata",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "ata is not a Spanish noun, likely a conjugated verb form or processing error",
+      "confidence": 95,
+      "lemma_id": "ba2e582f-36f9-44c7-bab9-474a00198acf",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "europea",
+      "issue_type": "variant",
+      "canonical_form": "europeo",
+      "explanation": "feminine form of europeo, should use masculine singular",
+      "confidence": 98,
+      "lemma_id": "f6b3a2fe-2430-452d-8b13-3507ffce33d8",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "punzante",
+      "issue_type": "variant",
+      "canonical_form": "punzante",
+      "explanation": "tagged as ADV but punzante is an adjective meaning 'sharp/piercing', not an adverb",
+      "confidence": 95,
+      "lemma_id": "749695b1-6d5a-4020-ad33-3cc99b73f91a",
+      "canonical_exists": true,
+      "canonical_id": "749695b1-6d5a-4020-ad33-3cc99b73f91a"
+    },
+    {
+      "lemma": "marte",
+      "issue_type": "variant",
+      "canonical_form": "Marte",
+      "explanation": "proper noun Mars should be capitalized",
+      "confidence": 99,
+      "lemma_id": "a62a26df-d06c-4157-ab8a-0bdb264fe7ee",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el veces",
+      "issue_type": "misspelling",
+      "canonical_form": "la vez",
+      "explanation": "incorrect gender and number - 'vez' is feminine and 'veces' is plural",
+      "confidence": 99,
+      "lemma_id": "1b09191e-b7ab-4edd-b65e-817b5ea9be69",
+      "canonical_exists": true,
+      "canonical_id": "525354b8-3393-4f7c-b253-4b28b5290f9f"
+    },
+    {
+      "lemma": "el descubre",
+      "issue_type": "conjugation",
+      "canonical_form": "descubrir",
+      "explanation": "this is the conjugated verb form (3rd person singular present) of descubrir, not a noun",
+      "confidence": 98,
+      "lemma_id": "f7857f4e-e6f6-4eec-a6b8-402b4a39d602",
+      "canonical_exists": true,
+      "canonical_id": "21be1b86-96a0-4a7e-aed0-df5f4f29028e"
+    },
+    {
+      "lemma": "el causa",
+      "issue_type": "misspelling",
+      "canonical_form": "la causa",
+      "explanation": "incorrect gender - 'causa' is feminine",
+      "confidence": 99,
+      "lemma_id": "4c19a961-dd3b-4931-89eb-11f91a3bf4ea",
+      "canonical_exists": true,
+      "canonical_id": "477ac3fb-6a92-4f91-b231-cdaad977abec"
+    },
+    {
+      "lemma": "el vestido",
+      "issue_type": "misspelling",
+      "canonical_form": "el vestido",
+      "explanation": "translation error - 'vestido' means 'dress' but is masculine, not feminine clothing",
+      "confidence": 85,
+      "lemma_id": "3af8c3b9-ce5e-4b97-b82b-59c1c1b57293",
+      "canonical_exists": true,
+      "canonical_id": "3af8c3b9-ce5e-4b97-b82b-59c1c1b57293"
+    },
+    {
+      "lemma": "mismo",
+      "issue_type": "variant",
+      "canonical_form": "mismo",
+      "explanation": "mismo is primarily an adjective, not a pronoun - POS tag should be ADJ",
+      "confidence": 85,
+      "lemma_id": "1b0a81fc-8ef5-4396-9a66-0d7940fae8f3",
+      "canonical_exists": true,
+      "canonical_id": "1b0a81fc-8ef5-4396-9a66-0d7940fae8f3"
+    },
+    {
+      "lemma": "cuánto",
+      "issue_type": "variant",
+      "canonical_form": "cuánto",
+      "explanation": "cuánto is primarily an adverb/pronoun, not an adjective - POS tag should be ADV or PRON",
+      "confidence": 80,
+      "lemma_id": "a6f92f8e-5669-4ac8-b01f-08f5feca59a1",
+      "canonical_exists": true,
+      "canonical_id": "a6f92f8e-5669-4ac8-b01f-08f5feca59a1"
+    },
+    {
+      "lemma": "llegar",
+      "issue_type": "misspelling",
+      "canonical_form": "llegar",
+      "explanation": "translation is incorrect - 'llegar' means 'to arrive', not 'to go to'",
+      "confidence": 95,
+      "lemma_id": "a575d755-1c73-4987-b5cd-5d78872493c4",
+      "canonical_exists": true,
+      "canonical_id": "a575d755-1c73-4987-b5cd-5d78872493c4"
+    },
+    {
+      "lemma": "valer",
+      "issue_type": "misspelling",
+      "canonical_form": "valer",
+      "explanation": "translation is incorrect - 'valer' means 'to be worth' not 'to worth'",
+      "confidence": 90,
+      "lemma_id": "b838c8b9-bcf4-4e0b-8faa-85d659cbc352",
+      "canonical_exists": true,
+      "canonical_id": "b838c8b9-bcf4-4e0b-8faa-85d659cbc352"
+    },
+    {
+      "lemma": "el manera",
+      "issue_type": "misspelling",
+      "canonical_form": "la manera",
+      "explanation": "'manera' is feminine, should be 'la manera'",
+      "confidence": 99,
+      "lemma_id": "c29b8f2c-5104-4948-a7e1-65973c4009be",
+      "canonical_exists": true,
+      "canonical_id": "76528f89-2bbe-41fa-8f87-e8ebc515c630"
+    },
+    {
+      "lemma": "indulgent",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, this is English - Spanish would be 'indulgente'",
+      "confidence": 98,
+      "lemma_id": "f1308b3e-21ad-46f5-8c77-01e2a5affbd3",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el ligera",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "'ligera' is an adjective (feminine form), cannot be masculine noun, translation is also wrong",
+      "confidence": 95,
+      "lemma_id": "4b212426-eb5c-428f-a01f-ff6635a2b58c",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "titubeo",
+      "issue_type": "misspelling",
+      "canonical_form": "el titubeo",
+      "explanation": "should be tagged as NOUN not PROPN, and needs article",
+      "confidence": 95,
+      "lemma_id": "e69d9565-f857-43e9-ba26-2000cff7abff",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el perdonármelo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "complex clitic pronoun construction, not a dictionary lemma",
+      "confidence": 90,
+      "lemma_id": "b6af5fae-de02-48b8-95cd-5cfc43bda37a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el través",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "través doesn't exist as standalone noun, only in phrase 'a través de'",
+      "confidence": 85,
+      "lemma_id": "a95c044e-6305-486e-b730-299fa598b5ad",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el tal",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "tal is not a noun meaning 'such as', it's an adjective/pronoun",
+      "confidence": 90,
+      "lemma_id": "5b95b1b2-3dbf-41d3-a907-ab6fa8a18111",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la haz",
+      "issue_type": "misspelling",
+      "canonical_form": "el haz",
+      "explanation": "haz is masculine (el haz) and means 'bundle/beam', not 'go to'",
+      "confidence": 85,
+      "lemma_id": "7e224e4f-6fc1-4eaf-a624-f572c6e242f9",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el gracias",
+      "issue_type": "variant",
+      "canonical_form": "la gracia",
+      "explanation": "gracias is plural form, should be singular la gracia; also wrong gender",
+      "confidence": 95,
+      "lemma_id": "fee069e8-d50a-4ee3-94f9-344d4ef59949",
+      "canonical_exists": true,
+      "canonical_id": "1e53d19f-0c6f-4122-8c02-a1c37654fee4"
+    },
+    {
+      "lemma": "el juiciosamente",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "juiciosamente is an adverb, not a masculine noun",
+      "confidence": 99,
+      "lemma_id": "ffc8b225-0b78-4d59-a771-4b477595af78",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "hablarar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely error - should be hablar",
+      "confidence": 99,
+      "lemma_id": "0860d787-406b-4f84-8009-8f21de6f3ada",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el consiguiente",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "consiguiente is an adjective, not a noun meaning 'consequently'",
+      "confidence": 98,
+      "lemma_id": "2266faff-4e9b-47e8-8e93-bfc7c11b49f9",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "duermen",
+      "issue_type": "conjugation",
+      "canonical_form": "dormir",
+      "explanation": "conjugated form (3rd person plural present) of dormir",
+      "confidence": 99,
+      "lemma_id": "31902e08-735a-48b9-b98b-27b83bf19ee3",
+      "canonical_exists": true,
+      "canonical_id": "fb81d33a-1699-4ae0-b70b-199c745476b7"
+    },
+    {
+      "lemma": "la encantadora",
+      "issue_type": "variant",
+      "canonical_form": "encantador",
+      "explanation": "feminine form of adjective encantador, should be masculine singular",
+      "confidence": 97,
+      "lemma_id": "bd1cbeb1-2d82-4c36-8094-7973baaa5435",
+      "canonical_exists": true,
+      "canonical_id": "6f687706-a933-44dd-b296-ac9e2b7f5cac"
+    },
+    {
+      "lemma": "ramito",
+      "issue_type": "variant",
+      "canonical_form": "el ramito",
+      "explanation": "ramito is a noun meaning 'small bunch/sprig', not an adjective",
+      "confidence": 98,
+      "lemma_id": "37f01a1a-b184-4943-acd6-6fd7916e4c9f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la verdad",
+      "issue_type": "misspelling",
+      "canonical_form": "la verdad",
+      "explanation": "translation is incorrect - should be 'the truth' not 'the it is true'",
+      "confidence": 95,
+      "lemma_id": "131271e9-3681-4c4c-ad27-c83602b2333e",
+      "canonical_exists": true,
+      "canonical_id": "131271e9-3681-4c4c-ad27-c83602b2333e"
+    },
+    {
+      "lemma": "el administro",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid noun - 'administro' is a verb conjugation, not a noun meaning 'the i manage'",
+      "confidence": 98,
+      "lemma_id": "609521b4-3a45-4f75-a6ac-9c36aaa5fc2d",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el cuanto",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid noun - 'cuanto' is not a noun meaning 'the as soon as'",
+      "confidence": 97,
+      "lemma_id": "1b7496aa-e8d0-4b39-b019-781b2735ae27",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la mañana",
+      "issue_type": "misspelling",
+      "canonical_form": "la mañana",
+      "explanation": "translation is incorrect - should be 'the morning' not 'the tomorrow'",
+      "confidence": 95,
+      "lemma_id": "86f6af69-7dd7-4a74-921a-f0956b643c91",
+      "canonical_exists": true,
+      "canonical_id": "86f6af69-7dd7-4a74-921a-f0956b643c91"
+    },
+    {
+      "lemma": "tratarse",
+      "issue_type": "variant",
+      "canonical_form": "tratar",
+      "explanation": "reflexive form of tratar, should use base infinitive",
+      "confidence": 95,
+      "lemma_id": "054b283c-ef7d-4376-a02e-332d6aac6178",
+      "canonical_exists": true,
+      "canonical_id": "d09b514a-6264-4c56-a817-fd88f4e0828a"
+    },
+    {
+      "lemma": "la baobabs",
+      "issue_type": "misspelling",
+      "canonical_form": "el baobab",
+      "explanation": "baobab is masculine singular, baobabs is plural form",
+      "confidence": 98,
+      "lemma_id": "aeddc868-8cb3-4666-a96f-d1c13906973f",
+      "canonical_exists": true,
+      "canonical_id": "d09eeb98-ac0e-41f1-a686-9c9de07fca14"
+    },
+    {
+      "lemma": "tres",
+      "issue_type": "misspelling",
+      "canonical_form": "tres",
+      "explanation": "missing accent mark, should be 'tres'",
+      "confidence": 100,
+      "lemma_id": "a30b124c-ae1f-48f6-950e-be5468b17914",
+      "canonical_exists": true,
+      "canonical_id": "a30b124c-ae1f-48f6-950e-be5468b17914"
+    },
+    {
+      "lemma": "trabajer",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely error for 'trabajar'",
+      "confidence": 99,
+      "lemma_id": "8024266b-e3ea-4426-8c99-4fca405f469a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la valía",
+      "issue_type": "misspelling",
+      "canonical_form": "la valía",
+      "explanation": "translation is incorrect - means 'worth/value', not 'the was worth'",
+      "confidence": 95,
+      "lemma_id": "7bddb885-80f2-45ff-a427-a310dbe95169",
+      "canonical_exists": true,
+      "canonical_id": "7bddb885-80f2-45ff-a427-a310dbe95169"
+    },
+    {
+      "lemma": "el hacerlo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "infinitive + pronoun construction, not a dictionary lemma",
+      "confidence": 90,
+      "lemma_id": "cbb38270-9dc3-481e-99df-99a01a99c85d",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "cuarto",
+      "issue_type": "misspelling",
+      "canonical_form": "el cuarto",
+      "explanation": "POS mismatch - 'cuarto' as 'room' is a noun, not adjective",
+      "confidence": 98,
+      "lemma_id": "4a300d4c-b3ca-4c16-9501-d6cf2cf307e4",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "estados",
+      "issue_type": "variant",
+      "canonical_form": "Estados Unidos",
+      "explanation": "incomplete proper noun - should be 'Estados Unidos'",
+      "confidence": 95,
+      "lemma_id": "916b6938-32da-4cb8-b362-ca50ddae4db1",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "unidos",
+      "issue_type": "duplicate",
+      "canonical_form": "Estados Unidos",
+      "explanation": "part of 'Estados Unidos', should merge with previous",
+      "confidence": 95,
+      "lemma_id": "78f1ac7c-be86-453b-8cdd-23d2f52e370a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el puesta",
+      "issue_type": "misspelling",
+      "canonical_form": "la puesta",
+      "explanation": "gender error - 'puesta' is feminine, should be 'la puesta'",
+      "confidence": 99,
+      "lemma_id": "f867dc7a-4bae-4c98-8a86-738054b50011",
+      "canonical_exists": true,
+      "canonical_id": "8bfe274c-e8ed-41f5-a113-3f52108290c2"
+    },
+    {
+      "lemma": "el viste",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "viste is a verb conjugation (2nd person singular preterite of ver), not a noun",
+      "confidence": 99,
+      "lemma_id": "5e46137a-686a-4f4a-ac24-2e757aaeaa29",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el relación",
+      "issue_type": "misspelling",
+      "canonical_form": "la relación",
+      "explanation": "relación is feminine, should be 'la relación'",
+      "confidence": 99,
+      "lemma_id": "78b5e378-b41f-4da1-9ebc-356179f5bec3",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "respondir",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, correct verb is 'responder'",
+      "confidence": 99,
+      "lemma_id": "4863c7e4-1ed1-4ae0-9634-46a37c373ebb",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el mezclas",
+      "issue_type": "misspelling",
+      "canonical_form": "la mezcla",
+      "explanation": "incorrect gender and number - should be feminine singular 'la mezcla'",
+      "confidence": 98,
+      "lemma_id": "51faee0b-cb25-4c96-9fc4-37d2a340c727",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el parecer",
+      "issue_type": "misspelling",
+      "canonical_form": "el parecer",
+      "explanation": "translation is incorrect - means 'opinion' or 'appearance', not 'the look like'",
+      "confidence": 95,
+      "lemma_id": "ec039199-ad11-42bc-a6f5-3a0d761739f7",
+      "canonical_exists": true,
+      "canonical_id": "ec039199-ad11-42bc-a6f5-3a0d761739f7"
+    },
+    {
+      "lemma": "el pesar",
+      "issue_type": "misspelling",
+      "canonical_form": "el pesar",
+      "explanation": "translation is incorrect - means 'sorrow' or 'grief', not 'the despite'",
+      "confidence": 95,
+      "lemma_id": "25457dcb-0ad6-409c-b1f7-6f55652d4a94",
+      "canonical_exists": true,
+      "canonical_id": "25457dcb-0ad6-409c-b1f7-6f55652d4a94"
+    },
+    {
+      "lemma": "la mire",
+      "issue_type": "conjugation",
+      "canonical_form": "mirar",
+      "explanation": "conjugated form (1st/3rd person singular present subjunctive) of mirar",
+      "confidence": 99,
+      "lemma_id": "06cffb37-72df-4fe5-944b-d42cb11d33d8",
+      "canonical_exists": true,
+      "canonical_id": "2bc23c04-f791-4481-96f1-77707ab97a7a"
+    },
+    {
+      "lemma": "el flor",
+      "issue_type": "misspelling",
+      "canonical_form": "la flor",
+      "explanation": "incorrect gender - flor is feminine, should be 'la flor'",
+      "confidence": 99,
+      "lemma_id": "ef1aafd3-8b9d-4231-8dfa-88f92c9753b4",
+      "canonical_exists": true,
+      "canonical_id": "984c044a-af86-4877-b472-bc947864923d"
+    },
+    {
+      "lemma": "la come",
+      "issue_type": "conjugation",
+      "canonical_form": "comer",
+      "explanation": "conjugated form (3rd person singular present) of comer",
+      "confidence": 99,
+      "lemma_id": "acbeae28-8852-41bb-ae52-6a6bd6e6ba9a",
+      "canonical_exists": true,
+      "canonical_id": "9a633f55-d55b-4c65-bcb2-a8549b69f54c"
+    },
+    {
+      "lemma": "el sollozo",
+      "issue_type": "misspelling",
+      "canonical_form": "el sollozo",
+      "explanation": "correct spelling is 'sollozo' not 'sollozo' - this appears to be correct actually",
+      "confidence": 0,
+      "lemma_id": "9249bec1-23f1-4836-abd2-6d86cce9db24",
+      "canonical_exists": true,
+      "canonical_id": "9249bec1-23f1-4836-abd2-6d86cce9db24"
+    },
+    {
+      "lemma": "llevarter",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely OCR/processing error",
+      "confidence": 95,
+      "lemma_id": "83bee362-c350-4a84-b08f-eb9b53979a5f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "te",
+      "issue_type": "misspelling",
+      "canonical_form": null,
+      "explanation": "'te' is a pronoun, not an interjection meaning 'you'",
+      "confidence": 90,
+      "lemma_id": "faf59118-1f32-469e-97bc-28a16b6b952c",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el conocer",
+      "issue_type": "misspelling",
+      "canonical_form": "conocer",
+      "explanation": "conocer is a verb (infinitive), not a masculine noun meaning 'visit'",
+      "confidence": 95,
+      "lemma_id": "e4a063f2-7618-43ac-ac20-91df91517bbb",
+      "canonical_exists": true,
+      "canonical_id": "67f700f7-ff0d-415b-a6ee-dd58d78e8218"
+    },
+    {
+      "lemma": "adornado",
+      "issue_type": "conjugation",
+      "canonical_form": "adornado",
+      "explanation": "past participle form, but can function as adjective - this is actually acceptable",
+      "confidence": 30,
+      "lemma_id": "749250bf-f33f-4089-b6aa-6096c4659615",
+      "canonical_exists": true,
+      "canonical_id": "749250bf-f33f-4089-b6aa-6096c4659615"
+    },
+    {
+      "lemma": "sentado",
+      "issue_type": "conjugation",
+      "canonical_form": "sentado",
+      "explanation": "past participle form, but can function as adjective - this is actually acceptable",
+      "confidence": 30,
+      "lemma_id": "20acff58-6535-4be4-92af-5e4fae4e04de",
+      "canonical_exists": true,
+      "canonical_id": "20acff58-6535-4be4-92af-5e4fae4e04de"
+    },
+    {
+      "lemma": "la tranquila",
+      "issue_type": "misspelling",
+      "canonical_form": "la tranquilidad",
+      "explanation": "tranquila is an adjective, not a noun meaning 'the quiet' - should be 'la tranquilidad'",
+      "confidence": 95,
+      "lemma_id": "871ee6a3-d17a-40c6-ae6e-13247e6fd249",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el presencia",
+      "issue_type": "misspelling",
+      "canonical_form": "la presencia",
+      "explanation": "presencia is feminine noun, should be 'la presencia' not 'el presencia'",
+      "confidence": 99,
+      "lemma_id": "bd2d84c8-cba3-4a83-89be-d066633dbbd8",
+      "canonical_exists": true,
+      "canonical_id": "6ca8a440-9cab-4cd4-aa0f-bc5bce882ee8"
+    },
+    {
+      "lemma": "señor",
+      "issue_type": "misspelling",
+      "canonical_form": "el señor",
+      "explanation": "señor is a noun meaning 'mister/sir', not an adjective, and should include article",
+      "confidence": 98,
+      "lemma_id": "e1379594-ce33-4ad6-a028-26697a3e1e8a",
+      "canonical_exists": true,
+      "canonical_id": "fd7547d5-a464-4e44-b0d3-beaa77f9f9cb"
+    },
+    {
+      "lemma": "tendrar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely error for 'tender' or 'tener'",
+      "confidence": 99,
+      "lemma_id": "2a9c047c-8f74-4a24-888c-5236dea139f1",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "pregunt",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "incomplete word stem, not a valid Spanish adjective",
+      "confidence": 98,
+      "lemma_id": "8ba93828-5d65-4573-bb45-9ce52f3288f4",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "deshollinado",
+      "issue_type": "variant",
+      "canonical_form": "deshollinador",
+      "explanation": "participle form, canonical would be the agent noun deshollinador",
+      "confidence": 85,
+      "lemma_id": "27224d71-6c79-4a0c-a003-d0efd09627f6",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la conmovedora",
+      "issue_type": "variant",
+      "canonical_form": "conmovedor",
+      "explanation": "feminine form of adjective conmovedor used as noun, should be masculine singular",
+      "confidence": 90,
+      "lemma_id": "0205001c-5e70-4198-80fa-409519381928",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "tuvierar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish verb form, likely processing error",
+      "confidence": 95,
+      "lemma_id": "1ff13db1-b3e2-4190-a5c6-246a05978ba4",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el hum",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, appears to be English",
+      "confidence": 98,
+      "lemma_id": "250c2ada-9a6a-4bab-8596-ce73bd093258",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el bostez",
+      "issue_type": "misspelling",
+      "canonical_form": "el bostezo",
+      "explanation": "misspelled, correct form is bostezo",
+      "confidence": 95,
+      "lemma_id": "1a5eef3d-7b14-4b07-843a-5bd3d1d1f4a8",
+      "canonical_exists": true,
+      "canonical_id": "ae3be6f8-3cec-4d81-aa07-c6ee08bfae95"
+    },
+    {
+      "lemma": "volcánica",
+      "issue_type": "variant",
+      "canonical_form": "volcánico",
+      "explanation": "feminine form of volcánico, should be masculine singular",
+      "confidence": 99,
+      "lemma_id": "526097b7-3e84-4a6c-90fa-e0dd226d4e18",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "aquélla",
+      "issue_type": "variant",
+      "canonical_form": "aquel",
+      "explanation": "archaic accented feminine form, modern canonical is aquel",
+      "confidence": 85,
+      "lemma_id": "4f818ca4-6361-441f-a0bd-cf7507a61100",
+      "canonical_exists": true,
+      "canonical_id": "2561a330-1fdc-4a79-b6ed-a2b7735d9bb6"
+    },
+    {
+      "lemma": "la tonta",
+      "issue_type": "variant",
+      "canonical_form": "tonto",
+      "explanation": "substantivized adjective, should be listed as adjective 'tonto'",
+      "confidence": 95,
+      "lemma_id": "24371108-1fea-4877-89b6-2f7337437356",
+      "canonical_exists": true,
+      "canonical_id": "32c4e925-2d7d-4ff2-a26e-0d551821e7ce"
+    },
+    {
+      "lemma": "la órden",
+      "issue_type": "misspelling",
+      "canonical_form": "la orden",
+      "explanation": "incorrect accent mark - 'orden' is stressed on second syllable",
+      "confidence": 98,
+      "lemma_id": "91437e31-83c8-4248-bd90-16ee6c58cea8",
+      "canonical_exists": true,
+      "canonical_id": "f7391e5d-35b9-4676-9d4f-53ac9f9798a1"
+    },
+    {
+      "lemma": "el perdóname",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "imperative verb form with pronoun, not a noun",
+      "confidence": 99,
+      "lemma_id": "d7b5df07-daeb-4cc1-93c0-8edfcfc58c45",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "verdad",
+      "issue_type": "variant",
+      "canonical_form": "la verdad",
+      "explanation": "common noun, not proper noun, needs article",
+      "confidence": 90,
+      "lemma_id": "4afef199-ab39-46de-a5b4-ea43efd450bf",
+      "canonical_exists": true,
+      "canonical_id": "131271e9-3681-4c4c-ad27-c83602b2333e"
+    },
+    {
+      "lemma": "atrever",
+      "issue_type": "misspelling",
+      "canonical_form": "atreverse",
+      "explanation": "pronominal verb, should include reflexive pronoun 'se'",
+      "confidence": 95,
+      "lemma_id": "58293cbb-65bc-4d22-ae45-0abf86306530",
+      "canonical_exists": true,
+      "canonical_id": "d8260430-56fa-45cc-8074-588cca8439cf"
+    },
+    {
+      "lemma": "la olerla",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "verb + pronoun combination, not a noun",
+      "confidence": 99,
+      "lemma_id": "372996a6-6acd-484b-a2ee-6516ab7c9370",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el setenta",
+      "issue_type": "variant",
+      "canonical_form": "setenta",
+      "explanation": "cardinal number, not a noun with article",
+      "confidence": 92,
+      "lemma_id": "6dc8242f-27b8-4891-8587-f7257405a3ec",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "debido",
+      "issue_type": "variant",
+      "canonical_form": "debido",
+      "explanation": "participial adjective, not auxiliary verb",
+      "confidence": 88,
+      "lemma_id": "5f04581a-aaac-43e8-b90f-11b38d346d0f",
+      "canonical_exists": true,
+      "canonical_id": "5f04581a-aaac-43e8-b90f-11b38d346d0f"
+    },
+    {
+      "lemma": "el exigiré",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "conjugated verb form 'exigiré' incorrectly treated as noun",
+      "confidence": 99,
+      "lemma_id": "2fb45f69-81db-442d-a97d-4840999dff60",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "ejecutar",
+      "issue_type": "misspelling",
+      "canonical_form": "ejecutar",
+      "explanation": "definition contains 'executasir' which appears to be a typo",
+      "confidence": 90,
+      "lemma_id": "2c3872c8-47c2-4780-8e86-b5a99afacc52",
+      "canonical_exists": true,
+      "canonical_id": "2c3872c8-47c2-4780-8e86-b5a99afacc52"
+    },
+    {
+      "lemma": "el temo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "conjugated verb form 'temo' incorrectly treated as noun",
+      "confidence": 99,
+      "lemma_id": "afae73d2-975f-454b-ae70-c1191bab049b",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el erupción",
+      "issue_type": "variant",
+      "canonical_form": "la erupción",
+      "explanation": "erupción is feminine, should be 'la erupción' not 'el erupción'",
+      "confidence": 99,
+      "lemma_id": "d5956bdf-a7a6-459d-8edb-d24352bd71ca",
+      "canonical_exists": true,
+      "canonical_id": "f530e5c5-685a-4b0c-afb3-63f0ba214a9a"
+    },
+    {
+      "lemma": "vestido",
+      "issue_type": "variant",
+      "canonical_form": "el vestido",
+      "explanation": "vestido as 'dress' is a noun (el vestido), not an adjective",
+      "confidence": 95,
+      "lemma_id": "028ca91e-17ab-4e40-818b-5cae0dd74c5f",
+      "canonical_exists": true,
+      "canonical_id": "3af8c3b9-ce5e-4b97-b82b-59c1c1b57293"
+    },
+    {
+      "lemma": "semillo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely error for 'semilla' (seed) which would be a noun",
+      "confidence": 95,
+      "lemma_id": "f753c5f5-3c02-45ca-84cb-c096b0d9148d",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "visitarlo",
+      "issue_type": "conjugation",
+      "canonical_form": "visitar",
+      "explanation": "infinitive 'visitar' with clitic pronoun 'lo', not a pronoun as tagged",
+      "confidence": 98,
+      "lemma_id": "941ca221-2a32-4a75-90c5-2392f4dfab02",
+      "canonical_exists": true,
+      "canonical_id": "f92b3e63-7d9e-40cf-8283-b257820a387d"
+    },
+    {
+      "lemma": "sentarte",
+      "issue_type": "conjugation",
+      "canonical_form": "sentar",
+      "explanation": "infinitive 'sentar' with reflexive pronoun 'te', not an adverb as tagged",
+      "confidence": 98,
+      "lemma_id": "cfe31ba9-bf10-45b1-9c59-7572e35e4998",
+      "canonical_exists": true,
+      "canonical_id": "4b465871-01c9-47bf-98d3-f7f5a5ec46c5"
+    },
+    {
+      "lemma": "haber él",
+      "issue_type": "conjugation",
+      "canonical_form": "haber",
+      "explanation": "conjugated form with pronoun, should be infinitive only",
+      "confidence": 98,
+      "lemma_id": "7280bf78-497b-416e-8b91-90a6ecbfbf7a",
+      "canonical_exists": true,
+      "canonical_id": "74500e09-9b1f-432a-9dd4-d0df98320e2f"
+    },
+    {
+      "lemma": "tosiar",
+      "issue_type": "garbage",
+      "canonical_form": "toser",
+      "explanation": "misspelled verb, correct form is toser",
+      "confidence": 95,
+      "lemma_id": "56daa5cd-0281-4ea0-850b-431f8f883820",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "dejabas",
+      "issue_type": "conjugation",
+      "canonical_form": "dejar",
+      "explanation": "conjugated form (2nd person singular imperfect) of dejar",
+      "confidence": 99,
+      "lemma_id": "e0edd16a-9040-49b3-ae07-46e7bb795a28",
+      "canonical_exists": true,
+      "canonical_id": "922a07e8-6848-46ce-804a-b643a2d0974b"
+    },
+    {
+      "lemma": "la mirarla",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a noun, appears to be verb + pronoun construction incorrectly categorized",
+      "confidence": 90,
+      "lemma_id": "aa739091-207f-4c36-a0f8-f6951e2ab229",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "soporter",
+      "issue_type": "garbage",
+      "canonical_form": "soportar",
+      "explanation": "misspelled verb, correct form is soportar",
+      "confidence": 95,
+      "lemma_id": "1cc2f230-f21c-48ce-ae98-080a03e23d56",
+      "canonical_exists": true,
+      "canonical_id": "3a616997-b4f2-474b-bbcf-e683b67074a1"
+    },
+    {
+      "lemma": "el embargo",
+      "issue_type": "misspelling",
+      "canonical_form": "sin embargo",
+      "explanation": "translation suggests this should be the adverbial phrase 'sin embargo' meaning 'however'",
+      "confidence": 85,
+      "lemma_id": "2b436283-2a61-410c-810e-2df98ff1d6b4",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "simplificado",
+      "issue_type": "variant",
+      "canonical_form": "simple",
+      "explanation": "past participle used as adjective, canonical form is simple",
+      "confidence": 85,
+      "lemma_id": "508ea250-2c94-46b5-b40d-ecfe414569a8",
+      "canonical_exists": true,
+      "canonical_id": "53ee01a1-c9fb-42ac-a737-9c18cbcb8188"
+    },
+    {
+      "lemma": "tosió",
+      "issue_type": "conjugation",
+      "canonical_form": "toser",
+      "explanation": "conjugated form (3rd person singular preterite) of toser, incorrectly tagged as ADJ",
+      "confidence": 99,
+      "lemma_id": "f6691336-84ec-4f56-85d1-f0828eabff75",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el magnífico",
+      "issue_type": "variant",
+      "canonical_form": "magnífico",
+      "explanation": "adjective incorrectly categorized as noun, should be ADJ",
+      "confidence": 95,
+      "lemma_id": "6968e377-ff93-4ebb-b58d-d9715dd076df",
+      "canonical_exists": true,
+      "canonical_id": "0c42bad5-28df-43f8-a19b-4615efe5d258"
+    },
+    {
+      "lemma": "mansedumbre",
+      "issue_type": "variant",
+      "canonical_form": "la mansedumbre",
+      "explanation": "noun incorrectly tagged as ADJ, should be feminine noun",
+      "confidence": 98,
+      "lemma_id": "3924f0f2-7131-40e0-9c4a-ef9dd9c7dda7",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "despeinado",
+      "issue_type": "variant",
+      "canonical_form": "despeinar",
+      "explanation": "past participle used as adjective, could be canonical but verb form more common",
+      "confidence": 70,
+      "lemma_id": "cbd99625-c6f7-4405-aa48-7514b354fab9",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el te",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "malformed entry with nonsensical definition, likely processing error",
+      "confidence": 99,
+      "lemma_id": "b11d75d0-fba3-43e5-b64f-04f54c45f401",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "prohíbir",
+      "issue_type": "misspelling",
+      "canonical_form": "prohibir",
+      "explanation": "incorrect accent mark, should be prohibir",
+      "confidence": 99,
+      "lemma_id": "ed0a8313-4fb5-4126-a44f-d15e679bf551",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la bosteza",
+      "issue_type": "misspelling",
+      "canonical_form": "el bostezo",
+      "explanation": "incorrect form, correct noun is bostezo (masculine)",
+      "confidence": 95,
+      "lemma_id": "8e1de7dd-15f7-4789-a361-c6fca95e23b9",
+      "canonical_exists": true,
+      "canonical_id": "ae3be6f8-3cec-4d81-aa07-c6ee08bfae95"
+    },
+    {
+      "lemma": "viesar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely corruption of ver",
+      "confidence": 99,
+      "lemma_id": "e4a30ea5-cc60-425e-9bca-557dcc96715a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el cien",
+      "issue_type": "variant",
+      "canonical_form": "ciento",
+      "explanation": "should be cardinal form 'ciento', not apocopated 'cien'",
+      "confidence": 95,
+      "lemma_id": "706bdfaf-ee52-4762-a8d0-bdfee1f872d7",
+      "canonical_exists": true,
+      "canonical_id": "4e8b341a-52c6-4e42-a012-2d0bb7ca6c99"
+    },
+    {
+      "lemma": "cuándo",
+      "issue_type": "misspelling",
+      "canonical_form": "cuándo",
+      "explanation": "incorrect POS - should be ADV (adverb), not PRON (pronoun)",
+      "confidence": 90,
+      "lemma_id": "3e01dab9-2657-44f5-9046-c8fe86ebc9b9",
+      "canonical_exists": true,
+      "canonical_id": "3e01dab9-2657-44f5-9046-c8fe86ebc9b9"
+    },
+    {
+      "lemma": "la parta",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word - likely error for 'la parte' (the part)",
+      "confidence": 95,
+      "lemma_id": "6080ca12-5944-4230-b520-b0af3dc60ab0",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "vayar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely error for 'ir' (to go)",
+      "confidence": 98,
+      "lemma_id": "72d96762-83c9-4af0-85ac-8849f9e12a6f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el carroza",
+      "issue_type": "misspelling",
+      "canonical_form": "la carroza",
+      "explanation": "carroza is feminine noun, should be 'la carroza'",
+      "confidence": 95,
+      "lemma_id": "1094fb83-4d16-43ad-903a-d3977564b506",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "tampoco",
+      "issue_type": "misspelling",
+      "canonical_form": "tampoco",
+      "explanation": "incorrect definition - means 'neither/not either', not 'also'",
+      "confidence": 90,
+      "lemma_id": "a602d14a-359b-4aca-a290-6c6802e54f1e",
+      "canonical_exists": true,
+      "canonical_id": "a602d14a-359b-4aca-a290-6c6802e54f1e"
+    },
+    {
+      "lemma": "podrás",
+      "issue_type": "conjugation",
+      "canonical_form": "poder",
+      "explanation": "conjugated form (2nd person singular future) of poder",
+      "confidence": 99,
+      "lemma_id": "315c6546-5e50-4eb6-a774-09f5c501fdfe",
+      "canonical_exists": true,
+      "canonical_id": "ae8fa7d4-7cdf-4a90-8afc-459daca530cf"
+    },
+    {
+      "lemma": "el muerte",
+      "issue_type": "misspelling",
+      "canonical_form": "la muerte",
+      "explanation": "muerte is feminine, should be 'la muerte' not 'el muerte'",
+      "confidence": 99,
+      "lemma_id": "44f2fa86-9b08-46aa-ac2d-8f1653024ac1",
+      "canonical_exists": true,
+      "canonical_id": "c5ff711b-2c54-48a6-a087-f4b8b5501035"
+    },
+    {
+      "lemma": "indultarás",
+      "issue_type": "conjugation",
+      "canonical_form": "indultar",
+      "explanation": "conjugated form (2nd person singular future) of indultar, incorrectly tagged as adjective",
+      "confidence": 99,
+      "lemma_id": "62ac791d-32b0-4413-a873-1565f3afbb74",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "servirir",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "misspelled word, correct form is 'servir'",
+      "confidence": 99,
+      "lemma_id": "407ec2af-3bdb-4690-a65c-f9a18623c5c0",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el apaga",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "'apaga' is a verb form, not a noun meaning 'the turn off'",
+      "confidence": 95,
+      "lemma_id": "e046a64f-c156-4bb3-bbe8-480ef25ae8d2",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la acaba",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "'acaba' is a verb form, not a noun meaning 'the just'",
+      "confidence": 95,
+      "lemma_id": "fda76980-29c3-436a-b702-5a444ce3fa77",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el noches",
+      "issue_type": "misspelling",
+      "canonical_form": "la noche",
+      "explanation": "should be feminine singular 'la noche', not masculine plural",
+      "confidence": 99,
+      "lemma_id": "fc32c1ba-ea4c-4685-a3b5-a59602b45030",
+      "canonical_exists": true,
+      "canonical_id": "657e925d-bdf7-47db-994f-0b21512e0348"
+    },
+    {
+      "lemma": "comprendo",
+      "issue_type": "conjugation",
+      "canonical_form": "comprender",
+      "explanation": "conjugated form (1st person singular present) of comprender",
+      "confidence": 99,
+      "lemma_id": "5962fd3b-6938-4dbf-bb5c-a4b3950789ee",
+      "canonical_exists": true,
+      "canonical_id": "e69bf42d-32ee-4f6b-87bc-fcdd71e8fc7c"
+    },
+    {
+      "lemma": "reposo",
+      "issue_type": "misspelling",
+      "canonical_form": "el reposo",
+      "explanation": "reposo is a noun meaning 'rest', not an adjective - should be classified as noun with article",
+      "confidence": 95,
+      "lemma_id": "180a0df0-949a-4be7-a56e-657644cf06d9",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el descans",
+      "issue_type": "garbage",
+      "canonical_form": "el descanso",
+      "explanation": "incomplete word, missing final 'o' - should be 'el descanso'",
+      "confidence": 99,
+      "lemma_id": "7bdaae1e-968e-42ee-8f23-be2a7d83b02b",
+      "canonical_exists": true,
+      "canonical_id": "d15acbca-85d6-4c0f-8683-2cef100157e4"
+    },
+    {
+      "lemma": "caminarás",
+      "issue_type": "conjugation",
+      "canonical_form": "caminar",
+      "explanation": "conjugated form (2nd person singular future) of caminar, incorrectly tagged as adverb",
+      "confidence": 99,
+      "lemma_id": "7aa6a6d6-261d-47ab-adf0-e8f62120fdae",
+      "canonical_exists": true,
+      "canonical_id": "4a9148ca-2c25-490d-a01e-26aa44c02bbd"
+    },
+    {
+      "lemma": "haber yo",
+      "issue_type": "garbage",
+      "canonical_form": "haber",
+      "explanation": "auxiliary verb with pronoun - canonical form is just 'haber'",
+      "confidence": 98,
+      "lemma_id": "ce5d7978-bb96-4ced-8fed-d1b28fdf406f",
+      "canonical_exists": true,
+      "canonical_id": "74500e09-9b1f-432a-9dd4-d0df98320e2f"
+    },
+    {
+      "lemma": "el cuatrocienta",
+      "issue_type": "garbage",
+      "canonical_form": "cuatrocientos",
+      "explanation": "incorrect form - should be 'cuatrocientos' (cardinal number)",
+      "confidence": 97,
+      "lemma_id": "a02e2c9b-f9f2-45dd-8012-365f5c69989f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "mentir",
+      "issue_type": "misspelling",
+      "canonical_form": "mentir",
+      "explanation": "definition says 'to lying' but should be 'to lie' - the lemma is correct but definition is wrong",
+      "confidence": 95,
+      "lemma_id": "f3d85a2e-d2d7-4fc5-94c9-c31c44b624fb",
+      "canonical_exists": true,
+      "canonical_id": "f3d85a2e-d2d7-4fc5-94c9-c31c44b624fb"
+    },
+    {
+      "lemma": "majestad",
+      "issue_type": "variant",
+      "canonical_form": "la majestad",
+      "explanation": "marked as PROPN but should be NOUN with article, means 'majesty' as common noun",
+      "confidence": 90,
+      "lemma_id": "91360008-39c1-4f13-8496-7f3f5c09e3c2",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "respondierar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish verb form, likely OCR/processing error for 'responder'",
+      "confidence": 99,
+      "lemma_id": "9074106c-27e4-4905-ac83-e572d7aa1a61",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "emocionado",
+      "issue_type": "conjugation",
+      "canonical_form": "emocionar",
+      "explanation": "past participle form, dictionary form should be the infinitive verb",
+      "confidence": 85,
+      "lemma_id": "70f4005b-37ae-4cdc-8491-245fec8580c5",
+      "canonical_exists": true,
+      "canonical_id": "2b9f5693-74ff-43e6-b4e8-340679d5f603"
+    },
+    {
+      "lemma": "el vas",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish noun, 'vas' is 2nd person singular of 'ir', definition makes no sense",
+      "confidence": 98,
+      "lemma_id": "69c1f9be-d839-4cd3-ac71-5da41e21f712",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "arrepentir",
+      "issue_type": "variant",
+      "canonical_form": "arrepentirse",
+      "explanation": "this verb is always reflexive, canonical form should include 'se'",
+      "confidence": 92,
+      "lemma_id": "0d4b5028-0c10-4032-bf79-3792f405b9ef",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el pasarlo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a dictionary noun, this is an infinitive + pronoun construction",
+      "confidence": 96,
+      "lemma_id": "b2664748-774a-4355-af75-d67c4b4e9394",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "traigar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish verb, likely error for 'traer'",
+      "confidence": 99,
+      "lemma_id": "6b6c08b7-5174-4076-9855-9cc1f4b6cb10",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el tan",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "tan is an adverb meaning 'so', not a masculine noun",
+      "confidence": 95,
+      "lemma_id": "ee73153b-a97f-49ed-a3c7-d06803a90280",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "ayudarte",
+      "issue_type": "conjugation",
+      "canonical_form": "ayudar",
+      "explanation": "infinitive + pronoun form, not an adjective; canonical form is ayudar",
+      "confidence": 99,
+      "lemma_id": "a7f8575a-6cc8-474b-adcc-8fdcd80eca66",
+      "canonical_exists": true,
+      "canonical_id": "a69baed8-d706-4356-8c35-fe4a67370565"
+    },
+    {
+      "lemma": "la habla",
+      "issue_type": "variant",
+      "canonical_form": "el habla",
+      "explanation": "habla is feminine but takes masculine article 'el' due to initial stressed 'a'",
+      "confidence": 90,
+      "lemma_id": "d2413e49-31c1-4858-a140-507d3a99eb79",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "inútilmente",
+      "issue_type": "variant",
+      "canonical_form": "inútilmente",
+      "explanation": "this is an adverb ending in -mente, not an adjective",
+      "confidence": 95,
+      "lemma_id": "3321d192-ca2d-4ac0-8b16-442e8b4dc490",
+      "canonical_exists": true,
+      "canonical_id": "3321d192-ca2d-4ac0-8b16-442e8b4dc490"
+    },
+    {
+      "lemma": "la miró",
+      "issue_type": "conjugation",
+      "canonical_form": "mirar",
+      "explanation": "conjugated form (3rd person singular preterite) of mirar, not a noun",
+      "confidence": 99,
+      "lemma_id": "00169f7c-3789-4a5b-b3c5-73b19d62faec",
+      "canonical_exists": true,
+      "canonical_id": "2bc23c04-f791-4481-96f1-77707ab97a7a"
+    },
+    {
+      "lemma": "el encontrarlo",
+      "issue_type": "conjugation",
+      "canonical_form": "encontrar",
+      "explanation": "infinitive + pronoun construction, not a standalone noun",
+      "confidence": 95,
+      "lemma_id": "6755291b-3826-4f0d-95f6-b807e952951e",
+      "canonical_exists": true,
+      "canonical_id": "7d7b2e77-8e41-46da-8e7f-e8396159cfb7"
+    },
+    {
+      "lemma": "el partir",
+      "issue_type": "conjugation",
+      "canonical_form": "partir",
+      "explanation": "infinitive used as noun, should be listed as verb",
+      "confidence": 90,
+      "lemma_id": "198c63c7-5138-4fc5-b4d3-ea17669a3088",
+      "canonical_exists": true,
+      "canonical_id": "b979511c-2dc4-4071-a437-c068db566284"
+    },
+    {
+      "lemma": "el noveciento",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "incorrect form, should be novecientos (plural)",
+      "confidence": 95,
+      "lemma_id": "1221c34a-c1d1-4340-998e-90e7c46c17ba",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "medio",
+      "issue_type": "variant",
+      "canonical_form": "medio",
+      "explanation": "medio is primarily an adjective, not a number",
+      "confidence": 85,
+      "lemma_id": "f29ab802-4b3b-4cbe-9688-3df481cb0784",
+      "canonical_exists": true,
+      "canonical_id": "f29ab802-4b3b-4cbe-9688-3df481cb0784"
+    },
+    {
+      "lemma": "el es",
+      "issue_type": "conjugation",
+      "canonical_form": "ser",
+      "explanation": "conjugated form (3rd person singular present) of ser, not a noun",
+      "confidence": 99,
+      "lemma_id": "e223cb0b-6e35-49dd-9d2b-d6182d8db59e",
+      "canonical_exists": true,
+      "canonical_id": "96fe57ec-9e7b-426a-b6b8-1e11816f2401"
+    },
+    {
+      "lemma": "el decir",
+      "issue_type": "conjugation",
+      "canonical_form": "decir",
+      "explanation": "infinitive used as noun, should be listed as verb",
+      "confidence": 90,
+      "lemma_id": "f3a2a033-ad91-46a6-a248-a74b88ab3ea9",
+      "canonical_exists": true,
+      "canonical_id": "0c7bb6c2-8816-4ab0-97f1-c642526920a1"
+    },
+    {
+      "lemma": "el cuatrociento",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "incorrect form, should be cuatrocientos (plural)",
+      "confidence": 95,
+      "lemma_id": "aaabe469-bcf7-4a02-a4db-fc2ce8b8f07d",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "visto",
+      "issue_type": "conjugation",
+      "canonical_form": "ver",
+      "explanation": "past participle of ver, not a standalone adjective",
+      "confidence": 90,
+      "lemma_id": "063e2db3-390d-41f1-8c6f-d86200d5329a",
+      "canonical_exists": true,
+      "canonical_id": "a992776d-b62b-41c9-9232-f44ce1a773fb"
+    },
+    {
+      "lemma": "regulado",
+      "issue_type": "conjugation",
+      "canonical_form": "regular",
+      "explanation": "past participle form of regular, should be listed as adjective 'regular'",
+      "confidence": 85,
+      "lemma_id": "548a7fae-8aea-481e-a2f1-134688a531ab",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "siberia",
+      "issue_type": "variant",
+      "canonical_form": "Siberia",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 95,
+      "lemma_id": "03e7fe4a-8338-48bc-a0e0-97366920d6c3",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "rusia",
+      "issue_type": "variant",
+      "canonical_form": "Rusia",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 95,
+      "lemma_id": "e5e55749-08ad-4848-ad05-698cf9d6df6c",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "india",
+      "issue_type": "variant",
+      "canonical_form": "India",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 95,
+      "lemma_id": "17d56a04-db49-4da2-ae49-5ab9ea96102c",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "Zelanda",
+      "issue_type": "variant",
+      "canonical_form": "Nueva Zelanda",
+      "explanation": "incomplete proper noun, should be 'Nueva Zelanda'",
+      "confidence": 90,
+      "lemma_id": "4bfbf5cd-e1ad-4218-b278-519e43ed5d38",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "américa",
+      "issue_type": "variant",
+      "canonical_form": "América",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 95,
+      "lemma_id": "00898b38-8bd5-4a5f-9b25-2daac22bfcc4",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "sur",
+      "issue_type": "variant",
+      "canonical_form": "el sur",
+      "explanation": "should be listed as common noun with article, not proper noun",
+      "confidence": 80,
+      "lemma_id": "d8bae28c-a7c1-4f90-ade9-8bb633432718",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "norte",
+      "issue_type": "variant",
+      "canonical_form": "el norte",
+      "explanation": "should be listed as common noun with article, not proper noun",
+      "confidence": 80,
+      "lemma_id": "eee3e1a8-43d3-4640-b32d-0d83a1749512",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "polo",
+      "issue_type": "duplicate",
+      "canonical_form": "el polo",
+      "explanation": "duplicate of existing noun entry, should be merged",
+      "confidence": 90,
+      "lemma_id": "3fb15202-670e-442c-9e0b-cc0850122d20",
+      "canonical_exists": true,
+      "canonical_id": "c843dcf7-fc33-4d44-9dd5-60013abe1abc"
+    },
+    {
+      "lemma": "mentar",
+      "issue_type": "misspelling",
+      "canonical_form": "mentir",
+      "explanation": "translation suggests 'to lie' which is 'mentir', not 'mentar'",
+      "confidence": 85,
+      "lemma_id": "3d938407-eb91-4529-a3c9-f975d0f8c530",
+      "canonical_exists": true,
+      "canonical_id": "f3d85a2e-d2d7-4fc5-94c9-c31c44b624fb"
+    },
+    {
+      "lemma": "corro",
+      "issue_type": "conjugation",
+      "canonical_form": "correr",
+      "explanation": "conjugated form (1st person singular present) of correr",
+      "confidence": 99,
+      "lemma_id": "db43c45d-4ce2-4423-8feb-4b6580bbbd61",
+      "canonical_exists": true,
+      "canonical_id": "6ca5c8bf-c2da-408d-a165-e97515e9e1c7"
+    },
+    {
+      "lemma": "pusieram",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish word, likely corrupted form",
+      "confidence": 95
+    },
+    {
+      "lemma": "pacífico",
+      "issue_type": "variant",
+      "canonical_form": "Pacífico",
+      "explanation": "proper noun should be capitalized",
+      "confidence": 90,
+      "lemma_id": "f7cc719d-6aee-4446-a253-70055977ac89",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la volcán",
+      "issue_type": "misspelling",
+      "canonical_form": "el volcán",
+      "explanation": "volcán is masculine, should be 'el volcán'",
+      "confidence": 99,
+      "lemma_id": "2c1daaa3-2936-4beb-bd2c-10ca09dbb4ac",
+      "canonical_exists": true,
+      "canonical_id": "3f62bddc-5a67-4cd9-8718-63175ed2d172"
+    },
+    {
+      "lemma": "silvestr",
+      "issue_type": "misspelling",
+      "canonical_form": "silvestre",
+      "explanation": "incomplete form, correct adjective is 'silvestre'",
+      "confidence": 98,
+      "lemma_id": "fa29aee2-e64b-4605-b06f-e725d99cd601",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el juzgarás",
+      "issue_type": "conjugation",
+      "canonical_form": "juzgar",
+      "explanation": "conjugated verb form (2nd person singular future) incorrectly labeled as noun",
+      "confidence": 99,
+      "lemma_id": "39a3f538-1802-46d6-ba54-86cef887eb1a",
+      "canonical_exists": true,
+      "canonical_id": "950db7fd-a554-490c-a53c-5c3809f40859"
+    },
+    {
+      "lemma": "el vete",
+      "issue_type": "conjugation",
+      "canonical_form": "ir",
+      "explanation": "imperative form of 'ir' incorrectly labeled as noun",
+      "confidence": 95,
+      "lemma_id": "3d35715d-b175-413d-91b1-f3cc96efa115",
+      "canonical_exists": true,
+      "canonical_id": "427bd6cd-8aeb-4563-9734-70b4946e2f6d"
+    },
+    {
+      "lemma": "el maravillado",
+      "issue_type": "variant",
+      "canonical_form": "maravillado",
+      "explanation": "past participle used as adjective, should be listed as adjective not noun",
+      "confidence": 90,
+      "lemma_id": "5459d1e4-db51-4d13-8c57-2f825603ff59",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la gana",
+      "issue_type": "misspelling",
+      "canonical_form": "la gana",
+      "explanation": "should be 'las ganas' (desire/wish) - 'gana' alone doesn't mean 'wins'",
+      "confidence": 85,
+      "lemma_id": "718822b3-3324-4ceb-9b8b-eae00f200ed4",
+      "canonical_exists": true,
+      "canonical_id": "718822b3-3324-4ceb-9b8b-eae00f200ed4"
+    },
+    {
+      "lemma": "sepa",
+      "issue_type": "conjugation",
+      "canonical_form": "saber",
+      "explanation": "subjunctive form of 'saber' (to know), not an adjective",
+      "confidence": 95,
+      "lemma_id": "df7e79fe-7222-44e3-99b0-1cd69e7913ca",
+      "canonical_exists": true,
+      "canonical_id": "d27e3bb3-f391-4483-a1d5-987d79892744"
+    },
+    {
+      "lemma": "arbusto",
+      "issue_type": "variant",
+      "canonical_form": "el arbusto",
+      "explanation": "should be noun 'el arbusto' (the bush), not adjective",
+      "confidence": 90,
+      "lemma_id": "fe54b3dd-67e8-4eb3-b60a-b450358d2d67",
+      "canonical_exists": true,
+      "canonical_id": "82de5a7b-0871-4235-890f-2d2e862c189f"
+    },
+    {
+      "lemma": "volvía",
+      "issue_type": "conjugation",
+      "canonical_form": "volver",
+      "explanation": "imperfect tense form of 'volver', not an adjective",
+      "confidence": 95,
+      "lemma_id": "e8c28a00-ebd2-4f71-95a0-1ba758121f42",
+      "canonical_exists": true,
+      "canonical_id": "da93d226-1fe3-40df-a4f2-3dea3c0db048"
+    },
+    {
+      "lemma": "hazmer",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely OCR/processing error",
+      "confidence": 95,
+      "lemma_id": "cff92277-9079-4af3-8f01-e61f4f11e747",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "bebo",
+      "issue_type": "conjugation",
+      "canonical_form": "beber",
+      "explanation": "conjugated form (1st person singular present) of beber, incorrectly tagged as interjection",
+      "confidence": 99,
+      "lemma_id": "6cd22347-e770-4581-93ea-e8898f31b911",
+      "canonical_exists": true,
+      "canonical_id": "1ca34aca-78e0-4335-bab7-60b8822f708b"
+    },
+    {
+      "lemma": "la beb",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely truncated or OCR error",
+      "confidence": 95,
+      "lemma_id": "3ee5773f-4871-4333-9645-d30dde06b172",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "compadecido",
+      "issue_type": "conjugation",
+      "canonical_form": "compadecer",
+      "explanation": "past participle of compadecer, not base adjective form",
+      "confidence": 90,
+      "lemma_id": "f8844556-6ff0-4e99-a20a-c01c6af576ac",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "abstraído",
+      "issue_type": "conjugation",
+      "canonical_form": "abstraer",
+      "explanation": "past participle of abstraer, not base adjective form",
+      "confidence": 90,
+      "lemma_id": "40ca4411-30b9-4445-bd0a-fc7b99004460",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el siquiera",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "siquiera is an adverb meaning 'at least/even', not a masculine noun",
+      "confidence": 95,
+      "lemma_id": "87bbb881-0ef4-4fcc-b179-b47bf4f01039",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la veintidós",
+      "issue_type": "misspelling",
+      "canonical_form": "veintidós",
+      "explanation": "numbers should not have articles and veintidós is invariant in gender",
+      "confidence": 95,
+      "lemma_id": "e31a9cfe-7a17-4bf7-9d0b-4f24857afc5f",
+      "canonical_exists": true,
+      "canonical_id": "2ac29707-8783-4675-aafc-1c46882545ca"
+    },
+    {
+      "lemma": "veintiocho",
+      "issue_type": "variant",
+      "canonical_form": "veintiocho",
+      "explanation": "numbers should be tagged as NUM, not ADJ",
+      "confidence": 90,
+      "lemma_id": "b0e9fda2-4030-4571-b4e4-c88b27d740df",
+      "canonical_exists": true,
+      "canonical_id": "b0e9fda2-4030-4571-b4e4-c88b27d740df"
+    },
+    {
+      "lemma": "seisciento",
+      "issue_type": "misspelling",
+      "canonical_form": "seiscientos",
+      "explanation": "incorrect form, should be seiscientos (with s)",
+      "confidence": 98,
+      "lemma_id": "2e86dd93-7a97-4c11-8713-a4aab4874879",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el veintidós",
+      "issue_type": "duplicate",
+      "canonical_form": "veintidós",
+      "explanation": "duplicate of veintidós, numbers don't take articles",
+      "confidence": 95,
+      "lemma_id": "52ede141-c84f-44c0-9412-d04d64a84789",
+      "canonical_exists": true,
+      "canonical_id": "2ac29707-8783-4675-aafc-1c46882545ca"
+    },
+    {
+      "lemma": "el seteciento",
+      "issue_type": "misspelling",
+      "canonical_form": "setecientos",
+      "explanation": "incorrect form, should be setecientos (with s) and no article",
+      "confidence": 98,
+      "lemma_id": "4d2fa33e-84c5-4b1a-b53b-59cad8ecc5ba",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el cosita",
+      "issue_type": "variant",
+      "canonical_form": "la cosita",
+      "explanation": "cosita is feminine noun, should be 'la cosita' not 'el cosita'",
+      "confidence": 99,
+      "lemma_id": "3e7a597d-6d9c-4426-9d84-4fa27da5c444",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el exacto",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "exacto is an adjective, not a noun; translation 'the exactly' is nonsensical",
+      "confidence": 95,
+      "lemma_id": "00ae1d2c-e00c-42cc-a671-3d9b38225dec",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "tuya",
+      "issue_type": "variant",
+      "canonical_form": "tuyo",
+      "explanation": "possessive adjective should be masculine singular form 'tuyo'",
+      "confidence": 98,
+      "lemma_id": "12146f91-5b57-41a0-ae6c-9cbb736b3edb",
+      "canonical_exists": true,
+      "canonical_id": "c5be1f4b-0430-4ee7-9ca5-0f09ebfc05df"
+    },
+    {
+      "lemma": "el obstante",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "obstante is not a standalone noun; part of phrase 'no obstante' meaning 'however'",
+      "confidence": 96,
+      "lemma_id": "faeba722-d41a-42f8-a173-510aafbc9ba6",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "suyo",
+      "issue_type": "variant",
+      "canonical_form": "suyo",
+      "explanation": "tagged as DET but should be ADJ (possessive adjective)",
+      "confidence": 90,
+      "lemma_id": "0127d469-a6ad-48ad-8eef-321bccca458f",
+      "canonical_exists": true,
+      "canonical_id": "0127d469-a6ad-48ad-8eef-321bccca458f"
+    },
+    {
+      "lemma": "el rato",
+      "issue_type": "garbage",
+      "canonical_form": "el rato",
+      "explanation": "translation 'the for a while' is incorrect; should be 'the while/moment'",
+      "confidence": 85,
+      "lemma_id": "292bc64d-7130-492b-b00e-a4f4990fc5e9",
+      "canonical_exists": true,
+      "canonical_id": "292bc64d-7130-492b-b00e-a4f4990fc5e9"
+    },
+    {
+      "lemma": "pata",
+      "issue_type": "variant",
+      "canonical_form": "la pata",
+      "explanation": "pata is a feminine noun meaning 'leg/paw', not an adjective",
+      "confidence": 99,
+      "lemma_id": "d30b022f-8961-453a-a9ed-c015b56c3271",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "roca (POS=ADJ)",
+      "issue_type": "duplicate",
+      "canonical_form": "la roca",
+      "explanation": "roca as adjective should be merged with la roca noun - same word, rock/rocky",
+      "confidence": 85
+    },
+    {
+      "lemma": "quiénes (POS=PROPN)",
+      "issue_type": "variant",
+      "canonical_form": "quién",
+      "explanation": "plural interrogative pronoun, should be singular canonical form quién",
+      "confidence": 90
+    },
+    {
+      "lemma": "el estupefacto (POS=NOUN, gender=M)",
+      "issue_type": "variant",
+      "canonical_form": "estupefacto",
+      "explanation": "estupefacto is an adjective meaning amazed/astounded, not a noun",
+      "confidence": 95
+    },
+    {
+      "lemma": "viesir (POS=VERB)",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely misspelling of ver (to see)",
+      "confidence": 98
+    },
+    {
+      "lemma": "toseer (POS=VERB)",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely misspelling of toser (to cough)",
+      "confidence": 98
+    },
+    {
+      "lemma": "simulacer (POS=VERB)",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely misspelling of simular (to simulate)",
+      "confidence": 98
+    },
+    {
+      "lemma": "cuidado (POS=ADJ)",
+      "issue_type": "variant",
+      "canonical_form": "cuidadoso",
+      "explanation": "cuidado is a noun/past participle, not primarily an adjective meaning careful",
+      "confidence": 85
+    },
+    {
+      "lemma": "humillarmer (POS=VERB)",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely processing error combining humillar with something else",
+      "confidence": 99
+    },
+    {
+      "lemma": "ven",
+      "issue_type": "conjugation",
+      "canonical_form": "venir",
+      "explanation": "conjugated form (2nd person singular imperative) of venir",
+      "confidence": 95,
+      "lemma_id": "73a7f5af-f5cb-40fc-8324-26ac7cfbf927",
+      "canonical_exists": true,
+      "canonical_id": "af22c833-f891-43d0-a586-5ff04a364401"
+    },
+    {
+      "lemma": "domesticado",
+      "issue_type": "variant",
+      "canonical_form": "domesticar",
+      "explanation": "past participle used as adjective, should be listed under verb domesticar",
+      "confidence": 85,
+      "lemma_id": "9afb180e-b67e-49ff-98e2-65fa7da33a2e",
+      "canonical_exists": true,
+      "canonical_id": "ad9ded3d-ced8-42a1-885c-166ae50b580c"
+    },
+    {
+      "lemma": "olvidado",
+      "issue_type": "variant",
+      "canonical_form": "olvidar",
+      "explanation": "past participle used as adjective, should be listed under verb olvidar",
+      "confidence": 85,
+      "lemma_id": "e45b6e26-50f7-48e2-a451-f1f8c56ae393",
+      "canonical_exists": true,
+      "canonical_id": "47f8adb1-6274-42f5-bf01-19d766eb4bf4"
+    },
+    {
+      "lemma": "intrigado",
+      "issue_type": "variant",
+      "canonical_form": "intrigar",
+      "explanation": "past participle used as adjective, should be listed under verb intrigar",
+      "confidence": 85,
+      "lemma_id": "3a8ad54f-1c97-4aa9-be6c-aac103faec22",
+      "canonical_exists": true,
+      "canonical_id": "05d6c64a-5efd-4826-8cab-2b2c91ee793f"
+    },
+    {
+      "lemma": "el tanto",
+      "issue_type": "misspelling",
+      "canonical_form": "el tanto",
+      "explanation": "translation 'the both' is incorrect; 'tanto' means 'so much/so many' or can refer to a point/goal in sports",
+      "confidence": 85,
+      "lemma_id": "ce66ec72-d483-4227-9c30-6db340309bb6",
+      "canonical_exists": true,
+      "canonical_id": "ce66ec72-d483-4227-9c30-6db340309bb6"
+    },
+    {
+      "lemma": "compran",
+      "issue_type": "conjugation",
+      "canonical_form": "comprar",
+      "explanation": "conjugated form (3rd person plural present) of comprar",
+      "confidence": 99,
+      "lemma_id": "c2abd337-0d2c-4806-98f0-6706647cef43",
+      "canonical_exists": true,
+      "canonical_id": "5848f538-9f61-4445-b3cb-534b8bbf1279"
+    },
+    {
+      "lemma": "hecho",
+      "issue_type": "variant",
+      "canonical_form": "el hecho",
+      "explanation": "listed as adjective but translated as 'fact' (noun); should be 'el hecho' (noun) or keep as adjective meaning 'made/done'",
+      "confidence": 90,
+      "lemma_id": "0b71360f-684e-45e2-9e38-433d2870fda1",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "sentarás",
+      "issue_type": "conjugation",
+      "canonical_form": "sentar",
+      "explanation": "conjugated form (2nd person singular future) of sentar, incorrectly labeled as adverb",
+      "confidence": 99,
+      "lemma_id": "b66c4ea8-d43d-450e-8204-9fa51e6da6a2",
+      "canonical_exists": true,
+      "canonical_id": "4b465871-01c9-47bf-98d3-f7f5a5ec46c5"
+    },
+    {
+      "lemma": "el avance",
+      "issue_type": "misspelling",
+      "canonical_form": "el avance",
+      "explanation": "translation 'the go to' is incorrect; 'avance' means 'advance/progress'",
+      "confidence": 90,
+      "lemma_id": "894362c5-aae3-467f-823e-4be49c7185c9",
+      "canonical_exists": true,
+      "canonical_id": "894362c5-aae3-467f-823e-4be49c7185c9"
+    },
+    {
+      "lemma": "sabré",
+      "issue_type": "conjugation",
+      "canonical_form": "saber",
+      "explanation": "conjugated form (1st person singular future) of saber, incorrectly labeled as adjective",
+      "confidence": 99,
+      "lemma_id": "64897c3a-50b4-4ae6-be1d-e7b3990e16ac",
+      "canonical_exists": true,
+      "canonical_id": "d27e3bb3-f391-4483-a1d5-987d79892744"
+    },
+    {
+      "lemma": "el jueves",
+      "issue_type": "misspelling",
+      "canonical_form": "el jueves",
+      "explanation": "translation 'the thursdays' should be singular 'Thursday'",
+      "confidence": 85,
+      "lemma_id": "3f57e540-7ac0-4830-9884-5793ea395c35",
+      "canonical_exists": true,
+      "canonical_id": "3f57e540-7ac0-4830-9884-5793ea395c35"
+    },
+    {
+      "lemma": "la vacación",
+      "issue_type": "variant",
+      "canonical_form": "la vacación",
+      "explanation": "typically used in plural 'las vacaciones' but singular form exists and is valid",
+      "confidence": 70,
+      "lemma_id": "5e33b4fc-23d2-464b-87e3-8be9a615e2c2",
+      "canonical_exists": true,
+      "canonical_id": "5e33b4fc-23d2-464b-87e3-8be9a615e2c2"
+    },
+    {
+      "lemma": "la va",
+      "issue_type": "conjugation",
+      "canonical_form": "ir",
+      "explanation": "conjugated form (3rd person singular present) of ir, not a noun",
+      "confidence": 98,
+      "lemma_id": "c9940ef1-4910-4b89-b274-d8b647a6c71e",
+      "canonical_exists": true,
+      "canonical_id": "427bd6cd-8aeb-4563-9734-70b4946e2f6d"
+    },
+    {
+      "lemma": "conmigo",
+      "issue_type": "variant",
+      "canonical_form": "con",
+      "explanation": "prepositional phrase 'con + mí', should be listed under preposition 'con'",
+      "confidence": 85,
+      "lemma_id": "0e722d2c-5a56-4c6f-9a63-6b759ec3cffb",
+      "canonical_exists": true,
+      "canonical_id": "00ee8d03-fbf2-441b-8d12-40f15536074f"
+    },
+    {
+      "lemma": "la busca",
+      "issue_type": "conjugation",
+      "canonical_form": "buscar",
+      "explanation": "conjugated form (3rd person singular present) of buscar, not a standard noun",
+      "confidence": 90,
+      "lemma_id": "acfba5ca-16ef-449b-9c59-a623705e7e31",
+      "canonical_exists": true,
+      "canonical_id": "4e364015-dd60-4ad7-9191-972974f4f51c"
+    },
+    {
+      "lemma": "el mira",
+      "issue_type": "conjugation",
+      "canonical_form": "mirar",
+      "explanation": "conjugated form (3rd person singular present) of mirar, not a noun",
+      "confidence": 98,
+      "lemma_id": "26947a74-4044-4d5a-9175-27c0af71b2f5",
+      "canonical_exists": true,
+      "canonical_id": "2bc23c04-f791-4481-96f1-77707ab97a7a"
+    },
+    {
+      "lemma": "el podrás",
+      "issue_type": "conjugation",
+      "canonical_form": "poder",
+      "explanation": "conjugated form (2nd person singular future) of poder, not a noun",
+      "confidence": 99,
+      "lemma_id": "f9557c39-8254-47f7-b051-6e859bfcc2e5",
+      "canonical_exists": true,
+      "canonical_id": "ae8fa7d4-7cdf-4a90-8afc-459daca530cf"
+    },
+    {
+      "lemma": "el inquieto",
+      "issue_type": "variant",
+      "canonical_form": "inquieto",
+      "explanation": "adjective marked as noun, should be ADJ pos-tag",
+      "confidence": 95,
+      "lemma_id": "c9bfd552-ddb4-4b3d-9f1c-e8febaae2313",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el hacerte",
+      "issue_type": "conjugation",
+      "canonical_form": "hacer",
+      "explanation": "infinitive + pronoun clitic, not a standard noun entry",
+      "confidence": 90,
+      "lemma_id": "e93cf9d9-fe79-4954-a4a8-5cbdc22ab0c9",
+      "canonical_exists": true,
+      "canonical_id": "c5847203-e6cf-4df8-b7dd-f50554233752"
+    },
+    {
+      "lemma": "el rosa",
+      "issue_type": "variant",
+      "canonical_form": "la rosa",
+      "explanation": "rosa (rose) is feminine, should be 'la rosa'",
+      "confidence": 95,
+      "lemma_id": "4e7a6949-f13d-4e88-ba09-1046512c7fcd",
+      "canonical_exists": true,
+      "canonical_id": "c3593b6d-0353-4c9f-9b7b-d4fe83db15cb"
+    },
+    {
+      "lemma": "el comprenderás",
+      "issue_type": "conjugation",
+      "canonical_form": "comprender",
+      "explanation": "conjugated form (2nd person singular future) of comprender, not a noun",
+      "confidence": 99,
+      "lemma_id": "92733340-c92f-4143-a48f-efc9a6abd28a",
+      "canonical_exists": true,
+      "canonical_id": "e69bf42d-32ee-4f6b-87bc-fcdd71e8fc7c"
+    },
+    {
+      "lemma": "la vacía",
+      "issue_type": "variant",
+      "canonical_form": "vacío",
+      "explanation": "adjective marked as noun, should be ADJ pos-tag with masculine form 'vacío'",
+      "confidence": 95,
+      "lemma_id": "e34c9333-75be-4a61-8deb-a6a7455e5044",
+      "canonical_exists": true,
+      "canonical_id": "92c9f74e-c792-4d3f-95c4-fa780325a5aa"
+    },
+    {
+      "lemma": "el indudablemente",
+      "issue_type": "variant",
+      "canonical_form": "indudablemente",
+      "explanation": "adverb marked as noun, should be ADV pos-tag",
+      "confidence": 98,
+      "lemma_id": "827808e2-f645-40ec-9d24-e4f21ccc6265",
+      "canonical_exists": true,
+      "canonical_id": "e9c357d2-ab18-44a5-b072-2166108c2f78"
+    },
+    {
+      "lemma": "mater",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely processing error",
+      "confidence": 95,
+      "lemma_id": "2fdf385f-8263-43e8-aa98-e209fc58a257",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "oer",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely processing error",
+      "confidence": 95,
+      "lemma_id": "0c0e6771-01d3-4bf3-9e20-ebd2bab52928",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "har",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely processing error",
+      "confidence": 95,
+      "lemma_id": "3ad148a2-5c80-483e-b355-b3e2172e28b0",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "paquete",
+      "issue_type": "misspelling",
+      "canonical_form": "paquete",
+      "explanation": "paquete is a noun meaning package, not an adjective",
+      "confidence": 95,
+      "lemma_id": "662bbb00-38e4-43aa-ae64-e44c0a21ae2a",
+      "canonical_exists": true,
+      "canonical_id": "662bbb00-38e4-43aa-ae64-e44c0a21ae2a"
+    },
+    {
+      "lemma": "ruger",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely misspelling of rugir",
+      "confidence": 90,
+      "lemma_id": "0e64abf5-2a5e-4519-b2f6-69ffa4fdfb67",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "prís",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, appears to be corrupted text",
+      "confidence": 95,
+      "lemma_id": "c4088aef-7747-4267-b889-07c16d018f46",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el rápido",
+      "issue_type": "misspelling",
+      "canonical_form": "el rápido",
+      "explanation": "while rápido can be used as a noun (express train), the definition 'the fast' suggests confusion with adjective",
+      "confidence": 80,
+      "lemma_id": "646611c2-91d2-40de-b422-c7083c21d8c8",
+      "canonical_exists": true,
+      "canonical_id": "646611c2-91d2-40de-b422-c7083c21d8c8"
+    },
+    {
+      "lemma": "van",
+      "issue_type": "conjugation",
+      "canonical_form": "ir",
+      "explanation": "conjugated form (3rd person plural present) of ir",
+      "confidence": 99,
+      "lemma_id": "52695580-cecb-4c9d-8029-584793a081a7",
+      "canonical_exists": true,
+      "canonical_id": "427bd6cd-8aeb-4563-9734-70b4946e2f6d"
+    },
+    {
+      "lemma": "rugir",
+      "issue_type": "duplicate",
+      "canonical_form": "rugir",
+      "explanation": "duplicate of ruger which should be deleted",
+      "confidence": 85,
+      "lemma_id": "e604eb72-1856-4644-be65-47841558cf02",
+      "canonical_exists": true,
+      "canonical_id": "e604eb72-1856-4644-be65-47841558cf02"
+    },
+    {
+      "lemma": "la vend",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely incomplete or corrupted entry",
+      "confidence": 95,
+      "lemma_id": "4dc76b53-a182-4d6c-b6d4-b79e8944b795",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la gota",
+      "issue_type": "misspelling",
+      "canonical_form": "la gota",
+      "explanation": "translation shows 'the gota' but should be 'the drop'",
+      "confidence": 80,
+      "lemma_id": "8db78a61-18fc-470b-8d7a-ea4763e01ec4",
+      "canonical_exists": true,
+      "canonical_id": "8db78a61-18fc-470b-8d7a-ea4763e01ec4"
+    },
+    {
+      "lemma": "irr",
+      "issue_type": "garbage",
+      "canonical_form": "ir",
+      "explanation": "incomplete/corrupted form of 'ir' (to go)",
+      "confidence": 95,
+      "lemma_id": "c50f3180-3a10-4956-b71d-9d297f4b451c",
+      "canonical_exists": true,
+      "canonical_id": "427bd6cd-8aeb-4563-9734-70b4946e2f6d"
+    },
+    {
+      "lemma": "zorro",
+      "issue_type": "misspelling",
+      "canonical_form": "el zorro",
+      "explanation": "zorro is a noun (fox), not adjective - incorrect POS tagging",
+      "confidence": 90,
+      "lemma_id": "e6aff4c1-972c-402b-849a-0a732b5d9fc3",
+      "canonical_exists": true,
+      "canonical_id": "59731c01-0bf4-40c6-be4a-82f6149592ac"
+    },
+    {
+      "lemma": "el hambre",
+      "issue_type": "misspelling",
+      "canonical_form": "el hambre",
+      "explanation": "hambre is feminine but uses masculine article due to initial stressed 'a'",
+      "confidence": 85,
+      "lemma_id": "ef92b468-8bfd-487f-bc17-4570540ca275",
+      "canonical_exists": true,
+      "canonical_id": "ef92b468-8bfd-487f-bc17-4570540ca275"
+    },
+    {
+      "lemma": "protegerla",
+      "issue_type": "conjugation",
+      "canonical_form": "proteger",
+      "explanation": "infinitive verb with clitic pronoun attached, not a dictionary form",
+      "confidence": 99,
+      "lemma_id": "49470d78-8546-4d16-ba91-418f93476d5f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "rio",
+      "issue_type": "misspelling",
+      "canonical_form": "el río",
+      "explanation": "missing accent mark and article - should be 'el río' (noun), not adjective",
+      "confidence": 95,
+      "lemma_id": "48b55d6c-36de-4fe5-a00c-a08e46804fea",
+      "canonical_exists": true,
+      "canonical_id": "85f36280-3f5f-4dc7-ba21-238f67cc229a"
+    },
+    {
+      "lemma": "subir",
+      "issue_type": "misspelling",
+      "canonical_form": "subir",
+      "explanation": "translation 'to up' is incorrect; should be 'to go up/climb/rise'",
+      "confidence": 90,
+      "lemma_id": "929a40a1-21fc-458a-a0cd-a9cd05632300",
+      "canonical_exists": true,
+      "canonical_id": "929a40a1-21fc-458a-a0cd-a9cd05632300"
+    },
+    {
+      "lemma": "el oído",
+      "issue_type": "misspelling",
+      "canonical_form": "el oído",
+      "explanation": "translation 'the heard' is incorrect; should be 'the ear/hearing'",
+      "confidence": 95,
+      "lemma_id": "c6a79b9c-4008-4113-954b-215c8eb844fa",
+      "canonical_exists": true,
+      "canonical_id": "c6a79b9c-4008-4113-954b-215c8eb844fa"
+    },
+    {
+      "lemma": "sonar",
+      "issue_type": "misspelling",
+      "canonical_form": "sonar",
+      "explanation": "translation 'to sonar' is incorrect; should be 'to sound/ring'",
+      "confidence": 90,
+      "lemma_id": "f5a65fb4-a677-4eff-b9be-8c252158213b",
+      "canonical_exists": true,
+      "canonical_id": "f5a65fb4-a677-4eff-b9be-8c252158213b"
+    },
+    {
+      "lemma": "el dame",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "'dame' is imperative verb form, not a noun; 'el dame' doesn't exist",
+      "confidence": 99,
+      "lemma_id": "22a7d91e-c830-483f-8133-0e35f98fea8e",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "metar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "'metar' is not a Spanish verb; likely error for 'meter'",
+      "confidence": 95,
+      "lemma_id": "c5456c11-1955-45cf-9298-295edc9a6b39",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el canto",
+      "issue_type": "misspelling",
+      "canonical_form": "el canto",
+      "explanation": "translation 'the canto' is incorrect; should be 'the song/singing/corner'",
+      "confidence": 85,
+      "lemma_id": "9ea0acaf-6b77-415d-8b07-a426cf11b6fd",
+      "canonical_exists": true,
+      "canonical_id": "9ea0acaf-6b77-415d-8b07-a426cf11b6fd"
+    },
+    {
+      "lemma": "el bello",
+      "issue_type": "variant",
+      "canonical_form": "bello",
+      "explanation": "'bello' is an adjective (beautiful), not a noun",
+      "confidence": 98,
+      "lemma_id": "c0483024-9e4f-4be2-b630-7594ff358ce1",
+      "canonical_exists": true,
+      "canonical_id": "aa24aaef-8090-4684-82f3-627fd8960b5a"
+    },
+    {
+      "lemma": "navidad",
+      "issue_type": "variant",
+      "canonical_form": "la Navidad",
+      "explanation": "proper noun should be capitalized and include article",
+      "confidence": 90,
+      "lemma_id": "e9cba4e3-ad77-4b74-b9cc-4c7bb12c2506",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el miel",
+      "issue_type": "variant",
+      "canonical_form": "la miel",
+      "explanation": "'miel' is feminine, should be 'la miel'",
+      "confidence": 99,
+      "lemma_id": "2dba3f93-2dde-4c36-b0ad-08cb243aaa35",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "junto",
+      "issue_type": "misspelling",
+      "canonical_form": "junto",
+      "explanation": "translation 'together' is incorrect context; 'junto' means 'next to/close'",
+      "confidence": 80,
+      "lemma_id": "ccefff9b-a7f1-4b5a-826f-e7918ffd7e48",
+      "canonical_exists": true,
+      "canonical_id": "ccefff9b-a7f1-4b5a-826f-e7918ffd7e48"
+    },
+    {
+      "lemma": "el boas",
+      "issue_type": "variant",
+      "canonical_form": "la boa",
+      "explanation": "plural form, should be singular boa (feminine noun)",
+      "confidence": 95,
+      "lemma_id": "d55f13d2-0509-4e99-8860-34b1f9404b43",
+      "canonical_exists": true,
+      "canonical_id": "b2597d2c-7b39-4ad5-9b43-4bdbf82c6d4e"
+    },
+    {
+      "lemma": "la volvía",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "volvía is a verb conjugation, not a noun meaning 'the back to'",
+      "confidence": 98,
+      "lemma_id": "0a1b35fd-cb3f-49e2-bbc3-eacf26e2161a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "vacilante",
+      "issue_type": "variant",
+      "canonical_form": "vacilante",
+      "explanation": "vacilante is an adjective meaning 'hesitant', not an adverb - POS tag is incorrect",
+      "confidence": 90,
+      "lemma_id": "fb91a62b-2af4-4c1d-86e9-204631edffb1",
+      "canonical_exists": true,
+      "canonical_id": "fb91a62b-2af4-4c1d-86e9-204631edffb1"
+    },
+    {
+      "lemma": "el esperarme",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "esperarme is an infinitive with pronoun, not a standalone noun",
+      "confidence": 95,
+      "lemma_id": "39f44d65-b7c2-4b2c-927b-6f05e0f5084f",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "vetir",
+      "issue_type": "misspelling",
+      "canonical_form": "vestir",
+      "explanation": "misspelled form of vestir (to dress)",
+      "confidence": 99,
+      "lemma_id": "1d414371-dbb8-4966-bd70-8486395880a2",
+      "canonical_exists": true,
+      "canonical_id": "625fb212-683d-4741-8082-754af88a4d77"
+    },
+    {
+      "lemma": "el bajarme",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "bajarme is an infinitive with pronoun, not a standalone noun",
+      "confidence": 95,
+      "lemma_id": "2f905d24-c57f-40c5-a932-430c02be3b48",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "instintivamente",
+      "issue_type": "variant",
+      "canonical_form": "instintivo",
+      "explanation": "adverb form, but tagged as adjective; canonical adjective form is instintivo",
+      "confidence": 95,
+      "lemma_id": "7b502155-db70-4d61-92e2-f60e19c016af",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el dirección",
+      "issue_type": "misspelling",
+      "canonical_form": "la dirección",
+      "explanation": "dirección is feminine noun, should be 'la dirección'",
+      "confidence": 99,
+      "lemma_id": "a2d1cc9e-0f43-4f8b-918a-2c9a731de738",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "revólver",
+      "issue_type": "misspelling",
+      "canonical_form": "revolver",
+      "explanation": "revolver as verb has no accent; revólver with accent is the noun",
+      "confidence": 98,
+      "lemma_id": "55bdf591-7769-4af9-8bc2-abd58e15fc52",
+      "canonical_exists": true,
+      "canonical_id": "2ac04263-a41f-4173-965b-ecbfe4b413d6"
+    },
+    {
+      "lemma": "encontrado",
+      "issue_type": "conjugation",
+      "canonical_form": "encontrar",
+      "explanation": "past participle form of encontrar",
+      "confidence": 95,
+      "lemma_id": "eef0e26e-2b5c-49d7-ae3d-c89961967c60",
+      "canonical_exists": true,
+      "canonical_id": "7d7b2e77-8e41-46da-8e7f-e8396159cfb7"
+    },
+    {
+      "lemma": "picado",
+      "issue_type": "conjugation",
+      "canonical_form": "picar",
+      "explanation": "past participle form of picar",
+      "confidence": 95,
+      "lemma_id": "3b5d3b3e-9522-4adb-9577-930c87f750e3",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "sonreir",
+      "issue_type": "misspelling",
+      "canonical_form": "sonreír",
+      "explanation": "missing accent on final i",
+      "confidence": 99,
+      "lemma_id": "a6786cf3-b345-4e48-afcd-a55eebcefc32",
+      "canonical_exists": true,
+      "canonical_id": "5032eb99-4388-42ef-8b55-073801a5e534"
+    },
+    {
+      "lemma": "volviar",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word, likely misspelling of volver",
+      "confidence": 98,
+      "lemma_id": "4036754e-ccb0-4c73-9017-e5df22576eac",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el rio",
+      "issue_type": "misspelling",
+      "canonical_form": "el río",
+      "explanation": "missing accent mark on río",
+      "confidence": 99,
+      "lemma_id": "2c512df7-1c61-49e1-9d34-ffca7401dd9f",
+      "canonical_exists": true,
+      "canonical_id": "85f36280-3f5f-4dc7-ba21-238f67cc229a"
+    },
+    {
+      "lemma": "la misma",
+      "issue_type": "variant",
+      "canonical_form": "mismo",
+      "explanation": "feminine form of adjective mismo, should be masculine singular",
+      "confidence": 95,
+      "lemma_id": "cb965df9-475d-49ea-9556-94b2a0df67e5",
+      "canonical_exists": true,
+      "canonical_id": "1b0a81fc-8ef5-4396-9a66-0d7940fae8f3"
+    },
+    {
+      "lemma": "guía",
+      "issue_type": "variant",
+      "canonical_form": "el guía",
+      "explanation": "marked as adjective but is actually a noun meaning guide",
+      "confidence": 90,
+      "lemma_id": "7906d6f8-d6f7-417c-8339-2a54d6b6b58e",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "lucecita",
+      "issue_type": "variant",
+      "canonical_form": "la luz",
+      "explanation": "diminutive form of luz, should be base noun form",
+      "confidence": 85,
+      "lemma_id": "11e114dd-22bc-41fe-92a6-3d1454b0cb85",
+      "canonical_exists": true,
+      "canonical_id": "fe5d10d3-fc8d-4c32-a890-3c686fd7a445"
+    },
+    {
+      "lemma": "mir",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a Spanish word",
+      "confidence": 95,
+      "lemma_id": "bd7de4ce-2ca6-482d-a601-ca8b599aa36a",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "hayar",
+      "issue_type": "misspelling",
+      "canonical_form": "hallar",
+      "explanation": "misspelled verb, should be hallar (to find)",
+      "confidence": 90,
+      "lemma_id": "1626e67a-a1a5-4e55-ab9c-d7aeea0be316",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el estarás",
+      "issue_type": "conjugation",
+      "canonical_form": "estar",
+      "explanation": "conjugated form (2nd person singular future) of estar",
+      "confidence": 99,
+      "lemma_id": "31b0cdce-ac13-4b51-8570-c957d87d0f6b",
+      "canonical_exists": true,
+      "canonical_id": "7319275e-19c9-4582-ae4e-083a82ff1d7f"
+    },
+    {
+      "lemma": "haberme",
+      "issue_type": "conjugation",
+      "canonical_form": "haber",
+      "explanation": "infinitive with pronoun attached, should be base infinitive haber",
+      "confidence": 95,
+      "lemma_id": "b7c373bd-6c9d-4acb-9ab9-2a175d5575f0",
+      "canonical_exists": true,
+      "canonical_id": "74500e09-9b1f-432a-9dd4-d0df98320e2f"
+    },
+    {
+      "lemma": "el asombrado",
+      "issue_type": "variant",
+      "canonical_form": "asombrado",
+      "explanation": "past participle used as adjective, not a noun",
+      "confidence": 90,
+      "lemma_id": "f49f66a1-5c6e-4a57-ae5f-e582b99b39da",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la verte",
+      "issue_type": "conjugation",
+      "canonical_form": "ver",
+      "explanation": "infinitive with pronoun attached, should be base infinitive ver",
+      "confidence": 95,
+      "lemma_id": "54d26abc-9c4f-4d82-93a7-3a40c341c0a2",
+      "canonical_exists": true,
+      "canonical_id": "a992776d-b62b-41c9-9232-f44ce1a773fb"
+    },
+    {
+      "lemma": "pareceré",
+      "issue_type": "conjugation",
+      "canonical_form": "parecer",
+      "explanation": "conjugated form (1st person singular future) of parecer",
+      "confidence": 99,
+      "lemma_id": "26685636-c8fb-4187-b583-9484245641a6",
+      "canonical_exists": true,
+      "canonical_id": "6360f3f0-b974-4881-97a9-3b049881a2f6"
+    },
+    {
+      "lemma": "herrumbrós",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "not a valid Spanish word, likely misspelling of herrumbroso",
+      "confidence": 95,
+      "lemma_id": "1859c629-59aa-437f-a6da-ffa78112d1bb",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el moverme",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "infinitive with pronoun cannot be a masculine noun",
+      "confidence": 98,
+      "lemma_id": "ae04f3ff-2aec-4c50-b5a5-6343c670b13b",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la oía",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "conjugated verb form (imperfect) cannot be a feminine noun",
+      "confidence": 99,
+      "lemma_id": "d7bf8609-b82c-478a-80e3-df66923769cc",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la amarilla",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "feminine adjective cannot be a feminine noun in this context",
+      "confidence": 95,
+      "lemma_id": "9a8d1c67-4a61-415e-9f63-fc33ee660e1d",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el mirarás",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "conjugated verb form (future) cannot be a masculine noun",
+      "confidence": 99,
+      "lemma_id": "f4f655a3-6892-4295-a1ca-de3bb86c3a26",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "la morderte",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "infinitive with pronoun cannot be a feminine noun",
+      "confidence": 98,
+      "lemma_id": "c31c4051-c84d-4f34-836e-a97375e41874",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el realidad",
+      "issue_type": "misspelling",
+      "canonical_form": "la realidad",
+      "explanation": "realidad is feminine, should be 'la realidad'",
+      "confidence": 99,
+      "lemma_id": "386ed678-abbc-4087-b93c-3e448db8f43b",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "el atárselo",
+      "issue_type": "garbage",
+      "canonical_form": null,
+      "explanation": "infinitive with clitic pronouns attached is not a canonical noun form",
+      "confidence": 95,
+      "lemma_id": "96deca97-d72f-464a-b855-e1f466781dc2",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "miren",
+      "issue_type": "conjugation",
+      "canonical_form": "mirar",
+      "explanation": "conjugated form (3rd person plural present subjunctive/imperative) of mirar",
+      "confidence": 99,
+      "lemma_id": "6d432860-ec59-4ed7-932c-62243f39c574",
+      "canonical_exists": true,
+      "canonical_id": "2bc23c04-f791-4481-96f1-77707ab97a7a"
+    },
+    {
+      "lemma": "pregúntense",
+      "issue_type": "conjugation",
+      "canonical_form": "preguntar",
+      "explanation": "conjugated reflexive form (3rd person plural imperative) of preguntar, incorrectly labeled as adjective",
+      "confidence": 99,
+      "lemma_id": "cad26d1e-92e5-4a54-9266-1bb5cc5f1a1a",
+      "canonical_exists": true,
+      "canonical_id": "017c0d36-c061-489c-acca-f018d4a554ce"
+    },
+    {
+      "lemma": "veréis",
+      "issue_type": "conjugation",
+      "canonical_form": "ver",
+      "explanation": "conjugated form (2nd person plural future) of ver",
+      "confidence": 99,
+      "lemma_id": "3f457b07-ce71-4d33-afde-30ebe28dd327",
+      "canonical_exists": true,
+      "canonical_id": "a992776d-b62b-41c9-9232-f44ce1a773fb"
+    },
+    {
+      "lemma": "el casualidad",
+      "issue_type": "misspelling",
+      "canonical_form": "la casualidad",
+      "explanation": "casualidad is feminine, should be 'la casualidad'",
+      "confidence": 98,
+      "lemma_id": "c29617a8-6d52-40fd-b641-2005f48c5cd8",
+      "canonical_exists": false
+    },
+    {
+      "lemma": "alguna",
+      "issue_type": "variant",
+      "canonical_form": "alguno",
+      "explanation": "feminine form of alguno, should use masculine singular canonical form",
+      "confidence": 95,
+      "lemma_id": "435dbc42-08ed-4597-b855-beed613625f1",
+      "canonical_exists": true,
+      "canonical_id": "60403536-4a7e-4067-b6a6-fb5e0f789b4d"
+    }
+  ]
+}

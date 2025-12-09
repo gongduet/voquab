@@ -91,16 +91,29 @@ export default function Book() {
 
     // Update total_chapter_words for each chapter
     for (const ch of chaptersData) {
-      const { count } = await supabase
-        .from('vocabulary')
-        .select('vocab_id', { count: 'exact', head: true })
+      // Get sentences for this chapter
+      const { data: sentences } = await supabase
+        .from('sentences')
+        .select('sentence_id')
         .eq('chapter_id', ch.chapter_id)
 
-      await supabase
-        .from('user_chapter_progress')
-        .update({ total_chapter_words: count || 0 })
-        .eq('user_id', userId)
-        .eq('chapter_id', ch.chapter_id)
+      if (sentences && sentences.length > 0) {
+        const sentenceIds = sentences.map(s => s.sentence_id)
+
+        // Get unique lemma count from words in these sentences
+        const { data: words } = await supabase
+          .from('words')
+          .select('lemma_id')
+          .in('sentence_id', sentenceIds)
+
+        const uniqueLemmaCount = words ? new Set(words.map(w => w.lemma_id)).size : 0
+
+        await supabase
+          .from('user_chapter_progress')
+          .update({ total_chapter_words: uniqueLemmaCount })
+          .eq('user_id', userId)
+          .eq('chapter_id', ch.chapter_id)
+      }
     }
   }
 

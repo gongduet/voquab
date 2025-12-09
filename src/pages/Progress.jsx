@@ -68,9 +68,9 @@ export default function Progress() {
     try {
       console.log('📈 Fetching overall stats...')
 
-      // Get all user vocabulary progress (DUAL PROGRESSION SYSTEM)
+      // Get all user lemma progress (DUAL PROGRESSION SYSTEM)
       const { data: progressData, error: progressError } = await supabase
-        .from('user_vocabulary_progress')
+        .from('user_lemma_progress')
         .select('mastery_level, review_due, total_reviews, correct_reviews')
         .eq('user_id', user.id)
 
@@ -229,25 +229,25 @@ export default function Progress() {
         return
       }
 
-      // Get all unique vocab IDs in Chapter 1
-      const { data: occurrences, error: occurrencesError } = await supabase
-        .from('vocabulary_occurrences')
-        .select('vocab_id, sentence_id')
+      // Get all unique lemma IDs in Chapter 1
+      const { data: wordsData, error: wordsError } = await supabase
+        .from('words')
+        .select('lemma_id, sentence_id')
         .in('sentence_id', sentenceIds)
 
-      if (occurrencesError) {
-        console.error('Error fetching occurrences:', occurrencesError)
-        throw occurrencesError
+      if (wordsError) {
+        console.error('Error fetching words:', wordsError)
+        throw wordsError
       }
 
-      // Defensive: ensure occurrences is an array
-      const safeOccurrences = Array.isArray(occurrences) ? occurrences : []
+      // Defensive: ensure wordsData is an array
+      const safeWordsData = Array.isArray(wordsData) ? wordsData : []
 
-      // Get unique vocab IDs
-      const uniqueVocabIds = [...new Set(safeOccurrences.map(o => o.vocab_id))]
-      const totalWords = uniqueVocabIds.length
+      // Get unique lemma IDs
+      const uniqueLemmaIds = [...new Set(safeWordsData.map(w => w.lemma_id))]
+      const totalWords = uniqueLemmaIds.length
 
-      console.log('Total unique words in chapter:', totalWords)
+      console.log('Total unique lemmas in chapter:', totalWords)
 
       if (totalWords === 0) {
         setChapterMastery({ totalWords: 0, reviewedWords: 0, percentage: 0 })
@@ -256,10 +256,10 @@ export default function Progress() {
 
       // Get how many of these the user has reviewed at mastery level 30+ (equivalent to old level 3+)
       const { data: userProgress, error: progressError } = await supabase
-        .from('user_vocabulary_progress')
-        .select('vocab_id, mastery_level')
+        .from('user_lemma_progress')
+        .select('lemma_id, mastery_level')
         .eq('user_id', user.id)
-        .in('vocab_id', uniqueVocabIds)
+        .in('lemma_id', uniqueLemmaIds)
         .gte('mastery_level', 30)
 
       if (progressError) {
@@ -294,7 +294,7 @@ export default function Progress() {
       console.log('📊 Fetching vocabulary breakdown...')
 
       const { data: progressData, error: progressError } = await supabase
-        .from('user_vocabulary_progress')
+        .from('user_lemma_progress')
         .select('mastery_level')
         .eq('user_id', user.id)
 
@@ -336,8 +336,8 @@ export default function Progress() {
       console.log('📈 Fetching learning metrics (DUAL PROGRESSION)...')
 
       const { data: progressData, error: progressError } = await supabase
-        .from('user_vocabulary_progress')
-        .select('mastery_level, total_reviews, correct_reviews, last_review_date')
+        .from('user_lemma_progress')
+        .select('mastery_level, total_reviews, correct_reviews, last_reviewed_at')
         .eq('user_id', user.id)
 
       if (progressError) {

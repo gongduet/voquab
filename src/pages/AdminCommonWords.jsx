@@ -40,18 +40,26 @@ export default function AdminCommonWords() {
       setLoading(true)
       setError(null)
 
-      // Fetch all vocabulary with frequency already calculated
-      const { data: vocabData, error: vocabError } = await supabase
-        .from('vocabulary')
-        .select('vocab_id, lemma, english_definition, part_of_speech, is_stop_word, is_common_word, admin_notes, frequency')
+      // Fetch all lemmas
+      const { data: lemmaData, error: lemmaError } = await supabase
+        .from('lemmas')
+        .select('lemma_id, lemma_text, definitions, part_of_speech, is_stop_word')
         .eq('language_code', 'es')
-        .order('frequency', { ascending: false })
 
-      if (vocabError) throw vocabError
+      if (lemmaError) throw lemmaError
 
-      console.log(`Fetched ${vocabData.length} vocabulary words with frequencies`)
+      console.log(`Fetched ${lemmaData.length} lemmas`)
 
-      setWords(vocabData)
+      // Add compatibility aliases for existing code
+      const wordsWithAliases = lemmaData.map(l => ({
+        ...l,
+        vocab_id: l.lemma_id,
+        lemma: l.lemma_text,
+        english_definition: Array.isArray(l.definitions) ? l.definitions[0] : l.definitions,
+        frequency: 0  // Frequency not stored in new schema, would need to count from words table
+      }))
+
+      setWords(wordsWithAliases)
       setLoading(false)
     } catch (err) {
       console.error('Error fetching words:', err)
@@ -73,15 +81,15 @@ export default function AdminCommonWords() {
       const newStatus = !word.is_stop_word
 
       const { error } = await supabase
-        .from('vocabulary')
+        .from('lemmas')
         .update({ is_stop_word: newStatus })
-        .eq('vocab_id', word.vocab_id)
+        .eq('lemma_id', word.lemma_id || word.vocab_id)
 
       if (error) throw error
 
       // Update local state
       setWords(words.map(w =>
-        w.vocab_id === word.vocab_id
+        (w.lemma_id || w.vocab_id) === (word.lemma_id || word.vocab_id)
           ? { ...w, is_stop_word: newStatus }
           : w
       ))
@@ -101,33 +109,33 @@ export default function AdminCommonWords() {
     try {
       setProcessing(true)
 
-      // Get top N words by frequency that aren't already stop words
-      const topWords = words
+      // Get top N lemmas by frequency that aren't already stop words
+      const topLemmas = words
         .filter(w => !w.is_stop_word)
         .slice(0, topN)
-        .map(w => w.vocab_id)
+        .map(w => w.lemma_id || w.vocab_id)
 
-      if (topWords.length === 0) {
+      if (topLemmas.length === 0) {
         alert('No words to mark (top words are already marked as stop words)')
         setProcessing(false)
         return
       }
 
       const { error } = await supabase
-        .from('vocabulary')
+        .from('lemmas')
         .update({ is_stop_word: true })
-        .in('vocab_id', topWords)
+        .in('lemma_id', topLemmas)
 
       if (error) throw error
 
       // Update local state
       setWords(words.map(w =>
-        topWords.includes(w.vocab_id)
+        topLemmas.includes(w.lemma_id || w.vocab_id)
           ? { ...w, is_stop_word: true }
           : w
       ))
 
-      alert(`Successfully marked ${topWords.length} words as stop words`)
+      alert(`Successfully marked ${topLemmas.length} words as stop words`)
       setProcessing(false)
     } catch (err) {
       console.error('Error bulk marking:', err)

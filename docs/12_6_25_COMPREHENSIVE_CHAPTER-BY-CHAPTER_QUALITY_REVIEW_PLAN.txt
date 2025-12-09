@@ -1,0 +1,581 @@
+COMPREHENSIVE CHAPTER-BY-CHAPTER QUALITY REVIEW PLAN
+
+Overview
+Goal: Replicate Chapter 1 thoroughness across all 27 chapters
+Method: Systematic AI validation + manual review of flagged items
+Time: ~30-45 min per chapter = ~12-20 hours total
+Approach: Complete one chapter fully before moving to next
+
+Phase 1: Setup (Do Tomorrow Morning)
+Create Review Infrastructure
+1. Progress Tracking Table
+sqlCREATE TABLE chapter_review_progress (
+    chapter_number integer PRIMARY KEY,
+    review_started_at timestamp,
+    review_completed_at timestamp,
+    lemmas_reviewed integer,
+    lemmas_flagged integer,
+    lemmas_fixed integer,
+    phrases_reviewed integer,
+    phrases_approved integer,
+    phrases_rejected integer,
+    words_validated integer,
+    issues_found text[],
+    reviewer_notes text,
+    status text CHECK (status IN ('pending', 'in_progress', 'completed', 'needs_rework'))
+);
+2. Issue Tracking Table
+sqlCREATE TABLE chapter_review_issues (
+    issue_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    chapter_number integer,
+    issue_type text, -- 'lemma_translation', 'lemma_pos', 'phrase_quality', 'word_orphan', etc.
+    lemma_id uuid REFERENCES lemmas,
+    phrase_id uuid REFERENCES phrases,
+    description text,
+    severity text CHECK (severity IN ('critical', 'high', 'medium', 'low')),
+    status text CHECK (status IN ('open', 'fixed', 'dismissed')),
+    fix_applied text,
+    created_at timestamp DEFAULT now()
+);
+3. Review Scripts Directory
+bashmkdir -p /home/peter/voquab/scripts/chapter_review
+
+Phase 2: Per-Chapter Review Process (Repeat 27 times)
+Step 1: Initialize Chapter Review (2 min)
+Queries:
+sql-- Mark chapter as in progress
+INSERT INTO chapter_review_progress (chapter_number, review_started_at, status)
+VALUES (N, now(), 'in_progress');
+
+-- Get chapter stats
+SELECT 
+    c.chapter_number,
+    c.chapter_title,
+    COUNT(DISTINCT s.sentence_id) as sentences,
+    COUNT(DISTINCT w.word_id) as words,
+    COUNT(DISTINCT l.lemma_id) as unique_lemmas,
+    (SELECT COUNT(*) FROM phrase_occurrences po 
+     JOIN sentences s2 ON po.sentence_id = s2.sentence_id 
+     WHERE s2.chapter_id = c.chapter_id) as phrase_occurrences
+FROM chapters c
+LEFT JOIN sentences s ON c.chapter_id = s.chapter_id
+LEFT JOIN words w ON s.sentence_id = w.sentence_id
+LEFT JOIN lemmas l ON w.lemma_id = l.lemma_id
+WHERE c.chapter_number = N
+GROUP BY c.chapter_id;
+
+Step 2: Lemma Quality Review (15-20 min)
+2A: Extract All Lemmas for Chapter
+sqlSELECT DISTINCT
+    l.lemma_id,
+    l.lemma_text,
+    l.part_of_speech,
+    l.gender,
+    l.definitions,
+    COUNT(w.word_id) as usage_in_chapter,
+    array_agg(DISTINCT w.word_text ORDER BY w.word_text) as word_forms
+FROM lemmas l
+JOIN words w ON l.lemma_id = w.lemma_id
+JOIN sentences s ON w.sentence_id = s.sentence_id
+WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+GROUP BY l.lemma_id
+ORDER BY COUNT(w.word_id) DESC;
+```
+
+#### 2B: AI Translation Validation
+**For each lemma, validate:**
+1. Spanish form correct? (infinitive for verbs, singular+article for nouns)
+2. English translation accurate?
+3. POS tag correct?
+4. Gender correct (for nouns)?
+5. Multiple meanings needed?
+
+**AI Prompt Template:**
+```
+Validate this Spanish vocabulary entry:
+
+Spanish: {lemma_text}
+POS: {part_of_speech}
+Gender: {gender}
+English: {definitions[0]}
+Context: Appears {usage_count} times in chapter as forms: {word_forms}
+
+Check:
+1. Is Spanish form canonical? (verbs=infinitive, nouns=singular+article)
+2. Is English translation accurate and appropriate?
+3. Is POS tag correct?
+4. For nouns: Is gender correct?
+5. Should multiple English meanings be included?
+
+Respond ONLY with JSON:
+{
+  "is_valid": true/false,
+  "issues": [
+    {"type": "translation/pos/gender/form", "description": "...", "severity": "critical/high/medium/low"}
+  ],
+  "suggested_fixes": {
+    "lemma_text": "corrected form",
+    "definitions": ["improved translation"],
+    "part_of_speech": "corrected POS",
+    "gender": "M/F"
+  }
+}
+Batch Process:
+
+Validate top 50 most-used lemmas individually (AI reviews each)
+Validate remaining lemmas in batches of 10
+Flag any with issues for manual review
+
+2C: Automated Checks
+sql-- Verbs missing "to " prefix
+SELECT lemma_id, lemma_text, definitions->>0
+FROM lemmas l
+WHERE part_of_speech = 'VERB'
+  AND definitions->>0 NOT LIKE 'to %'
+  AND lemma_id IN (
+    SELECT DISTINCT lemma_id FROM words w
+    JOIN sentences s ON w.sentence_id = s.sentence_id
+    WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+  );
+
+-- Nouns missing "the " prefix
+SELECT lemma_id, lemma_text, definitions->>0
+FROM lemmas l
+WHERE part_of_speech = 'NOUN'
+  AND definitions->>0 NOT LIKE 'the %'
+  AND lemma_id IN (
+    SELECT DISTINCT lemma_id FROM words w
+    JOIN sentences s ON w.sentence_id = s.sentence_id
+    WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+  );
+
+-- Nouns without article
+SELECT lemma_id, lemma_text, part_of_speech
+FROM lemmas l
+WHERE part_of_speech = 'NOUN'
+  AND lemma_text NOT LIKE 'el %'
+  AND lemma_text NOT LIKE 'la %'
+  AND lemma_id IN (
+    SELECT DISTINCT lemma_id FROM words w
+    JOIN sentences s ON w.sentence_id = s.sentence_id
+    WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+  );
+
+-- Verbs not in infinitive form (ending with accented vowels)
+SELECT lemma_id, lemma_text, part_of_speech
+FROM lemmas l
+WHERE part_of_speech = 'VERB'
+  AND lemma_text ~ '[éíóáú]$'
+  AND lemma_id IN (
+    SELECT DISTINCT lemma_id FROM words w
+    JOIN sentences s ON w.sentence_id = s.sentence_id
+    WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+  );
+2D: Log Issues
+sql-- Log each issue found
+INSERT INTO chapter_review_issues 
+  (chapter_number, issue_type, lemma_id, description, severity, status)
+VALUES 
+  (N, 'lemma_translation', 'uuid', 'Translation inaccurate: ...', 'high', 'open');
+
+Step 3: Phrase Quality Review (10-15 min)
+3A: Extract All Phrases for Chapter
+sqlSELECT 
+    p.phrase_id,
+    p.phrase_text,
+    p.phrase_type,
+    p.definitions,
+    p.is_reviewed,
+    COUNT(po.occurrence_id) as occurrences_in_chapter,
+    array_agg(s.sentence_text ORDER BY s.sentence_id) as example_sentences
+FROM phrases p
+JOIN phrase_occurrences po ON p.phrase_id = po.phrase_id
+JOIN sentences s ON po.sentence_id = s.sentence_id
+WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+GROUP BY p.phrase_id
+ORDER BY COUNT(po.occurrence_id) DESC;
+```
+
+#### 3B: AI Phrase Validation
+**For each phrase, validate:**
+1. Is it truly idiomatic? (meaning ≠ sum of parts)
+2. Is translation accurate?
+3. Is it useful for Spanish learners?
+4. Any duplicates or near-duplicates?
+
+**AI Prompt Template:**
+```
+Validate this Spanish phrase:
+
+Phrase: {phrase_text}
+Type: {phrase_type}
+Translation: {definitions[0]}
+Occurrences: {occurrences_in_chapter}
+Example context: "{example_sentence}"
+
+Check:
+1. Is this truly idiomatic? (meaning different from literal word-by-word)
+2. Is the English translation accurate?
+3. Is this phrase useful for Spanish learners?
+4. Should it be kept or rejected?
+
+Respond ONLY with JSON:
+{
+  "is_valid": true/false,
+  "is_idiomatic": true/false,
+  "translation_accurate": true/false,
+  "learner_value": "high/medium/low",
+  "recommendation": "keep/reject",
+  "reason": "...",
+  "suggested_translation": "improved translation if needed"
+}
+3C: Categorize Phrases
+
+Auto-keep: High-frequency idioms (>3 occurrences, clearly idiomatic)
+Review: Medium-frequency or unclear (1-3 occurrences)
+Auto-reject: Too literal, just verb conjugations, not useful
+
+3D: Apply Decisions
+sql-- Approve keepers
+UPDATE phrases SET is_reviewed = true 
+WHERE phrase_id IN (...);
+
+-- Delete rejected
+DELETE FROM phrase_occurrences WHERE phrase_id IN (...);
+DELETE FROM phrases WHERE phrase_id IN (...);
+
+-- Log issues
+INSERT INTO chapter_review_issues 
+  (chapter_number, issue_type, phrase_id, description, severity, status)
+VALUES (N, 'phrase_quality', 'uuid', '...', 'medium', 'open');
+
+Step 4: Word Integrity Check (5 min)
+sql-- Orphaned words (no lemma)
+SELECT w.word_id, w.word_text, s.sentence_text
+FROM words w
+JOIN sentences s ON w.sentence_id = s.sentence_id
+WHERE w.lemma_id IS NULL
+  AND s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N);
+
+-- Words with deleted lemmas (shouldn't happen but check)
+SELECT w.word_id, w.word_text, w.lemma_id
+FROM words w
+JOIN sentences s ON w.sentence_id = s.sentence_id
+WHERE s.chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+  AND NOT EXISTS (SELECT 1 FROM lemmas WHERE lemma_id = w.lemma_id);
+
+-- Should both return 0 rows
+
+Step 5: Sentence Translation Review (5 min)
+5A: Sample Validation
+sql-- Get 5 random sentences for manual spot-check
+SELECT 
+    sentence_id,
+    sentence_text as spanish,
+    sentence_translation as english
+FROM sentences
+WHERE chapter_id = (SELECT chapter_id FROM chapters WHERE chapter_number = N)
+ORDER BY random()
+LIMIT 5;
+Manual review: Read each, confirm translation makes sense
+5B: AI Sentence Validation (Optional - for suspicious cases)
+
+Run AI validation on sentences with unusual word combinations
+Check for context-dependent translation issues
+
+
+Step 6: Generate Fix Script (5-10 min)
+Compile all issues into SQL fix script:
+sql-- CHAPTER N FIX SCRIPT
+-- Generated: [timestamp]
+
+-- CRITICAL ISSUES (must fix)
+-- ...
+
+-- HIGH PRIORITY (should fix)
+-- ...
+
+-- MEDIUM PRIORITY (nice to fix)
+-- ...
+
+-- LOW PRIORITY (optional)
+-- ...
+
+Step 7: Apply Fixes & Verify (5 min)
+Apply fix script, then verify:
+sql-- Verification queries
+SELECT COUNT(*) as verbs_missing_to FROM lemmas WHERE part_of_speech = 'VERB' AND definitions->>0 NOT LIKE 'to %' AND lemma_id IN (...);
+SELECT COUNT(*) as nouns_missing_the FROM lemmas WHERE part_of_speech = 'NOUN' AND definitions->>0 NOT LIKE 'the %' AND lemma_id IN (...);
+SELECT COUNT(*) as orphan_words FROM words WHERE lemma_id IS NULL AND sentence_id IN (...);
+
+-- All should return 0
+
+Step 8: Mark Complete & Generate Report (2 min)
+sql-- Update progress
+UPDATE chapter_review_progress
+SET review_completed_at = now(),
+    lemmas_reviewed = X,
+    lemmas_flagged = Y,
+    lemmas_fixed = Z,
+    phrases_reviewed = A,
+    phrases_approved = B,
+    phrases_rejected = C,
+    words_validated = D,
+    status = 'completed'
+WHERE chapter_number = N;
+
+-- Generate report
+SELECT 
+    chapter_number,
+    lemmas_reviewed,
+    lemmas_flagged,
+    lemmas_fixed,
+    phrases_reviewed,
+    phrases_approved,
+    phrases_rejected,
+    CASE 
+        WHEN lemmas_flagged - lemmas_fixed = 0 THEN 'PASS ✓'
+        ELSE 'NEEDS REVIEW ⚠'
+    END as status
+FROM chapter_review_progress
+WHERE chapter_number = N;
+
+Phase 3: Batch Summaries (After Every 5 Chapters)
+After chapters 5, 10, 15, 20, 25:
+sql-- Progress summary
+SELECT 
+    COUNT(*) as chapters_completed,
+    SUM(lemmas_reviewed) as total_lemmas_reviewed,
+    SUM(lemmas_fixed) as total_lemmas_fixed,
+    SUM(phrases_reviewed) as total_phrases_reviewed,
+    SUM(phrases_rejected) as total_phrases_rejected,
+    ROUND(AVG(EXTRACT(EPOCH FROM (review_completed_at - review_started_at))/60), 1) as avg_minutes_per_chapter
+FROM chapter_review_progress
+WHERE status = 'completed';
+Identify patterns:
+
+Common error types across chapters
+Systematic issues to add to pipeline
+Quality trends (improving? consistent?)
+
+
+Phase 4: Final Validation (After All 27 Chapters)
+Cross-Chapter Consistency Check
+sql-- 1. Verify no lemma has different translations across chapters
+SELECT 
+    l.lemma_text,
+    l.definitions,
+    COUNT(DISTINCT c.chapter_number) as chapters_used
+FROM lemmas l
+JOIN words w ON l.lemma_id = w.lemma_id
+JOIN sentences s ON w.sentence_id = s.sentence_id
+JOIN chapters c ON s.chapter_id = c.chapter_id
+GROUP BY l.lemma_id
+HAVING COUNT(DISTINCT c.chapter_number) > 1
+ORDER BY COUNT(DISTINCT c.chapter_number) DESC
+LIMIT 100;
+
+-- Spot-check: Do top 100 most-used lemmas have consistent translations?
+
+-- 2. Verify all chapters pass quality checks
+SELECT 
+    chapter_number,
+    CASE 
+        WHEN lemmas_flagged - lemmas_fixed = 0 
+         AND phrases_rejected + phrases_approved = phrases_reviewed
+         THEN 'PASS ✓'
+        ELSE 'FAIL ✗'
+    END as status
+FROM chapter_review_progress
+ORDER BY chapter_number;
+
+-- All should show PASS ✓
+
+-- 3. Database-wide quality check
+SELECT 
+    'Verbs missing "to"' as check,
+    COUNT(*) as issues
+FROM lemmas 
+WHERE part_of_speech = 'VERB' 
+  AND definitions->>0 NOT LIKE 'to %'
+UNION ALL
+SELECT 
+    'Nouns missing "the"',
+    COUNT(*)
+FROM lemmas 
+WHERE part_of_speech = 'NOUN' 
+  AND definitions->>0 NOT LIKE 'the %'
+UNION ALL
+SELECT 
+    'Orphaned words',
+    COUNT(*)
+FROM words 
+WHERE lemma_id IS NULL;
+
+-- All should show 0
+
+Automation Scripts for Claude Code
+Master Script: review_chapter.py
+python#!/usr/bin/env python3
+"""
+Comprehensive chapter review script.
+Usage: python3 scripts/chapter_review/review_chapter.py --chapter N
+"""
+
+import argparse
+from anthropic import Anthropic
+import json
+
+def review_chapter(chapter_number):
+    """Run full review process for a chapter."""
+    
+    print(f"=== REVIEWING CHAPTER {chapter_number} ===\n")
+    
+    # Step 1: Initialize
+    initialize_review(chapter_number)
+    
+    # Step 2: Review lemmas
+    lemma_issues = review_lemmas(chapter_number)
+    
+    # Step 3: Review phrases
+    phrase_decisions = review_phrases(chapter_number)
+    
+    # Step 4: Check word integrity
+    word_issues = check_word_integrity(chapter_number)
+    
+    # Step 5: Spot-check sentences
+    sentence_samples = review_sentences(chapter_number)
+    
+    # Step 6: Generate fix script
+    generate_fix_script(chapter_number, lemma_issues, phrase_decisions, word_issues)
+    
+    # Step 7: Apply fixes & verify
+    apply_fixes_and_verify(chapter_number)
+    
+    # Step 8: Mark complete
+    mark_complete(chapter_number)
+    
+    print(f"\n=== CHAPTER {chapter_number} REVIEW COMPLETE ===")
+
+def review_lemmas(chapter_number):
+    """AI-powered lemma validation."""
+    # Get lemmas for chapter
+    lemmas = fetch_chapter_lemmas(chapter_number)
+    
+    issues = []
+    
+    # Review top 50 individually
+    for lemma in lemmas[:50]:
+        validation = validate_lemma_with_ai(lemma)
+        if not validation['is_valid']:
+            issues.append({
+                'lemma': lemma,
+                'issues': validation['issues'],
+                'fixes': validation['suggested_fixes']
+            })
+    
+    # Batch review remaining
+    for batch in chunks(lemmas[50:], 10):
+        validations = batch_validate_lemmas_with_ai(batch)
+        for v in validations:
+            if not v['is_valid']:
+                issues.append(v)
+    
+    return issues
+
+def validate_lemma_with_ai(lemma):
+    """Use Claude API to validate a single lemma."""
+    client = Anthropic()
+    
+    prompt = f"""Validate this Spanish vocabulary entry:
+
+Spanish: {lemma['lemma_text']}
+POS: {lemma['part_of_speech']}
+English: {lemma['definitions'][0]}
+Usage: {lemma['usage_count']} times as forms: {lemma['word_forms']}
+
+Check:
+1. Spanish form canonical? (verbs=infinitive, nouns=singular+article)
+2. English translation accurate?
+3. POS tag correct?
+4. Gender correct (if noun)?
+5. Multiple meanings needed?
+
+Respond ONLY with JSON."""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    
+    return json.loads(response.content[0].text)
+
+# Similar functions for phrases, words, sentences...
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--chapter', type=int, required=True)
+    args = parser.parse_args()
+    
+    review_chapter(args.chapter)
+```
+
+---
+
+## Tomorrow's Prompt for Claude Code
+```
+COMPREHENSIVE CHAPTER-BY-CHAPTER QUALITY REVIEW
+
+SETUP PHASE:
+1. Create review infrastructure (progress tables, issue tracking)
+2. Create review_chapter.py master script
+3. Test on Chapter 1 (already known to be good - validates process)
+
+REVIEW PROCESS (Repeat for Chapters 2-27):
+For each chapter:
+1. Extract all lemmas - AI validate translations, POS, forms
+2. Extract all phrases - AI validate if truly idiomatic
+3. Check word integrity - no orphans
+4. Spot-check sentences - translation accuracy
+5. Generate fix script for issues found
+6. Apply fixes and verify
+7. Mark chapter complete
+8. Move to next chapter
+
+DELIVERABLES PER CHAPTER:
+- Chapter N review report
+- Fix script (if issues found)
+- Verification: All checks pass
+- Updated progress tracking
+
+FINAL DELIVERABLE:
+- All 27 chapters reviewed
+- Database-wide quality validation
+- Production-ready confirmation
+
+BEGIN WITH SETUP, THEN START CHAPTER 2.
+
+Estimated time: ~30-45 min per chapter = 12-20 hours total
+
+Success Criteria
+Per Chapter:
+
+✓ 0 verbs missing "to " prefix
+✓ 0 nouns missing "the " prefix
+✓ 0 orphaned words
+✓ All high-frequency lemmas validated by AI
+✓ All phrases evaluated (keep/reject)
+✓ Sample sentences spot-checked
+
+Final (All 27 Chapters):
+
+✓ 1,854 lemmas all validated
+✓ ~800 phrases all evaluated
+✓ 13,052 words all properly linked
+✓ Consistent quality across all chapters
+✓ Database production-ready for MVP
+
+
+This plan ensures Chapter 1 quality across the entire book. It's methodical, sustainable, and uses AI to scale the review process while maintaining human oversight on critical decisions.
+Ready to execute tomorrow!

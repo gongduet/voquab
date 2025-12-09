@@ -48,15 +48,15 @@ export default function PackageView() {
       console.log('✅ Package loaded:', pkg)
       setPackage(pkg)
 
-      // Load package words
+      // Load package words with lemma data
       const { data: pkgWords, error: wordsError } = await supabase
         .from('package_words')
         .select(`
           *,
-          vocabulary (
-            vocab_id,
-            lemma,
-            english_definition
+          lemmas (
+            lemma_id,
+            lemma_text,
+            definitions
           )
         `)
         .eq('package_id', packageId)
@@ -68,23 +68,25 @@ export default function PackageView() {
         console.log(`📚 Loaded ${pkgWords?.length || 0} package words`)
 
         // Load occurrence counts for times_in_book calculation
-        const { data: occurrences } = await supabase
-          .from('vocabulary_occurrences')
-          .select('vocab_id')
+        const { data: wordsData } = await supabase
+          .from('words')
+          .select('lemma_id')
 
-        // Count occurrences per vocab_id
+        // Count occurrences per lemma_id
         const countsMap = {}
-        if (occurrences) {
-          occurrences.forEach(occ => {
-            countsMap[occ.vocab_id] = (countsMap[occ.vocab_id] || 0) + 1
+        if (wordsData) {
+          wordsData.forEach(word => {
+            countsMap[word.lemma_id] = (countsMap[word.lemma_id] || 0) + 1
           })
         }
 
-        // Merge times_in_book into vocabulary objects
+        // Merge times_in_book into vocabulary objects with compatibility aliases
         const wordsWithCounts = pkgWords?.map(word => ({
           ...word,
-          vocabulary: word.vocabulary ? {
-            ...word.vocabulary,
+          vocabulary: word.lemmas ? {
+            vocab_id: word.lemmas.lemma_id,
+            lemma: word.lemmas.lemma_text,
+            english_definition: Array.isArray(word.lemmas.definitions) ? word.lemmas.definitions[0] : word.lemmas.definitions,
             times_in_book: countsMap[word.vocab_id] || 0
           } : null
         })) || []

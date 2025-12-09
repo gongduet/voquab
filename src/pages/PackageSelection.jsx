@@ -29,13 +29,13 @@ export default function PackageSelection() {
 
       console.log('📦 Loading package selection data...')
 
-      // Debug: Check vocabulary table structure
-      console.log('🔍 Checking vocabulary table structure...')
-      const { data: sampleVocab } = await supabase
-        .from('vocabulary')
+      // Debug: Check lemmas table structure
+      console.log('🔍 Checking lemmas table structure...')
+      const { data: sampleLemma } = await supabase
+        .from('lemmas')
         .select('*')
         .limit(1)
-      console.log('📋 Sample vocabulary record:', sampleVocab?.[0])
+      console.log('📋 Sample lemma record:', sampleLemma?.[0])
 
       // Check for active package
       const { data: packages } = await supabase
@@ -51,54 +51,57 @@ export default function PackageSelection() {
         setActivePackage(packages[0])
       }
 
-      // Load user words with vocabulary data
-      const { data: words, error: wordsError } = await supabase
-        .from('user_vocabulary_progress')
+      // Load user lemmas with vocabulary data
+      const { data: userLemmas, error: lemmasError } = await supabase
+        .from('user_lemma_progress')
         .select(`
-          vocab_id,
+          lemma_id,
           mastery_level,
           health,
           last_reviewed_at,
           last_correct_review_at,
           total_reviews,
           failed_in_last_3_sessions,
-          vocabulary (
-            vocab_id,
-            lemma,
-            english_definition
+          lemmas (
+            lemma_id,
+            lemma_text,
+            definitions
           )
         `)
         .eq('user_id', user.id)
 
-      if (wordsError) {
-        console.error('Error loading words:', wordsError)
+      if (lemmasError) {
+        console.error('Error loading lemmas:', lemmasError)
       } else {
-        console.log(`📚 Loaded ${words?.length || 0} words`)
+        console.log(`📚 Loaded ${userLemmas?.length || 0} lemmas`)
 
         // Load occurrence counts for times_in_book calculation
-        const { data: occurrences } = await supabase
-          .from('vocabulary_occurrences')
-          .select('vocab_id')
+        const { data: wordsData } = await supabase
+          .from('words')
+          .select('lemma_id')
 
-        // Count occurrences per vocab_id
+        // Count occurrences per lemma_id
         const countsMap = {}
-        if (occurrences) {
-          occurrences.forEach(occ => {
-            countsMap[occ.vocab_id] = (countsMap[occ.vocab_id] || 0) + 1
+        if (wordsData) {
+          wordsData.forEach(word => {
+            countsMap[word.lemma_id] = (countsMap[word.lemma_id] || 0) + 1
           })
         }
 
-        // Merge times_in_book into vocabulary objects
-        const wordsWithCounts = words?.map(word => ({
-          ...word,
-          vocabulary: word.vocabulary ? {
-            ...word.vocabulary,
-            times_in_book: countsMap[word.vocab_id] || 0
+        // Merge times_in_book into lemma objects and add compatibility aliases
+        const lemmasWithCounts = userLemmas?.map(item => ({
+          ...item,
+          vocab_id: item.lemma_id,  // Backward compatibility alias
+          vocabulary: item.lemmas ? {
+            vocab_id: item.lemmas.lemma_id,
+            lemma: item.lemmas.lemma_text,
+            english_definition: Array.isArray(item.lemmas.definitions) ? item.lemmas.definitions[0] : item.lemmas.definitions,
+            times_in_book: countsMap[item.lemma_id] || 0
           } : null
         })) || []
 
-        console.log(`📊 Calculated occurrence counts for ${Object.keys(countsMap).length} unique words`)
-        setUserWords(wordsWithCounts)
+        console.log(`📊 Calculated occurrence counts for ${Object.keys(countsMap).length} unique lemmas`)
+        setUserWords(lemmasWithCounts)
       }
 
       // Load user stats for today
@@ -114,7 +117,7 @@ export default function PackageSelection() {
       console.log('📊 User stats:', stats)
 
       // Calculate recommendation
-      const wordsWithHealth = (words || []).map(w => ({
+      const wordsWithHealth = (userLemmas || []).map(w => ({
         ...w,
         currentHealth: calculateCurrentHealth(w).health
       }))
@@ -140,25 +143,25 @@ export default function PackageSelection() {
         return
       }
 
-      // Get first 100 vocabulary words
-      const { data: vocabWords, error: vocabError } = await supabase
-        .from('vocabulary')
-        .select('vocab_id')
+      // Get first 100 lemmas
+      const { data: lemmaList, error: lemmaError } = await supabase
+        .from('lemmas')
+        .select('lemma_id')
         .limit(100)
 
-      if (vocabError || !vocabWords) {
-        console.error('Error fetching vocabulary:', vocabError)
-        alert('Failed to fetch vocabulary words')
+      if (lemmaError || !lemmaList) {
+        console.error('Error fetching lemmas:', lemmaError)
+        alert('Failed to fetch lemmas')
         setLoading(false)
         return
       }
 
-      console.log(`📚 Found ${vocabWords.length} vocabulary words`)
+      console.log(`📚 Found ${lemmaList.length} lemmas`)
 
       // Create progress records with random values
-      const progressRecords = vocabWords.map(word => ({
+      const progressRecords = lemmaList.map(lemma => ({
         user_id: user.id,
-        vocab_id: word.vocab_id,
+        lemma_id: lemma.lemma_id,
         mastery_level: Math.floor(Math.random() * 50), // 0-50
         health: Math.floor(Math.random() * 80) + 20, // 20-100
         total_reviews: Math.floor(Math.random() * 20), // 0-20
@@ -171,7 +174,7 @@ export default function PackageSelection() {
 
       // Insert all at once
       const { error: insertError } = await supabase
-        .from('user_vocabulary_progress')
+        .from('user_lemma_progress')
         .insert(progressRecords)
 
       if (insertError) {
@@ -216,18 +219,18 @@ export default function PackageSelection() {
       }
       console.log('✅ Settings loaded:', settings)
 
-      // Get total vocabulary count for dynamic composition
-      console.log('📊 Querying total vocabulary count...')
-      const { count: totalVocabCount, error: countError } = await supabase
-        .from('vocabulary')
+      // Get total lemmas count for dynamic composition
+      console.log('📊 Querying total lemmas count...')
+      const { count: totalLemmaCount, error: countError } = await supabase
+        .from('lemmas')
         .select('*', { count: 'exact', head: true })
 
       if (countError) {
-        console.warn('⚠️ Error getting vocab count:', countError)
+        console.warn('⚠️ Error getting lemma count:', countError)
       }
 
-      const totalAvailableWords = totalVocabCount || 1000 // Fallback if count fails
-      console.log(`📚 Total vocabulary available: ${totalAvailableWords} words`)
+      const totalAvailableWords = totalLemmaCount || 1000 // Fallback if count fails
+      console.log(`📚 Total lemmas available: ${totalAvailableWords} words`)
 
       // Select words for package
       console.log('🔍 Selecting words for package...')
@@ -239,34 +242,39 @@ export default function PackageSelection() {
       if (packageType === 'getting_started' && userWords.length < 50) {
         console.log('🌱 Creating beginner package from foundational vocabulary...')
 
-        // Query vocabulary directly (not user progress) - get first 30 words
+        // Query lemmas directly (not user progress) - get first 30 lemmas
         // These are the foundational words that appear early in the book
         // FILTER: Exclude stop words (is_stop_word = false)
-        const { data: chapter1Words, error: vocabError } = await supabase
-          .from('vocabulary')
+        const { data: beginnerLemmas, error: lemmaQueryError } = await supabase
+          .from('lemmas')
           .select('*')  // Get ALL columns to see what's available
           .eq('is_stop_word', false)  // EXCLUDE STOP WORDS
           .limit(30)
 
-        console.log('📚 Beginner words fetched:', chapter1Words)
-        console.log('❌ Any error?', vocabError)
+        console.log('📚 Beginner lemmas fetched:', beginnerLemmas)
+        console.log('❌ Any error?', lemmaQueryError)
 
-        if (vocabError || !chapter1Words) {
-          console.error('Error fetching chapter 1 vocabulary:', vocabError)
+        if (lemmaQueryError || !beginnerLemmas) {
+          console.error('Error fetching beginner lemmas:', lemmaQueryError)
           alert('Failed to load beginner words')
           setCreating(false)
           return
         }
 
-        console.log(`📚 Found ${chapter1Words.length} words`)
-        console.log('🔍 First word structure:', chapter1Words[0])
+        console.log(`📚 Found ${beginnerLemmas.length} lemmas`)
+        console.log('🔍 First lemma structure:', beginnerLemmas[0])
 
         // Create selection object matching expected format
-        // Use the actual word object structure
+        // Use the actual lemma object structure with compatibility aliases
         selection = {
-          words: chapter1Words.map((word, i) => ({
-            vocab_id: word.vocab_id,
-            vocabulary: word,  // Use the entire word object as-is
+          words: beginnerLemmas.map((lemma, i) => ({
+            vocab_id: lemma.lemma_id,  // Backward compatibility
+            lemma_id: lemma.lemma_id,
+            vocabulary: {
+              vocab_id: lemma.lemma_id,
+              lemma: lemma.lemma_text,
+              english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions
+            },
             word_order: i + 1,
             category: 'new',
             mastery_level: 0,
@@ -274,8 +282,8 @@ export default function PackageSelection() {
             total_reviews: 0
           })),
           breakdown: {
-            total: chapter1Words.length,
-            new: chapter1Words.length,
+            total: beginnerLemmas.length,
+            new: beginnerLemmas.length,
             critical: 0,
             mastery_ready: 0,
             exposure: 0
