@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { calculateCurrentHealth } from '../../utils/healthCalculations'
 import { selectCardsForSession } from '../../utils/priorityCalculations'
 
@@ -28,12 +28,11 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
       if (e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault()
         handleCardClick()
-      } else if (isFlipped) {
-        if (e.key === '1') handleDifficulty('dont-know')
-        else if (e.key === '2') handleDifficulty('hard')
-        else if (e.key === '3') handleDifficulty('medium')
-        else if (e.key === '4') handleDifficulty('easy')
       }
+      // Allow keyboard shortcuts regardless of flip state
+      if (e.key === '1') handleDifficulty('again')
+      else if (e.key === '2') handleDifficulty('hard')
+      else if (e.key === '3') handleDifficulty('got-it')
     }
 
     window.addEventListener('keydown', handleKeyPress)
@@ -87,13 +86,17 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
   }
 
   function handleDifficulty(difficulty) {
-    // REMOVED: if (!isFlipped) return - allow rating before flipping
     console.log('🎴 Session handleDifficulty:', { difficulty, isFlipped, currentIndex })
+
+    // Map new button values to session tracking
+    const trackingKey = difficulty === 'again' ? 'dont-know' :
+                        difficulty === 'got-it' ? 'easy' :
+                        difficulty // 'hard' stays 'hard'
 
     // Update session ratings
     setSessionRatings(prev => ({
       ...prev,
-      [difficulty]: (prev[difficulty] || 0) + 1
+      [trackingKey]: (prev[trackingKey] || 0) + 1
     }))
 
     // Mark card as reviewed
@@ -102,8 +105,8 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
       setReviewedCardIds(prev => new Set([...prev, currentCard.vocab_id]))
     }
 
-    // Handle "Don't Know" - requeue card
-    if (difficulty === 'dont-know') {
+    // Handle "Again" - requeue card
+    if (difficulty === 'again') {
       requeueCard()
     } else {
       // Move to next card

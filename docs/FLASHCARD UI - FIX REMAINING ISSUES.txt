@@ -1,0 +1,202 @@
+FLASHCARD UI - FIX REMAINING ISSUES
+Looking at the screenshots, several issues need fixing:
+ISSUE 1: Background Color ❌
+Current: Yellow/amber gradient (from-amber-50 to-orange-50)
+Should be: Gray gradient (from-slate-50 to-slate-100)
+Fix in src/pages/Flashcards.jsx:
+FIND (around line 330):
+jsx<div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8 px-4">
+REPLACE WITH:
+jsx<div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
+
+ISSUE 2: Remove SessionStats Component ❌
+Current: Shows 4 stat boxes (Cards, Accuracy, Time, Reviewed)
+Should be: These stats should not display at all in new design
+Fix in src/pages/Flashcards.jsx:
+FIND (around line 340-350):
+jsx{/* Session Stats */}
+<SessionStats
+  currentIndex={currentIndex}
+  totalCards={totalCards}
+  sessionRatings={sessionRatings}
+  sessionStartTime={sessionStartTime}
+  focusChapter={focusChapter}
+  chapterInfo={chapterInfo}
+  onExitChapterFocus={() => navigate('/flashcards')}
+/>
+REPLACE WITH:
+jsx{/* Session Stats - REMOVED in new design */}
+(Simply remove or comment out the entire SessionStats component)
+
+ISSUE 3: Remove WordStatusCard Component ❌
+Current: Shows "Word Status" section with mastery/health bars at bottom
+Should be: This entire section should not display in new design
+Fix in src/pages/Flashcards.jsx:
+FIND (around line 375-385):
+jsx{/* Word Status Card */}
+{currentCard && (
+  <WordStatusCard
+    card={currentCard}
+    showDetailedReview={showDetailedReview}
+    onToggleDetail={() => setShowDetailedReview(!showDetailedReview)}
+    getMasteryPercentage={getMasteryPercentage}
+    formatTimeAgo={formatTimeAgo}
+  />
+)}
+REPLACE WITH:
+jsx{/* Word Status Card - REMOVED in new design */}
+(Simply remove or comment out the entire WordStatusCard component)
+
+ISSUE 4: Update Header ❌
+Current: "← Home" and "Flashcard Review" title
+Should be: "← Exit" and "1/15 Cards" in header
+Fix in src/pages/Flashcards.jsx:
+FIND (around line 335-345):
+jsx{/* Header with back button */}
+<div className="mb-6 flex justify-between items-center">
+  <button
+    onClick={() => navigate('/')}
+    className="text-amber-800 hover:text-amber-900 font-serif flex items-center gap-2"
+  >
+    ← Home
+  </button>
+  <h1 className="text-2xl font-serif font-bold text-amber-700">Flashcard Review</h1>
+  <div className="w-16"></div>
+</div>
+REPLACE WITH:
+jsx{/* Header with exit button and progress */}
+<div className="mb-6 flex justify-between items-center">
+  <button
+    onClick={() => navigate('/')}
+    className="text-slate-700 hover:text-slate-900 flex items-center gap-2"
+    style={{ fontFamily: 'Inter, sans-serif' }}
+  >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    <span className="text-base font-medium">Exit</span>
+  </button>
+  <div className="text-lg font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <span style={{ color: '#b5838d' }}>{currentIndex + 1}</span>
+    <span className="text-slate-700">/{totalCards}</span>
+    <span className="text-slate-600 ml-1">Cards</span>
+  </div>
+  <div className="w-24"></div>
+</div>
+
+ISSUE 5: Card Showing Wrong Data ❌
+Current: Card shows "the island" (English) on front
+Should be: Card shows Spanish word on front, English on back
+Diagnosis: The card data structure might be different than expected. Need to verify what data is in currentCard.
+Fix in src/components/flashcard/FlashcardDisplay.jsx:
+FIND (around line 10-15):
+jsx// Extract display data
+const displayLemma = card.lemma
+const displayTranslation = card.english_definition
+const displayPOS = card.part_of_speech
+REPLACE WITH:
+jsx// Extract display data - handle both new and legacy data structures
+const displayLemma = card.lemma || card.lemma_text || 'No word'
+const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions[0] : 'No translation')
+const displayPOS = card.part_of_speech || 'unknown'
+
+// Debug logging
+console.log('🎴 Card data:', {
+  lemma: card.lemma,
+  lemma_text: card.lemma_text,
+  english_definition: card.english_definition,
+  definitions: card.definitions,
+  example_sentence: card.example_sentence
+})
+
+ISSUE 6: Empty Sentence Quotes ❌
+Current: Shows empty "" at bottom of card
+Should be: Show actual sentence or hide section if no sentence
+Fix in src/components/flashcard/FlashcardDisplay.jsx:
+FIND (around line 70-75 for front card):
+jsx{/* Spanish sentence at bottom */}
+<div className="mt-6 pt-6 border-t border-slate-200 text-center">
+  <p 
+    className="text-slate-400 text-base leading-relaxed"
+    style={{ fontFamily: 'Inter, sans-serif' }}
+  >
+    "{highlightWordInSentence(card.example_sentence, card.lemma)}"
+  </p>
+</div>
+REPLACE WITH:
+jsx{/* Spanish sentence at bottom - only show if exists */}
+{card.example_sentence && (
+  <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+    <p 
+      className="text-slate-400 text-base leading-relaxed"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      {highlightWordInSentence(card.example_sentence, displayLemma)}
+    </p>
+  </div>
+)}
+AND FIND (around line 90-95 for back card):
+jsx{/* English sentence at bottom */}
+<div className="mt-6 pt-6 border-t border-slate-200 text-center">
+  <p 
+    className="text-slate-400 text-base leading-relaxed italic"
+    style={{ fontFamily: 'Inter, sans-serif' }}
+  >
+    "{card.example_sentence_translation}"
+  </p>
+</div>
+REPLACE WITH:
+jsx{/* English sentence at bottom - only show if exists */}
+{card.example_sentence_translation && (
+  <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+    <p 
+      className="text-slate-400 text-base leading-relaxed italic"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      {card.example_sentence_translation}
+    </p>
+  </div>
+)}
+
+ISSUE 7: Remove Unused State Variables
+Current: showDetailedReview state is declared but WordStatusCard removed
+Should be: Clean up unused state
+Fix in src/pages/Flashcards.jsx:
+FIND (around line 20-25):
+jsx// Local state
+const [showDetailedReview, setShowDetailedReview] = useState(false)
+const [timeGateMessage, setTimeGateMessage] = useState(null)
+REPLACE WITH:
+jsx// Local state
+const [timeGateMessage, setTimeGateMessage] = useState(null)
+AND REMOVE these unused helper functions (if they exist):
+
+formatGrammaticalContext
+getMasteryPercentage
+formatTimeAgo
+
+
+SUMMARY OF CHANGES
+
+✅ Background: amber → slate gray
+✅ Remove SessionStats component
+✅ Remove WordStatusCard component
+✅ Update header: "← Exit" + "1/15 Cards"
+✅ Fix card data extraction (handle different data structures)
+✅ Hide sentence section if no sentence data
+✅ Clean up unused state and functions
+
+
+TESTING AFTER FIXES
+After implementing, verify:
+
+ Background is gray (not yellow/amber)
+ Only header + card + buttons visible (no stats boxes)
+ Header shows "← Exit" and "1/15 Cards"
+ Card front shows Spanish word (lowercase)
+ Card back shows English translation
+ Sentences appear if data exists (or section hidden if no data)
+ Console logs show card data structure for debugging
+
+
+END OF SPEC

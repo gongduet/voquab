@@ -68,7 +68,7 @@ export default function SessionStats({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Cards Remaining */}
         <div className="bg-white rounded-lg shadow p-4 text-center">
-          <div className="text-3xl font-bold text-gray-900">
+          <div className="text-3xl font-bold" style={{ color: '#b5838d' }}>
             {currentIndex + 1}/{totalCards}
           </div>
           <div className="text-sm text-gray-600 mt-1">Cards</div>

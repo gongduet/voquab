@@ -1,74 +1,106 @@
+import { RotateCcw, AlertCircle, CheckCircle } from 'lucide-react'
+
 export default function DifficultyButtons({
   onDifficulty,
   disabled = false,
-  timeGateMessage = null,
-  showingAnswer = false
+  timeGateMessage = null
 }) {
   return (
     <div className="max-w-2xl mx-auto mt-6">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        .button-hover {
+          transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+        }
+
+        .button-hover:hover {
+          transform: scale(1.25);
+        }
+
+        .button-hover:active {
+          transform: scale(0.95);
+        }
+      `}</style>
+
       {/* Time gate message */}
       {timeGateMessage && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <div className="text-sm text-yellow-800">
+          <div className="text-sm text-yellow-800" style={{ fontFamily: 'Inter, sans-serif' }}>
             ⏰ {timeGateMessage}
           </div>
-          <div className="text-xs text-yellow-600 mt-1">
+          <div className="text-xs text-yellow-600 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
             Health will still improve, but mastery points require more time.
           </div>
         </div>
       )}
 
-      {/* Button grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Don't Know */}
+      {/* Icon Buttons - 3 buttons with muted earthy colors */}
+      <div className="grid grid-cols-3 gap-8 px-2">
+        {/* Again Button */}
         <button
-          onClick={() => onDifficulty('dont-know')}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('again'); }}
           disabled={disabled}
-          className="px-6 py-4 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+          className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
+          style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          <div className="text-lg">❌</div>
-          <div className="text-sm">Don't Know</div>
-          <div className="text-xs opacity-75 mt-1">(1)</div>
+          <RotateCcw
+            size={36}
+            strokeWidth={2.5}
+            style={{ color: '#6d6875' }}
+            className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
+          />
+          <span
+            className="text-sm font-semibold transition-all duration-150"
+            style={{ color: '#6d6875' }}
+          >
+            Again
+          </span>
         </button>
 
-        {/* Hard */}
+        {/* Hard Button */}
         <button
-          onClick={() => onDifficulty('hard')}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('hard'); }}
           disabled={disabled}
-          className="px-6 py-4 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+          className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
+          style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          <div className="text-lg">🟠</div>
-          <div className="text-sm">Hard</div>
-          <div className="text-xs opacity-75 mt-1">(2)</div>
+          <AlertCircle
+            size={36}
+            strokeWidth={2.5}
+            style={{ color: '#e5989b' }}
+            className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
+          />
+          <span
+            className="text-sm font-semibold transition-all duration-150"
+            style={{ color: '#e5989b' }}
+          >
+            Hard
+          </span>
         </button>
 
-        {/* Medium */}
+        {/* Got It Button */}
         <button
-          onClick={() => onDifficulty('medium')}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('got-it'); }}
           disabled={disabled}
-          className="px-6 py-4 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+          className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
+          style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          <div className="text-lg">🟡</div>
-          <div className="text-sm">Medium</div>
-          <div className="text-xs opacity-75 mt-1">(3)</div>
-        </button>
-
-        {/* Easy */}
-        <button
-          onClick={() => onDifficulty('easy')}
-          disabled={disabled}
-          className="px-6 py-4 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
-        >
-          <div className="text-lg">✅</div>
-          <div className="text-sm">Easy</div>
-          <div className="text-xs opacity-75 mt-1">(4)</div>
+          <CheckCircle
+            size={36}
+            strokeWidth={2.5}
+            style={{ color: '#ffcdb2' }}
+            className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
+          />
+          <span
+            className="text-sm font-semibold transition-all duration-150"
+            style={{ color: '#ffcdb2' }}
+          >
+            Got It
+          </span>
         </button>
       </div>
 
-      {/* Keyboard hint */}
-      <div className="mt-4 text-center text-sm text-gray-500">
-        💡 Use keyboard: 1 (Don't Know) • 2 (Hard) • 3 (Medium) • 4 (Easy) • Space (Flip)
-      </div>
     </div>
   )
 }

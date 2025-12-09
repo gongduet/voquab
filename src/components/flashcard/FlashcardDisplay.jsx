@@ -1,10 +1,7 @@
 export default function FlashcardDisplay({
   card,
   isFlipped,
-  onCardClick,
-  chapterInfo,
-  formatGrammaticalContext,
-  highlightWordInSentence
+  onCardClick
 }) {
   if (!card) {
     return (
@@ -14,125 +11,143 @@ export default function FlashcardDisplay({
     )
   }
 
-  // Extract data with FALLBACKS for missing canonical forms
-  const wordForm = card.lemma
+  // Extract display data - handle both new and legacy data structures
+  const displayLemma = card.lemma || card.lemma_text || 'No word'
+  const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions[0] : 'No translation')
+  const displayPOS = card.part_of_speech || 'unknown'
 
-  // Check if we have a valid canonical form
-  const hasValidCanonical = (
-    !card.is_canonical &&
-    card.canonical_vocab_id &&
-    card.canonical &&
-    card.canonical.lemma &&
-    card.canonical.lemma !== card.lemma
-  )
-
-  // Use canonical if available, otherwise use the word itself
-  const displayLemma = hasValidCanonical ? card.canonical.lemma : card.lemma
-  const displayTranslation = hasValidCanonical ? card.canonical.english_definition : card.english_definition
-  const displayPOS = hasValidCanonical ? card.canonical.part_of_speech : card.part_of_speech
-  const formMetadata = card.form_metadata || {}
-
-  console.log('🎴 Display logic:', {
-    wordForm,
-    hasValidCanonical,
-    displayLemma,
-    isCanonical: card.is_canonical,
-    canonicalVocabId: card.canonical_vocab_id
+  // Debug logging
+  console.log('🎴 Card data:', {
+    lemma: card.lemma,
+    lemma_text: card.lemma_text,
+    english_definition: card.english_definition,
+    definitions: card.definitions,
+    example_sentence: card.example_sentence
   })
+
+  // Helper to highlight word in sentence
+  const highlightWordInSentence = (sentence, word) => {
+    if (!sentence || !word) return sentence
+
+    const regex = new RegExp(`\\b(${word})\\b`, 'gi')
+    const parts = sentence.split(regex)
+    const matches = sentence.match(regex) || []
+
+    return parts.map((part, index) => (
+      <span key={index}>
+        {part}
+        {matches[index] && (
+          <span className="font-bold text-gray-800">
+            {matches[index]}
+          </span>
+        )}
+      </span>
+    ))
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+        .flip-card {
+          perspective: 1000px;
+        }
+
+        .flip-card-inner {
+          transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transform-style: preserve-3d;
+          position: relative;
+        }
+
+        .flip-card-inner.flipped {
+          transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          transform: rotateY(180deg);
+        }
+      `}</style>
+
       {/* Card container with flip effect */}
-      <div
-        onClick={onCardClick}
-        className="relative bg-white rounded-2xl shadow-2xl cursor-pointer transition-all duration-300 hover:shadow-3xl"
-        style={{ minHeight: '400px' }}
-      >
-        {/* Front - Spanish Side */}
-        {!isFlipped && (
-          <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
-            {/* Chapter badge */}
-            {chapterInfo && (
-              <div className="absolute top-4 left-4 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">
-                Chapter {chapterInfo.chapter_number}
+      <div className="flip-card mb-8">
+        <div
+          onClick={onCardClick}
+          className={`flip-card-inner ${isFlipped ? 'flipped' : ''} cursor-pointer`}
+        >
+          {/* Front - Spanish Side */}
+          <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="mb-auto"></div>
+              <div>
+                <h1
+                  className="text-7xl font-bold text-slate-800 mb-4 tracking-tight lowercase"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {displayLemma}
+                </h1>
+                <p
+                  className="text-slate-500 text-lg"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  ({displayPOS})
+                </p>
               </div>
-            )}
-
-            {/* Main word display */}
-            <div className="text-center mb-6">
-              <div className="text-6xl font-bold text-gray-900 mb-2">
-                {displayLemma.toUpperCase()}
-              </div>
-
-              {/* Show encountered form ONLY if we have a different canonical form */}
-              {hasValidCanonical && (
-                <div className="text-2xl text-gray-500 italic">
-                  ({wordForm})
-                </div>
-              )}
-
-              {/* Part of speech */}
-              <div className="text-sm text-gray-400 mt-2">
-                ({displayPOS || 'unknown'})
-              </div>
+              <div className="mb-auto"></div>
             </div>
 
-            {/* Context sentence with highlighted word */}
+            {/* Spanish sentence at bottom - only show if exists */}
             {card.example_sentence && (
-              <div className="mt-6 p-4 bg-amber-50 rounded-lg border-2 border-amber-200 max-w-xl">
-                <div className="text-gray-700 text-lg leading-relaxed">
-                  {highlightWordInSentence(card.example_sentence, wordForm)}
-                </div>
+              <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+                <p
+                  className="text-slate-400 text-base leading-relaxed"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  {highlightWordInSentence(card.example_sentence, displayLemma)}
+                </p>
               </div>
             )}
-
-            {/* Tap to reveal hint */}
-            <div className="absolute bottom-6 text-gray-400 text-sm italic">
-              Tap to reveal translation
-            </div>
           </div>
-        )}
 
-        {/* Back - English Side */}
-        {isFlipped && (
-          <div className="p-8 flex flex-col items-center justify-center min-h-[400px] bg-gradient-to-br from-blue-50 to-indigo-50">
-            {/* Main translation */}
-            <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-gray-900 mb-4">
-                {displayTranslation}
+          {/* Back - English Side */}
+          <div className="flip-card-back bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="mb-auto"></div>
+              <div>
+                <h1
+                  className="text-6xl font-bold text-slate-800 mb-4"
+                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+                >
+                  {displayTranslation}
+                </h1>
               </div>
-
-              {/* Show form-specific translation ONLY if different from canonical */}
-              {hasValidCanonical && card.english_definition !== displayTranslation && (
-                <div className="text-2xl text-gray-600 italic mb-2">
-                  (as {card.part_of_speech}: {card.english_definition})
-                </div>
-              )}
-
-              {/* Grammatical context */}
-              {formMetadata && Object.keys(formMetadata).length > 0 && (
-                <div className="text-sm text-gray-500 italic mt-2">
-                  {formatGrammaticalContext(formMetadata)}
-                </div>
-              )}
+              <div className="mb-auto"></div>
             </div>
 
-            {/* Translated sentence */}
+            {/* English sentence at bottom - only show if exists */}
             {card.example_sentence_translation && (
-              <div className="mt-6 p-4 bg-white rounded-lg border-2 border-blue-200 max-w-xl">
-                <div className="text-gray-700 text-lg leading-relaxed">
+              <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+                <p
+                  className="text-slate-400 text-base leading-relaxed italic"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
                   {card.example_sentence_translation}
-                </div>
+                </p>
               </div>
             )}
-
-            {/* Tap to flip back */}
-            <div className="absolute bottom-6 text-gray-400 text-sm italic">
-              Tap to flip back
-            </div>
           </div>
-        )}
+        </div>
       </div>
+
     </div>
   )
 }

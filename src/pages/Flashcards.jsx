@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 // Components
 import FlashcardDisplay from '../components/flashcard/FlashcardDisplay'
 import DifficultyButtons from '../components/flashcard/DifficultyButtons'
-import SessionStats from '../components/flashcard/SessionStats'
-import WordStatusCard from '../components/flashcard/WordStatusCard'
 import ChapterCompleteScreen from '../components/flashcard/ChapterCompleteScreen'
 
 // Hooks
@@ -19,7 +17,6 @@ export default function Flashcards() {
   const navigate = useNavigate()
 
   // Local state
-  const [showDetailedReview, setShowDetailedReview] = useState(false)
   const [timeGateMessage, setTimeGateMessage] = useState(null)
 
   // Data fetching
@@ -28,8 +25,7 @@ export default function Flashcards() {
     loading,
     error,
     chapterInfo,
-    focusChapter,
-    refetch
+    focusChapter
   } = useFlashcardData(user?.id)
 
   // Session management
@@ -40,7 +36,6 @@ export default function Flashcards() {
     isFlipped,
     isComplete,
     sessionRatings,
-    sessionStartTime,
     handleCardClick,
     handleDifficulty: handleDifficultySession,
     cardQueue
@@ -58,10 +53,15 @@ export default function Flashcards() {
       return
     }
 
-    console.log('📤 Calling updateProgress...')
+    // Map new button values to existing backend difficulty system
+    const backendDifficulty = difficulty === 'again' ? 'dont-know' :
+                              difficulty === 'got-it' ? 'easy' :
+                              difficulty // 'hard' stays 'hard'
+
+    console.log('📤 Calling updateProgress with:', backendDifficulty)
 
     // Update progress in database
-    const result = await updateProgress(currentCard, difficulty)
+    const result = await updateProgress(currentCard, backendDifficulty)
 
     console.log('📥 updateProgress result:', result)
 
@@ -79,103 +79,13 @@ export default function Flashcards() {
     console.log('✅ handleDifficulty complete')
   }
 
-  // Helper functions (kept from original)
-  function formatGrammaticalContext(formMetadata) {
-    if (!formMetadata || Object.keys(formMetadata).length === 0) {
-      return ''
-    }
-
-    const parts = []
-
-    // Tense
-    if (formMetadata.Tense) {
-      const tenseMap = {
-        'Pres': 'Present',
-        'Past': 'Past',
-        'Fut': 'Future',
-        'Imp': 'Imperfect',
-        'Cond': 'Conditional'
-      }
-      parts.push(tenseMap[formMetadata.Tense] || formMetadata.Tense)
-    }
-
-    // Person
-    if (formMetadata.Person) {
-      const personMap = {
-        '1': 'yo (I)',
-        '2': 'tú (you)',
-        '3': 'él/ella (he/she)'
-      }
-      parts.push(personMap[formMetadata.Person] || formMetadata.Person)
-    }
-
-    // Number
-    if (formMetadata.Number) {
-      const numberMap = {
-        'Sing': 'Singular',
-        'Plur': 'Plural'
-      }
-      parts.push(numberMap[formMetadata.Number] || formMetadata.Number)
-    }
-
-    // Gender
-    if (formMetadata.Gender) {
-      const genderMap = {
-        'Masc': 'Masculine',
-        'Fem': 'Feminine'
-      }
-      parts.push(genderMap[formMetadata.Gender] || formMetadata.Gender)
-    }
-
-    return parts.join(' · ')
-  }
-
-  function highlightWordInSentence(sentence, word) {
-    if (!sentence || !word) return sentence
-
-    const regex = new RegExp(`\\b${word}\\b`, 'gi')
-    const parts = sentence.split(regex)
-    const matches = sentence.match(regex) || []
-
-    return parts.map((part, index) => (
-      <span key={index}>
-        {part}
-        {matches[index] && (
-          <span className="font-bold text-blue-600">
-            {matches[index]}
-          </span>
-        )}
-      </span>
-    ))
-  }
-
-  function getMasteryPercentage(masteryLevel) {
-    return Math.min(100, (masteryLevel / 100) * 100)
-  }
-
-  function formatTimeAgo(timestamp) {
-    if (!timestamp) return 'Never'
-
-    const now = Date.now()
-    const then = new Date(timestamp).getTime()
-    const diffMs = now - then
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins} min ago`
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
-  }
-
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">📚</div>
-          <div className="text-xl font-serif text-gray-700">Loading flashcards...</div>
+          <div className="text-xl text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>Loading flashcards...</div>
         </div>
       </div>
     )
@@ -239,22 +149,24 @@ export default function Flashcards() {
 
           {/* Performance summary */}
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <div className="text-gray-600">Don't Know</div>
-                <div className="text-xl font-bold text-red-600">{sessionRatings['dont-know']}</div>
+                <div className="text-gray-600">Again</div>
+                <div className="text-xl font-bold" style={{ color: '#6d6875' }}>
+                  {sessionRatings['dont-know'] || 0}
+                </div>
               </div>
               <div>
                 <div className="text-gray-600">Hard</div>
-                <div className="text-xl font-bold text-orange-600">{sessionRatings.hard}</div>
+                <div className="text-xl font-bold" style={{ color: '#e5989b' }}>
+                  {sessionRatings.hard || 0}
+                </div>
               </div>
               <div>
-                <div className="text-gray-600">Medium</div>
-                <div className="text-xl font-bold text-yellow-600">{sessionRatings.medium}</div>
-              </div>
-              <div>
-                <div className="text-gray-600">Easy</div>
-                <div className="text-xl font-bold text-green-600">{sessionRatings.easy}</div>
+                <div className="text-gray-600">Got It</div>
+                <div className="text-xl font-bold" style={{ color: '#ffcdb2' }}>
+                  {sessionRatings.easy || 0}
+                </div>
               </div>
             </div>
           </div>
@@ -280,39 +192,32 @@ export default function Flashcards() {
 
   // Main flashcard interface
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header with back button */}
+        {/* Header with exit button and progress */}
         <div className="mb-6 flex justify-between items-center">
           <button
             onClick={() => navigate('/')}
-            className="text-amber-800 hover:text-amber-900 font-serif flex items-center gap-2"
+            className="text-slate-700 hover:text-slate-900 flex items-center gap-2"
+            style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            ← Home
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span className="text-base font-medium">Exit</span>
           </button>
-          <h1 className="text-2xl font-serif font-bold text-amber-700">Flashcard Review</h1>
-          <div className="w-16"></div>
+          <div className="text-lg font-semibold text-right" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span style={{ color: '#b5838d' }}>{currentIndex + 1}</span>
+            <span className="text-slate-700">/{totalCards}</span>
+            <span className="text-slate-600 ml-1">Cards</span>
+          </div>
         </div>
-
-        {/* Session Stats */}
-        <SessionStats
-          currentIndex={currentIndex}
-          totalCards={totalCards}
-          sessionRatings={sessionRatings}
-          sessionStartTime={sessionStartTime}
-          focusChapter={focusChapter}
-          chapterInfo={chapterInfo}
-          onExitChapterFocus={() => navigate('/flashcards')}
-        />
 
         {/* Flashcard Display */}
         <FlashcardDisplay
           card={currentCard}
           isFlipped={isFlipped}
           onCardClick={handleCardClick}
-          chapterInfo={chapterInfo}
-          formatGrammaticalContext={formatGrammaticalContext}
-          highlightWordInSentence={highlightWordInSentence}
         />
 
         {/* Difficulty Buttons */}
@@ -323,15 +228,14 @@ export default function Flashcards() {
           showingAnswer={isFlipped}
         />
 
-        {/* Word Status Card */}
-        {currentCard && (
-          <WordStatusCard
-            card={currentCard}
-            showDetailedReview={showDetailedReview}
-            onToggleDetail={() => setShowDetailedReview(!showDetailedReview)}
-            getMasteryPercentage={getMasteryPercentage}
-            formatTimeAgo={formatTimeAgo}
-          />
+        {/* Hint text below buttons */}
+        {!isFlipped && (
+          <p
+            className="text-center text-slate-400 text-sm mt-4"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Tap card to reveal translation
+          </p>
         )}
       </div>
     </div>
