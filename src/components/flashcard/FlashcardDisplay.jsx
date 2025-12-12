@@ -14,7 +14,25 @@ export default function FlashcardDisplay({
   // Extract display data - handle both new and legacy data structures
   const displayLemma = card.lemma || card.lemma_text || 'No word'
   const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions[0] : 'No translation')
-  const displayPOS = card.part_of_speech || 'unknown'
+
+  // Format part of speech to full word
+  const formatPartOfSpeech = (pos) => {
+    const posMap = {
+      'NOUN': 'noun',
+      'VERB': 'verb',
+      'ADJ': 'adjective',
+      'ADV': 'adverb',
+      'PRON': 'pronoun',
+      'DET': 'determiner',
+      'ADP': 'preposition',
+      'CONJ': 'conjunction',
+      'NUM': 'number',
+      'PHRASE': 'phrase'
+    }
+    return posMap[pos] || (pos ? pos.toLowerCase() : '')
+  }
+
+  const displayPOS = formatPartOfSpeech(card.part_of_speech)
 
   // Debug logging
   console.log('🎴 Card data:', {
@@ -25,24 +43,31 @@ export default function FlashcardDisplay({
     example_sentence: card.example_sentence
   })
 
+  // Helper to escape special regex characters
+  const escapeRegex = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  }
+
   // Helper to highlight word in sentence
   const highlightWordInSentence = (sentence, word) => {
     if (!sentence || !word) return sentence
 
-    const regex = new RegExp(`\\b(${word})\\b`, 'gi')
+    // Escape special chars and create regex
+    const escapedWord = escapeRegex(word)
+    const regex = new RegExp(`(${escapedWord})`, 'gi')
     const parts = sentence.split(regex)
-    const matches = sentence.match(regex) || []
 
-    return parts.map((part, index) => (
-      <span key={index}>
-        {part}
-        {matches[index] && (
-          <span className="font-bold text-gray-800">
-            {matches[index]}
+    return parts.map((part, index) => {
+      // Check if this part matches the word (case-insensitive)
+      if (part.toLowerCase() === word.toLowerCase()) {
+        return (
+          <span key={index} className="font-bold text-gray-800">
+            {part}
           </span>
-        )}
-      </span>
-    ))
+        )
+      }
+      return <span key={index}>{part}</span>
+    })
   }
 
   return (
@@ -85,7 +110,49 @@ export default function FlashcardDisplay({
           className={`flip-card-inner ${isFlipped ? 'flipped' : ''} cursor-pointer`}
         >
           {/* Front - Spanish Side */}
-          <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
+          <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100 relative">
+            {/* Badge inside card - top right corner - styled to match header */}
+            {card.isNew && (
+              <span
+                className="absolute top-3 right-4"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  fontFamily: 'Inter, sans-serif',
+                  color: '#15803d'
+                }}
+              >
+                {card.card_type === 'phrase' ? 'New Phrase' : 'New Word'}
+              </span>
+            )}
+            {card.isExposure && (
+              <span
+                className="absolute top-3 right-4"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  fontFamily: 'Inter, sans-serif',
+                  color: '#b45309'
+                }}
+              >
+                Exposure
+              </span>
+            )}
+            {/* Phrase badge - left side */}
+            {card.card_type === 'phrase' && !card.isNew && (
+              <span
+                className="absolute top-3 left-4"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  fontFamily: 'Inter, sans-serif',
+                  color: '#7c3aed'
+                }}
+              >
+                Phrase
+              </span>
+            )}
+
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <div className="mb-auto"></div>
               <div>
@@ -95,12 +162,7 @@ export default function FlashcardDisplay({
                 >
                   {displayLemma}
                 </h1>
-                <p
-                  className="text-slate-500 text-lg"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  ({displayPOS})
-                </p>
+                {/* Part of speech moved to English side */}
               </div>
               <div className="mb-auto"></div>
             </div>
@@ -109,10 +171,11 @@ export default function FlashcardDisplay({
             {card.example_sentence && (
               <div className="mt-6 pt-6 border-t border-slate-200 text-center">
                 <p
-                  className="text-slate-400 text-base leading-relaxed"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  className="text-slate-500 text-lg leading-relaxed italic"
+                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
                 >
-                  {highlightWordInSentence(card.example_sentence, displayLemma)}
+                  {/* Use word_in_sentence (conjugated form) if available, otherwise fall back to lemma */}
+                  {highlightWordInSentence(card.example_sentence, card.word_in_sentence || displayLemma)}
                 </p>
               </div>
             )}
@@ -129,6 +192,18 @@ export default function FlashcardDisplay({
                 >
                   {displayTranslation}
                 </h1>
+                {/* Part of speech - formatted as full word */}
+                {displayPOS && (
+                  <p style={{
+                    color: '#94a3b8',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    fontFamily: 'Inter, sans-serif',
+                    marginTop: '4px'
+                  }}>
+                    {displayPOS}
+                  </p>
+                )}
               </div>
               <div className="mb-auto"></div>
             </div>
@@ -137,9 +212,10 @@ export default function FlashcardDisplay({
             {card.example_sentence_translation && (
               <div className="mt-6 pt-6 border-t border-slate-200 text-center">
                 <p
-                  className="text-slate-400 text-base leading-relaxed italic"
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  className="text-slate-500 text-lg leading-relaxed italic"
+                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
                 >
+                  {/* No bolding for English - translations aren't always literal word matches */}
                   {card.example_sentence_translation}
                 </p>
               </div>

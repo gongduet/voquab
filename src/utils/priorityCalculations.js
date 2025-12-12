@@ -1,9 +1,16 @@
 import { calculateCurrentHealth } from './healthCalculations'
 
 /**
+ * @deprecated This file is deprecated as of December 2025.
+ * FSRS algorithm now handles card scheduling via fsrsService.js and sessionBuilder.js.
+ * Kept for backward compatibility - will be removed in future release.
+ */
+
+/**
  * Calculate priority score for a word
  * Higher score = more likely to be selected for review
  *
+ * @deprecated Use isCardDue() from fsrsService.js instead
  * @param {Object} word - Word with progress data and vocabulary metadata
  * @param {Object} options - { chapterFocus: boolean, focusChapterId: uuid }
  * @returns {Object} - { totalScore, breakdown, currentHealth, status }

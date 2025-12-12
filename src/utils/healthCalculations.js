@@ -1,6 +1,14 @@
 /**
+ * @deprecated This file is deprecated as of December 2025.
+ * FSRS algorithm now handles retrievability calculation via fsrsService.js.
+ * Kept for backward compatibility - will be removed in future release.
+ * Use calculateRetrievability() from fsrsService.js instead.
+ */
+
+/**
  * Health decay rates by mastery level (points per day)
  * Higher mastery = slower decay = less frequent reviews needed
+ * @deprecated Use FSRS stability instead
  */
 export const HEALTH_DECAY_RATES = {
   0: 25,   // Level 0 (0-9 mastery): Decays 25 points/day = critical in 4 days

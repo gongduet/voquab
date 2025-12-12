@@ -9,15 +9,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **FSRS Algorithm Implementation** - Replaced custom mastery/health system with research-backed spaced repetition
+- New FSRS database columns: `stability`, `difficulty`, `due_date`, `fsrs_state`, `reps`, `lapses`, `last_seen_at`
+- New `fsrsService.js` - Core FSRS algorithm wrapper using ts-fsrs library
+- New `sessionBuilder.js` - Session builder with 3 modes: Review, Learn, Chapter Focus
+- Mode selector UI in Flashcards page (Review Due / Learn New buttons)
+- Exposure badge for stable cards being checked
+- New word badge for freshly introduced words
+- Migration script `scripts/migration/migrate-to-fsrs.js` for existing user data
+- Database function `get_chapter_progress(user_id)` for chapter unlocking logic
 - New 2-table vocabulary architecture: `lemmas` and `words` tables
 - New `user_lemma_progress` table for tracking mastery per lemma
 - New `user_word_encounters` table for tracking form exposure
 - Database indexes for vocabulary queries
 
 ### Changed
+- **Flashcard scheduling now uses FSRS** instead of custom mastery/health decay
+- `useProgressTracking.js` - Updated to use FSRS scheduling with backward compatibility
+- `Flashcards.jsx` - Integrated session builder, added mode selector
+- Three-button UI: "Again" (forgot), "Hard", "Got It" (easy)
+- Chapter unlocking: 95% words introduced threshold
+- Exposure insurance: Stable cards (>30 days) shown occasionally to prevent forgetting
 - Migrated from 4-table system (vocabulary, vocabulary_forms, vocabulary_lemmas, vocabulary_occurrences) to simplified 2-table system (lemmas, words)
 - User progress now tracks mastery per lemma instead of per word form
 - Multiple verb conjugations (e.g., tenía, tuve, tienen) now consolidate to single lemma (tener)
+
+### Deprecated
+- `mastery_level` column - Kept for backward compatibility, computed from FSRS stability
+- `health` column - Kept for backward compatibility, computed from FSRS retrievability
+- `priorityCalculations.js` - No longer used, replaced by FSRS due date sorting
+- `healthCalculations.js` - No longer used, replaced by FSRS retrievability
+- `timeGateCalculations.js` - No longer used, FSRS handles intervals
 
 ### Migration Details (2025-12-04)
 

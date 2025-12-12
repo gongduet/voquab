@@ -1,6 +1,14 @@
 /**
+ * @deprecated This file is deprecated as of December 2025.
+ * FSRS algorithm now handles review intervals via fsrsService.js.
+ * Kept for backward compatibility - will be removed in future release.
+ * FSRS uses due_date field instead of time gates.
+ */
+
+/**
  * Time gate requirements for each mastery level (in hours)
  * These enforce spaced repetition - higher levels = longer waits
+ * @deprecated Use FSRS due_date instead
  */
 export const TIME_GATES = {
   0: 0,        // Level 0 (0-9 mastery): No gate (new word)

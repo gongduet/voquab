@@ -1,82 +1,148 @@
+/**
+ * Progress Tracking Hook - FSRS Implementation
+ *
+ * Handles updating user progress when reviewing flashcards.
+ * Uses FSRS algorithm for scheduling instead of custom mastery/health system.
+ */
+
 import { supabase } from '../../lib/supabase'
-import { getHealthBoost, applyHealthBoost } from '../../utils/healthCalculations'
-import { calculateMasteryChange } from '../../utils/timeGateCalculations'
+import {
+  scheduleCard,
+  markCardAsSeen,
+  stabilityToMastery,
+  calculateRetrievability,
+  getStateName
+} from '../../services/fsrsService'
 
 export default function useProgressTracking(userId) {
 
-  async function updateProgress(card, difficulty) {
+  /**
+   * Update progress for a card after user response
+   * Supports both lemmas and phrases
+   *
+   * @param {Object} card - Card that was reviewed
+   * @param {string} difficulty - 'again' | 'hard' | 'got-it' (or legacy 'dont-know' | 'easy')
+   * @param {boolean} isExposure - If true, only update last_seen_at (exposure card)
+   * @returns {Object} - { success, newStability, newDifficulty, dueDate, ... }
+   */
+  async function updateProgress(card, difficulty, isExposure = false) {
     if (!userId || !card) return { success: false }
 
     try {
-      // Step 1: Calculate health boost
-      // FIX: current_health might be an object with .health property, or a number, or undefined
-      let currentHealthValue = 0
-      if (typeof card.current_health === 'object' && card.current_health !== null) {
-        currentHealthValue = card.current_health.health || 0
-      } else if (typeof card.current_health === 'number') {
-        currentHealthValue = card.current_health
-      } else if (typeof card.health === 'number') {
-        currentHealthValue = card.health
-      }
+      // Determine if this is a phrase or lemma card
+      const isPhrase = card.card_type === 'phrase'
+      const tableName = isPhrase ? 'user_phrase_progress' : 'user_lemma_progress'
+      const idField = isPhrase ? 'phrase_id' : 'lemma_id'
+      const cardId = isPhrase ? card.phrase_id : (card.lemma_id || card.vocab_id)
 
-      const healthBoost = getHealthBoost(difficulty)
-      const newHealth = applyHealthBoost(currentHealthValue, healthBoost)
+      // Handle exposure cards differently - only update last_seen_at
+      if (isExposure || card.isExposure) {
+        const exposureUpdate = markCardAsSeen(card)
 
-      console.log('🏥 Health calculation:', {
-        currentHealthValue,
-        healthBoost,
-        newHealth,
-        cardCurrentHealth: card.current_health,
-        cardHealth: card.health
-      })
+        const { error } = await supabase
+          .from(tableName)
+          .upsert({
+            user_id: userId,
+            [idField]: cardId,
+            last_seen_at: exposureUpdate.last_seen_at
+          }, {
+            onConflict: `user_id,${idField}`
+          })
 
-      // Step 2: Calculate mastery change with time gate enforcement
-      const masteryResult = calculateMasteryChange(card, difficulty)
-      const newMastery = masteryResult.newMastery
-      const timeGateMessage = masteryResult.timeGateInfo.message
+        if (error) throw error
 
-      // Step 3: Update vocabulary progress
-      const progressUpdate = {
-        health: newHealth,
-        mastery_level: newMastery,
-        total_reviews: (card.total_reviews || 0) + 1,
-        last_reviewed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        console.log('👁️ Exposure card seen:', {
+          lemma: card.lemma,
+          card_type: isPhrase ? 'phrase' : 'lemma',
+          last_seen_at: exposureUpdate.last_seen_at
+        })
 
-      // Update correct reviews and last_correct_review_at for non-"don't know"
-      if (difficulty !== 'dont-know') {
-        progressUpdate.correct_reviews = (card.correct_reviews || 0) + 1
-        // FIX: Use masteryResult.timeGateInfo.canGainMastery instead of undefined canGainMastery
-        if (masteryResult.timeGateInfo.canGainMastery) {
-          progressUpdate.last_correct_review_at = new Date().toISOString()
+        // Still update daily stats for exposure reviews
+        await updateDailyStats(userId)
+
+        return {
+          success: true,
+          isExposure: true,
+          message: 'Exposure check complete'
         }
       }
 
+      // Regular review - use FSRS scheduling
+      const scheduledCard = scheduleCard(card, difficulty)
+
+      console.log('📊 FSRS scheduling:', {
+        lemma: card.lemma,
+        card_type: isPhrase ? 'phrase' : 'lemma',
+        difficulty,
+        oldStability: card.stability,
+        newStability: scheduledCard.stability,
+        oldDifficulty: card.difficulty,
+        newDifficulty: scheduledCard.difficulty,
+        dueDate: scheduledCard.due_date,
+        state: getStateName(scheduledCard.fsrs_state),
+        reps: scheduledCard.reps,
+        lapses: scheduledCard.lapses
+      })
+
+      // Build progress update with FSRS fields
+      const progressUpdate = {
+        // FSRS fields (new)
+        stability: scheduledCard.stability,
+        difficulty: scheduledCard.difficulty,
+        due_date: scheduledCard.due_date,
+        fsrs_state: scheduledCard.fsrs_state,
+        reps: scheduledCard.reps,
+        lapses: scheduledCard.lapses,
+        last_seen_at: scheduledCard.last_seen_at,
+
+        // Legacy fields (kept for backward compatibility during migration)
+        mastery_level: stabilityToMastery(scheduledCard.stability),
+        health: calculateRetrievability(scheduledCard),
+        total_reviews: scheduledCard.total_reviews,
+        last_reviewed_at: scheduledCard.last_reviewed_at,
+        updated_at: new Date().toISOString()
+      }
+
+      // Update correct_reviews for non-"again" responses
+      if (difficulty !== 'again' && difficulty !== 'dont-know') {
+        progressUpdate.correct_reviews = (card.correct_reviews || 0) + 1
+        progressUpdate.last_correct_review_at = new Date().toISOString()
+      }
+
+      // Upsert to database
       const { error: progressError } = await supabase
-        .from('user_lemma_progress')
+        .from(tableName)
         .upsert({
           user_id: userId,
-          lemma_id: card.lemma_id || card.vocab_id,  // Support both new and legacy
+          [idField]: cardId,
           ...progressUpdate
         }, {
-          onConflict: 'user_id,lemma_id'
+          onConflict: `user_id,${idField}`
         })
 
       if (progressError) throw progressError
 
-      // Step 4: Update daily stats
+      // Update daily stats
       await updateDailyStats(userId)
 
-      // Step 5: Update chapter progress
-      await updateChapterProgress(userId, card)
+      // Calculate human-readable info for UI
+      const dueInfo = formatDueDate(scheduledCard.due_date)
 
       return {
         success: true,
-        newHealth,
-        newMastery,
-        masteryChange: masteryResult.masteryChange,
-        timeGateMessage
+        // FSRS results
+        newStability: scheduledCard.stability,
+        newDifficulty: scheduledCard.difficulty,
+        dueDate: scheduledCard.due_date,
+        dueFormatted: dueInfo,
+        fsrsState: getStateName(scheduledCard.fsrs_state),
+        reps: scheduledCard.reps,
+        lapses: scheduledCard.lapses,
+        // Legacy compatibility
+        newMastery: progressUpdate.mastery_level,
+        newHealth: progressUpdate.health,
+        // No time gate in FSRS - always can progress
+        timeGateMessage: null
       }
 
     } catch (error) {
@@ -85,6 +151,9 @@ export default function useProgressTracking(userId) {
     }
   }
 
+  /**
+   * Update daily stats
+   */
   async function updateDailyStats(userId) {
     const today = new Date().toISOString().split('T')[0]
 
@@ -102,7 +171,7 @@ export default function useProgressTracking(userId) {
       }
 
       if (existingStats) {
-        // Update existing - REMOVE updated_at (column doesn't exist)
+        // Update existing
         const { error: updateError } = await supabase
           .from('user_daily_stats')
           .update({
@@ -113,11 +182,6 @@ export default function useProgressTracking(userId) {
 
         if (updateError) {
           console.error('Daily stats update error:', updateError)
-        } else {
-          console.log('Daily stats updated:', {
-            date: today,
-            words_reviewed: (existingStats.words_reviewed || 0) + 1
-          })
         }
       } else {
         // Insert new
@@ -126,18 +190,16 @@ export default function useProgressTracking(userId) {
           .insert({
             user_id: userId,
             review_date: today,
-            words_reviewed: 1,  // Changed from total_reviews
+            words_reviewed: 1,
             current_streak: 1
           })
 
         if (insertError) {
           console.error('Daily stats insert error:', insertError)
-        } else {
-          console.log('Daily stats created:', { date: today })
         }
       }
 
-      // Update streak logic (simplified - can be enhanced)
+      // Update streak logic
       await updateStreak(userId, today)
 
     } catch (error) {
@@ -145,8 +207,10 @@ export default function useProgressTracking(userId) {
     }
   }
 
+  /**
+   * Update streak calculation
+   */
   async function updateStreak(userId, today) {
-    // Get last 2 days of stats
     const { data: recentStats } = await supabase
       .from('user_daily_stats')
       .select('review_date')
@@ -156,16 +220,13 @@ export default function useProgressTracking(userId) {
 
     if (!recentStats || recentStats.length === 0) return
 
-    // Simple streak calculation
     const dates = recentStats.map(s => s.review_date)
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
 
     const hasYesterday = dates.includes(yesterday)
     const hasToday = dates.includes(today)
 
-    if (hasToday && hasYesterday) {
-      // Continuing streak - increment handled elsewhere
-    } else if (hasToday && !hasYesterday) {
+    if (hasToday && !hasYesterday) {
       // New streak started
       await supabase
         .from('user_daily_stats')
@@ -175,21 +236,34 @@ export default function useProgressTracking(userId) {
     }
   }
 
-  async function updateChapterProgress(userId, card) {
-    // This is simplified - full logic in original Flashcards.jsx
-    // Updates chapter unlock progress after each review
-    try {
-      // Get chapter info from card
-      // Calculate new progress
-      // Update user_chapter_progress table
-
-      // For now, placeholder - can be enhanced with full unlock logic
-    } catch (error) {
-      console.error('Error updating chapter progress:', error)
-    }
-  }
-
   return {
     updateProgress
   }
+}
+
+/**
+ * Format due date for display
+ *
+ * @param {string} dueDate - ISO date string
+ * @returns {string} - Human readable format
+ */
+function formatDueDate(dueDate) {
+  if (!dueDate) return 'Now'
+
+  const due = new Date(dueDate)
+  const now = new Date()
+  const diffMs = due - now
+
+  if (diffMs <= 0) return 'Now'
+
+  const diffMin = diffMs / (1000 * 60)
+  const diffHours = diffMs / (1000 * 60 * 60)
+  const diffDays = diffMs / (1000 * 60 * 60 * 24)
+
+  if (diffMin < 60) return `${Math.round(diffMin)} min`
+  if (diffHours < 24) return `${Math.round(diffHours)} hr`
+  if (diffDays < 7) return `${Math.round(diffDays)} days`
+  if (diffDays < 30) return `${Math.round(diffDays / 7)} weeks`
+
+  return `${Math.round(diffDays / 30)} months`
 }

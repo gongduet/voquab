@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 4, 2025
+**Last Updated:** December 12, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -394,15 +394,19 @@ CREATE TABLE validation_reports (
   is_valid BOOLEAN NOT NULL DEFAULT TRUE,
   confidence DECIMAL(5,2), -- AI confidence score 0-100
   issues JSONB DEFAULT '[]'::jsonb, -- Array of issue objects
-  suggested_fixes JSONB DEFAULT '[]'::jsonb, -- Suggested corrections
-  validated_at TIMESTAMPTZ DEFAULT NOW(),
-  validated_by TEXT DEFAULT 'ai', -- 'ai' or 'manual'
+  suggested_fixes JSONB DEFAULT '{}'::jsonb, -- Suggested corrections (object)
+  has_multiple_meanings BOOLEAN DEFAULT FALSE, -- Flag for polysemous words
+  alternative_meanings JSONB DEFAULT '[]'::jsonb, -- Additional meanings not in primary definition
+  validated_at TIMESTAMPTZ, -- When validation was performed
+  reviewed_by_human BOOLEAN DEFAULT FALSE, -- Manual review flag
+  created_at TIMESTAMPTZ DEFAULT NOW(),
 
   UNIQUE(lemma_id)
 );
 
 COMMENT ON TABLE validation_reports IS 'AI-generated validation results for lemma quality assurance';
 COMMENT ON COLUMN validation_reports.issues IS 'Array of issues: [{type, description, severity}]';
+COMMENT ON COLUMN validation_reports.has_multiple_meanings IS 'True if word has multiple distinct meanings beyond primary definition';
 ```
 
 **Purpose:** Track quality issues found during AI validation of lemmas.
@@ -422,15 +426,16 @@ COMMENT ON COLUMN validation_reports.issues IS 'Array of issues: [{type, descrip
       "severity": "high"
     }
   ],
-  "suggested_fixes": [
-    {
-      "action": "merge",
-      "target_lemma": "comprar",
-      "reason": "conjugated form should be merged to infinitive"
-    }
-  ],
+  "suggested_fixes": {
+    "action": "merge",
+    "target_lemma": "comprar",
+    "reason": "conjugated form should be merged to infinitive"
+  },
+  "has_multiple_meanings": false,
+  "alternative_meanings": [],
   "validated_at": "2025-12-06T10:30:00Z",
-  "validated_by": "ai"
+  "reviewed_by_human": false,
+  "created_at": "2025-12-06T18:14:35.083Z"
 }
 ```
 
@@ -1003,6 +1008,7 @@ WHERE ucp.user_id = :user_id AND ucp.chapter_id = :chapter_id;
 
 - 2025-11-30: Initial draft (Claude)
 - 2025-12-06: Added validation_reports table for AI quality assurance (Claude)
+- 2025-12-12: Updated validation_reports schema to match actual columns (has_multiple_meanings, alternative_meanings, reviewed_by_human) (Claude)
 - Status: Active
 
 ---

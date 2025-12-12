@@ -115,19 +115,17 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
   }
 
   function requeueCard() {
-    // Add current card back to queue (3-7 cards later)
+    // Move current card to end of queue
     const currentCard = cardQueue[currentIndex]
-    const requeuePosition = Math.min(
-      currentIndex + Math.floor(Math.random() * 5) + 3, // 3-7 cards later
-      cardQueue.length
-    )
 
     const newQueue = [...cardQueue]
-    newQueue.splice(requeuePosition, 0, currentCard)
+    newQueue.splice(currentIndex, 1)  // Remove from current position
+    newQueue.push(currentCard)  // Add to end of queue
 
     setCardQueue(newQueue)
     setIsFlipped(false)
-    setCurrentIndex(currentIndex + 1)
+    // DON'T increment currentIndex - next card slides into current position
+    // Progress counter stays the same (e.g., stays at 2/15)
   }
 
   function advanceToNextCard() {

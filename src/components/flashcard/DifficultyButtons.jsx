@@ -2,8 +2,7 @@ import { RotateCcw, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function DifficultyButtons({
   onDifficulty,
-  disabled = false,
-  timeGateMessage = null
+  disabled = false
 }) {
   return (
     <div className="max-w-2xl mx-auto mt-6">
@@ -23,23 +22,11 @@ export default function DifficultyButtons({
         }
       `}</style>
 
-      {/* Time gate message */}
-      {timeGateMessage && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <div className="text-sm text-yellow-800" style={{ fontFamily: 'Inter, sans-serif' }}>
-            ⏰ {timeGateMessage}
-          </div>
-          <div className="text-xs text-yellow-600 mt-1" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Health will still improve, but mastery points require more time.
-          </div>
-        </div>
-      )}
-
       {/* Icon Buttons - 3 buttons with muted earthy colors */}
       <div className="grid grid-cols-3 gap-8 px-2">
         {/* Again Button */}
         <button
-          onClick={(e) => { e.stopPropagation(); onDifficulty('again'); }}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('again', e); }}
           disabled={disabled}
           className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
           style={{ fontFamily: 'Inter, sans-serif' }}
@@ -60,7 +47,7 @@ export default function DifficultyButtons({
 
         {/* Hard Button */}
         <button
-          onClick={(e) => { e.stopPropagation(); onDifficulty('hard'); }}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('hard', e); }}
           disabled={disabled}
           className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
           style={{ fontFamily: 'Inter, sans-serif' }}
@@ -81,7 +68,7 @@ export default function DifficultyButtons({
 
         {/* Got It Button */}
         <button
-          onClick={(e) => { e.stopPropagation(); onDifficulty('got-it'); }}
+          onClick={(e) => { e.stopPropagation(); onDifficulty('got-it', e); }}
           disabled={disabled}
           className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
           style={{ fontFamily: 'Inter, sans-serif' }}

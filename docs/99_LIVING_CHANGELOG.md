@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
-**Document Type:** LIVING DOCUMENT (Updated Continuously)  
-**Last Updated:** December 4, 2025  
+**Document Type:** LIVING DOCUMENT (Updated Continuously)
+**Last Updated:** December 12, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -35,6 +35,52 @@ Working on database redesign and comprehensive documentation before MVP launch.
 #### In Progress
 - Component library build-out
 - Comprehensive chapter-by-chapter quality review
+
+---
+
+## [2025-12-12] - Database Schema Audit & Cleanup
+
+### Schema Audit Complete
+
+**Comprehensive audit of Supabase database comparing documentation vs actual state.**
+
+**Audit Findings:**
+- All 16 active tables verified and documented
+- 4 deprecated tables identified from old vocabulary architecture
+- All foreign key relationships verified (0 orphan records)
+- `validation_reports` schema updated in docs to match actual columns
+
+### Deprecated Tables Archived
+
+**Old vocabulary tables renamed (data preserved for rollback if needed):**
+
+| Old Name | New Name | Rows |
+|----------|----------|------|
+| `vocabulary` | `vocabulary_deprecated_20251212` | 1,526 |
+| `vocabulary_forms` | `vocabulary_forms_deprecated_20251212` | 1,526 |
+| `vocabulary_lemmas` | `vocabulary_lemmas_deprecated_20251212` | 1,171 |
+
+**Empty table deleted:**
+- `vocabulary_occurrences` (0 rows) - dropped
+
+### Documentation Updated
+
+- **02_DATABASE_SCHEMA.md:** Updated `validation_reports` schema to match actual columns:
+  - Added `has_multiple_meanings` (BOOLEAN)
+  - Added `alternative_meanings` (JSONB)
+  - Added `reviewed_by_human` (BOOLEAN)
+  - Changed `suggested_fixes` from array to object
+  - Added `created_at` timestamp
+
+### Code Verification
+
+- Confirmed no active code in `src/` references deprecated tables
+- Only backup files (`Flashcards.jsx.backup`) and migration scripts reference old tables
+- App verified working after schema cleanup
+
+### Migration SQL
+
+SQL script created at `scripts/migration/archive_deprecated_tables.sql` for archiving.
 
 ---
 
