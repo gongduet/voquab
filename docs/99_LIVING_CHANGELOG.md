@@ -31,6 +31,94 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## [2025-12-13] - Dashboard Overhaul & Phrase Integration
+
+### Summary
+
+Major dashboard rebuild with complete phrase integration into the learning system. Fixed critical data bugs, implemented new UI components, and established consistent patterns for lemma+phrase handling throughout the app.
+
+### Critical Fixes
+
+**Database Query Fixes**
+- Replaced non-existent `introduced` column references with `reps >= 1` throughout codebase
+- Fixed chapter progress to include phrases in both total and user progress counts
+- Fixed chapter progress to exclude stop words from totals (was showing 175, now correctly shows 161 for Chapter 1)
+- Chapter unlock now triggers correctly when previous chapter reaches 95%
+
+**Phrase Progress Tracking**
+- Phrase reviews now save correctly to `user_phrase_progress` table
+- FSRS scheduling works for phrases (stability, difficulty, due_date)
+- FloatingFeedback "+X days" animation shows for phrase reviews
+
+**Session Building**
+- Learn New sessions now include proportional mix of lemmas and phrases
+- No more 20% threshold gate - phrases available as soon as chapter unlocks
+- Review sessions combine due lemmas and due phrases, sorted by due_date
+
+### New Dashboard Components
+
+**ActivityHeatmap (Rewritten)**
+- Fixed timezone issue (was showing Friday as Saturday)
+- Colors scale based on user's `daily_goal_words` from `user_settings`
+- Future dates shown with muted styling and dashed borders
+- Added "X / 28 days" practiced stat
+- Today cell has prominent ring + shadow highlight
+- Uses local time consistently
+
+**ReviewForecast (Rewritten)**
+- Fixed bar rendering (was showing only numbers, no bars)
+- Bars use pixel-based heights for reliable rendering
+- Removed duplicate "Review X cards" button (use top Review button instead)
+- Compact layout with no wasted whitespace
+- Uses local time for day boundaries
+
+**ChapterCarousel**
+- Now shows combined lemma + phrase counts (e.g., "161/161" not "141/175")
+- Chapter 1 correctly shows 100% when all lemmas and phrases reviewed
+- Chapter 2 unlocks when Chapter 1 reaches 95%
+
+### Files Modified
+
+**Core Logic**
+- `src/services/sessionBuilder.js` - Proportional phrase/lemma selection, `reps >= 1` fix
+- `src/hooks/flashcard/useProgressTracking.js` - Phrase progress saving
+
+**Dashboard**
+- `src/pages/Dashboard.jsx` - All data fetching functions updated for phrases
+- `src/components/dashboard/ActivityHeatmap.jsx` - Complete rewrite
+- `src/components/dashboard/ReviewForecast.jsx` - Complete rewrite
+- `src/components/dashboard/ChapterCarousel.jsx` - Updated to receive phrase-inclusive data
+
+**Functions Updated in Dashboard.jsx**
+- `fetchHeroStats()` - Includes phrase counts
+- `fetchQuickActionStats()` - Includes phrase due counts
+- `fetchChaptersProgress()` - Calculates lemma + phrase totals, excludes stop words
+- `fetchActivityData()` - Queries both progress tables
+- `fetchForecastData()` - Uses local time, includes phrases
+- `fetchCategoryData()` - Includes phrase category
+- `getUnlockedChapterNumbers()` - Uses `reps >= 1`, includes phrases in calculation
+- `fetchUserSettings()` - New function for daily target
+
+### Database Schema Notes
+
+**No `introduced` column exists** in `user_lemma_progress` or `user_phrase_progress`.
+Use `reps >= 1` as proxy for "card has been introduced/reviewed at least once".
+
+**Key columns for progress tracking:**
+- `reps` - Number of reviews (>= 1 means introduced)
+- `stability` - FSRS stability value
+- `due_date` - Next scheduled review
+- `last_seen_at` - Timestamp of last review
+
+### Lessons Learned
+
+1. Always verify database schema before writing queries - the `introduced` column bug caused cascading failures
+2. Use local time for user-facing date displays, UTC for database queries
+3. Pixel-based heights more reliable than percentages in flex containers
+4. When combining data from two tables (lemmas + phrases), update ALL related queries consistently
+
+---
+
 ## [2025-12-13] - FSRS Algorithm Implementation & Phrases Integration
 
 ### 🚀 Major Features

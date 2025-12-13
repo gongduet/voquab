@@ -17,6 +17,28 @@ import {
 export default function useProgressTracking(userId) {
 
   /**
+   * Log a review event to user_review_history for activity tracking
+   */
+  async function logReviewEvent(card, difficulty) {
+    const reviewData = {
+      user_id: userId,
+      reviewed_at: new Date().toISOString(),
+      difficulty: difficulty,
+      // Set the appropriate ID based on card type
+      lemma_id: card.card_type === 'lemma' ? card.lemma_id : null,
+      phrase_id: card.card_type === 'phrase' ? card.phrase_id : null
+    }
+
+    const { error } = await supabase
+      .from('user_review_history')
+      .insert(reviewData)
+
+    if (error) {
+      console.error('❌ Failed to log review event:', error)
+    }
+  }
+
+  /**
    * Update progress for a card after user response
    * Supports both lemmas and phrases
    *
@@ -177,6 +199,9 @@ export default function useProgressTracking(userId) {
 
       // Update daily stats
       await updateDailyStats(userId)
+
+      // Log review event for activity tracking
+      await logReviewEvent(card, difficulty)
 
       // Calculate human-readable info for UI
       const dueInfo = formatDueDate(scheduledCard.due_date)

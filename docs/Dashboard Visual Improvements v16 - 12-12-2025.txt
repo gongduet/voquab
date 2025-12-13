@@ -1,0 +1,51 @@
+Claude Code Prompt: Fix Supabase Row Limit Issue (v16)
+Task: Fix the bulk queries in fetchChaptersProgress to fetch all rows, not just the default 1000.
+Problem: Supabase returns maximum 1000 rows by default. Our bulk queries need:
+
+~7,000 words
+~1,200 phrase occurrences
+~850 sentences
+
+Solution: Add .range(0, 50000) to each bulk query to ensure all rows are fetched.
+In src/pages/Dashboard.jsx, update the bulk queries in fetchChaptersProgress:
+BULK QUERY 2 (around line 392):
+javascript// BULK QUERY 2: Get all sentences (to map chapter_id -> sentence_ids)
+const { data: allSentences } = await supabase
+  .from('sentences')
+  .select('sentence_id, chapter_id')
+  .range(0, 50000)
+BULK QUERY 3 (around line 406):
+javascript// BULK QUERY 3: Get all words with lemma info (excluding stop words)
+const { data: allWords } = await supabase
+  .from('words')
+  .select('lemma_id, sentence_id, lemmas!inner(is_stop_word)')
+  .eq('lemmas.is_stop_word', false)
+  .range(0, 50000)
+BULK QUERY 4 (around line 421):
+javascript// BULK QUERY 4: Get all phrase occurrences
+const { data: allPhraseOccurrences } = await supabase
+  .from('phrase_occurrences')
+  .select('phrase_id, sentence_id')
+  .range(0, 50000)
+Also add debug logging after the bulk queries to verify counts (temporary):
+javascriptconsole.log('🔢 Bulk query counts:', {
+  sentences: allSentences?.length,
+  words: allWords?.length,
+  phraseOccurrences: allPhraseOccurrences?.length,
+  userLemmas: userLemmaProgress?.length,
+  userPhrases: userPhraseProgress?.length
+})
+```
+
+### Expected Results After Fix
+
+Console should show:
+```
+🔢 Bulk query counts: { sentences: ~850, words: ~7025, phraseOccurrences: ~1211, userLemmas: 155, userPhrases: 23 }
+And chapter totals should match:
+
+Chapter 1: 161/161 (not 160/160)
+Chapter 2: 246 total (not 245)
+
+
+This is the root cause. The 1000-row limit was silently dropping data.

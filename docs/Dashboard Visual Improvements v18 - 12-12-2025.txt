@@ -1,0 +1,258 @@
+Agreed. Let me think through the optimal schema design:
+
+Schema Analysis
+Current user_review_history:
+
+vocab_id - old word-based ID (orphaned, no longer relevant)
+No foreign keys to current lemma/phrase system
+Good structure otherwise (timestamp, user, difficulty)
+
+Best Design: Separate FK columns with constraint
+sqllemma_id UUID REFERENCES lemmas(lemma_id)  -- NULL if phrase review
+phrase_id UUID REFERENCES phrases(phrase_id) -- NULL if lemma review
+Why this is best:
+
+Referential integrity - Database enforces valid IDs
+Self-documenting - No ambiguity about what the ID represents
+No card_type column needed - Type is implicit (whichever column is populated)
+Efficient indexing - Can create partial indexes for each type
+Clean JOINs - Easy to join with lemmas or phrases table
+Future-proof - Can add more card types with additional FK columns
+
+
+Claude Code Prompt: Fix Activity Tracking with Review History (v18)
+Task: Update user_review_history table schema and integrate it with the review flow to enable accurate activity tracking.
+
+Part 1: Database Migration
+Create a new migration file or run these SQL commands directly in Supabase:
+sql-- 1. Add new columns with foreign keys
+ALTER TABLE user_review_history 
+  ADD COLUMN IF NOT EXISTS lemma_id UUID REFERENCES lemmas(lemma_id),
+  ADD COLUMN IF NOT EXISTS phrase_id UUID REFERENCES phrases(phrase_id);
+
+-- 2. Add check constraint: exactly one of lemma_id/phrase_id must be set (for new records)
+-- Allow legacy records where both are null but vocab_id exists
+ALTER TABLE user_review_history 
+  DROP CONSTRAINT IF EXISTS chk_review_item;
+
+ALTER TABLE user_review_history 
+  ADD CONSTRAINT chk_review_item CHECK (
+    (lemma_id IS NOT NULL AND phrase_id IS NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NOT NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NULL AND vocab_id IS NOT NULL)
+  );
+
+-- 3. Create indexes for efficient activity queries
+CREATE INDEX IF NOT EXISTS idx_review_history_user_lemma_date 
+  ON user_review_history(user_id, reviewed_at DESC, lemma_id) 
+  WHERE lemma_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_review_history_user_phrase_date 
+  ON user_review_history(user_id, reviewed_at DESC, phrase_id) 
+  WHERE phrase_id IS NOT NULL;
+
+-- 4. Add RLS policy if not exists (for security)
+ALTER TABLE user_review_history ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can insert own review history" ON user_review_history;
+CREATE POLICY "Users can insert own review history" ON user_review_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can view own review history" ON user_review_history;
+CREATE POLICY "Users can view own review history" ON user_review_history
+  FOR SELECT USING (auth.uid() = user_id);
+
+Part 2: Update useProgressTracking.js
+In src/hooks/flashcard/useProgressTracking.js, add a function to log reviews and call it from updateProgress:
+Add this helper function:
+javascript/**
+ * Log a review event to user_review_history for activity tracking
+ */
+async function logReviewEvent(userId, card, difficulty) {
+  const reviewData = {
+    user_id: userId,
+    reviewed_at: new Date().toISOString(),
+    difficulty: difficulty,
+    // Set the appropriate ID based on card type
+    lemma_id: card.card_type === 'lemma' ? card.lemma_id : null,
+    phrase_id: card.card_type === 'phrase' ? card.phrase_id : null
+  }
+
+  const { error } = await supabase
+    .from('user_review_history')
+    .insert(reviewData)
+
+  if (error) {
+    console.error('❌ Failed to log review event:', error)
+  }
+}
+Then call it from the updateProgress function:
+Find where updateProgress is called successfully (after FSRS update succeeds) and add:
+javascript// Log review event for activity tracking
+await logReviewEvent(userId, card, difficulty)
+Make sure to call this for BOTH lemma and phrase reviews.
+
+Part 3: Update fetchActivityData in Dashboard.jsx
+Replace the current fetchActivityData function in src/pages/Dashboard.jsx with this version that queries user_review_history:
+javascript/**
+ * Fetch activity data for heatmap - uses user_review_history for accurate counts
+ * Counts UNIQUE cards reviewed per day (not total reviews)
+ */
+async function fetchActivityData(userId) {
+  // Get reviews from last 35 days
+  const thirtyFiveDaysAgo = new Date()
+  thirtyFiveDaysAgo.setDate(thirtyFiveDaysAgo.getDate() - 35)
+
+  const { data: reviews, error } = await supabase
+    .from('user_review_history')
+    .select('reviewed_at, lemma_id, phrase_id')
+    .eq('user_id', userId)
+    .gte('reviewed_at', thirtyFiveDaysAgo.toISOString())
+    .order('reviewed_at', { ascending: false })
+
+  if (error) {
+    console.error('❌ [fetchActivityData] query failed:', error)
+    return { data: [], currentStreak: 0, bestStreak: 0 }
+  }
+
+  // Group by date and count UNIQUE lemmas + phrases per day
+  const activityByDate = {}
+  
+  for (const review of reviews || []) {
+    // Convert to local date string
+    const reviewDate = new Date(review.reviewed_at)
+    const dateStr = formatLocalDate(reviewDate)
+    
+    if (!activityByDate[dateStr]) {
+      activityByDate[dateStr] = {
+        lemmas: new Set(),
+        phrases: new Set()
+      }
+    }
+    
+    // Add to appropriate set (Sets automatically dedupe)
+    if (review.lemma_id) {
+      activityByDate[dateStr].lemmas.add(review.lemma_id)
+    }
+    if (review.phrase_id) {
+      activityByDate[dateStr].phrases.add(review.phrase_id)
+    }
+  }
+
+  // Convert to array format for heatmap
+  const activityData = Object.entries(activityByDate).map(([date, sets]) => ({
+    date,
+    count: sets.lemmas.size + sets.phrases.size
+  }))
+
+  console.log('[fetchActivityData] Unique cards per day:', activityData.slice(0, 5))
+
+  // Calculate streaks
+  const { currentStreak, bestStreak } = calculateStreaks(activityByDate)
+
+  return { 
+    data: activityData, 
+    currentStreak, 
+    bestStreak 
+  }
+}
+
+/**
+ * Calculate current and best streaks from activity data
+ */
+function calculateStreaks(activityByDate) {
+  // Get sorted dates that have activity
+  const activeDates = Object.keys(activityByDate)
+    .filter(date => {
+      const sets = activityByDate[date]
+      return sets.lemmas.size + sets.phrases.size > 0
+    })
+    .sort((a, b) => new Date(b) - new Date(a)) // Most recent first
+
+  if (activeDates.length === 0) {
+    return { currentStreak: 0, bestStreak: 0 }
+  }
+
+  // Check if today or yesterday has activity (for current streak)
+  const today = formatLocalDate(new Date())
+  const yesterday = formatLocalDate(new Date(Date.now() - 86400000))
+  
+  let currentStreak = 0
+  let bestStreak = 0
+  let tempStreak = 0
+  
+  // Calculate current streak (must include today or yesterday)
+  if (activeDates.includes(today) || activeDates.includes(yesterday)) {
+    const startDate = activeDates.includes(today) ? today : yesterday
+    let checkDate = new Date(startDate)
+    
+    while (true) {
+      const dateStr = formatLocalDate(checkDate)
+      if (activityByDate[dateStr] && 
+          (activityByDate[dateStr].lemmas.size + activityByDate[dateStr].phrases.size) > 0) {
+        currentStreak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+  }
+
+  // Calculate best streak
+  for (let i = 0; i < activeDates.length; i++) {
+    const currentDate = new Date(activeDates[i])
+    
+    if (i === 0) {
+      tempStreak = 1
+    } else {
+      const prevDate = new Date(activeDates[i - 1])
+      const diffDays = Math.round((prevDate - currentDate) / 86400000)
+      
+      if (diffDays === 1) {
+        tempStreak++
+      } else {
+        tempStreak = 1
+      }
+    }
+    
+    bestStreak = Math.max(bestStreak, tempStreak)
+  }
+
+  // Current streak is also a candidate for best streak
+  bestStreak = Math.max(bestStreak, currentStreak)
+
+  return { currentStreak, bestStreak }
+}
+
+Part 4: Ensure formatLocalDate exists
+Make sure this helper function exists in Dashboard.jsx (should already be there from earlier work):
+javascriptfunction formatLocalDate(date) {
+  const d = new Date(date)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+Expected Results
+After schema migration:
+sqlSELECT column_name FROM information_schema.columns 
+WHERE table_name = 'user_review_history';
+-- Should include: lemma_id, phrase_id
+After reviewing some cards:
+sqlSELECT DATE(reviewed_at), COUNT(DISTINCT lemma_id) as lemmas, COUNT(DISTINCT phrase_id) as phrases
+FROM user_review_history
+WHERE user_id = 'xxx' AND lemma_id IS NOT NULL OR phrase_id IS NOT NULL
+GROUP BY DATE(reviewed_at)
+ORDER BY 1 DESC;
+Activity heatmap:
+
+Shows accurate count of UNIQUE cards reviewed each day
+No double-counting if same card reviewed multiple times
+Historical data preserved (reviewing today doesn't erase yesterday's count)
+
+
+Migration Note
+The old data with vocab_id will remain but won't be used. New reviews will populate lemma_id or phrase_id. The activity query only looks at records with lemma_id or phrase_id set, so the old data is effectively ignored but preserved.
+
+This gives you a clean, properly-normalized schema with referential integrity and accurate activity tracking going forward.

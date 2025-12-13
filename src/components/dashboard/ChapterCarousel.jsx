@@ -5,11 +5,17 @@ import { Lock, BookOpen, CheckCircle, ChevronDown, ChevronUp } from 'lucide-reac
 /**
  * ChapterCarousel - Collapsible chapter grid with smart defaults
  *
- * @param {Object} props
- * @param {Array} props.chapters - Array of chapter objects with progress
- * @param {boolean} props.loading - Loading state
+ * Shows 4 chapters initially: 1 back, current, 2 forward
+ * Expands to show all when "View all" is clicked
  */
-export default function ChapterCarousel({ chapters = [], loading = false }) {
+export default function ChapterCarousel({
+  chapters = [],
+  totalChapters = 0,
+  currentChapterIndex = 0,
+  allChaptersLoaded = false,
+  onLoadAllChapters,
+  loading = false
+}) {
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -37,28 +43,26 @@ export default function ChapterCarousel({ chapters = [], loading = false }) {
     )
   }
 
-  // Find current chapter (first unlocked with progress < 95%)
-  const currentChapterIndex = chapters.findIndex(ch => {
-    const progress = ch.total_lemmas > 0 ? (ch.introduced / ch.total_lemmas) : 0
-    return ch.isUnlocked && progress < 0.95
-  })
+  // Handle expand/collapse
+  const handleToggleExpand = () => {
+    if (!isExpanded && !allChaptersLoaded && onLoadAllChapters) {
+      // Load all chapters when expanding for the first time
+      onLoadAllChapters()
+    }
+    setIsExpanded(!isExpanded)
+  }
 
-  // If no current chapter found, show first unlocked or first chapter
-  const startIndex = currentChapterIndex >= 0 ? currentChapterIndex : 0
-
-  // Collapsed: show current chapter + next 3 chapters (4 total for 2x2 grid)
-  const visibleChapters = isExpanded
-    ? chapters
-    : chapters.slice(startIndex, Math.min(startIndex + 4, chapters.length))
+  // Determine which chapters to show
+  const visibleChapters = isExpanded ? chapters : chapters.slice(0, 4)
 
   return (
     <div className="px-4">
       {/* Header with expand/collapse button */}
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold text-neutral-900">Chapters</h2>
-        {chapters.length > 4 && (
+        {totalChapters > 4 && (
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={handleToggleExpand}
             className="text-primary-500 text-sm font-medium flex items-center gap-1 hover:text-primary-600 transition-colors"
           >
             {isExpanded ? (
@@ -68,7 +72,7 @@ export default function ChapterCarousel({ chapters = [], loading = false }) {
               </>
             ) : (
               <>
-                View all {chapters.length}
+                View all {totalChapters}
                 <ChevronDown className="w-4 h-4" />
               </>
             )}
@@ -78,9 +82,11 @@ export default function ChapterCarousel({ chapters = [], loading = false }) {
 
       {/* Chapter cards - 2 column grid */}
       <div className="grid grid-cols-2 gap-3">
-        {visibleChapters.map((chapter) => {
+        {visibleChapters.map((chapter, index) => {
           const progress = chapter.total_lemmas > 0 ? (chapter.introduced / chapter.total_lemmas) : 0
-          const isCurrent = chapter.isUnlocked && progress < 0.95 && chapters.indexOf(chapter) === currentChapterIndex
+          const isCurrent = index === currentChapterIndex && !isExpanded ||
+                           (isExpanded && chapter.isUnlocked && progress < 1.0 &&
+                            chapters.findIndex(c => c.isUnlocked && (c.introduced / c.total_lemmas) < 1.0) === index)
           const isCompleted = chapter.isUnlocked && progress >= 0.95
 
           return (
@@ -163,7 +169,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
           <h3 className={`text-sm font-bold truncate ${
             isUnlocked || isNextToUnlock ? 'text-neutral-900' : 'text-neutral-400'
           }`}>
-            {title || `Chapter ${chapter_number}`}
+            {title || `Capítulo ${chapter_number}`}
           </h3>
         </div>
 
@@ -181,7 +187,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
         </div>
       </div>
 
-      {/* Progress bar - using inline style for width */}
+      {/* Progress bar */}
       <div className="mt-2">
         <div className="flex justify-between text-[10px] mb-1">
           <span className={isUnlocked || isNextToUnlock ? 'text-neutral-500' : 'text-neutral-300'}>
@@ -195,7 +201,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
         </div>
         <div className="w-full bg-neutral-200 rounded-full h-1.5">
           <div
-            className={`h-1.5 rounded-full transition-all duration-300`}
+            className="h-1.5 rounded-full transition-all duration-300"
             style={{
               width: `${progress}%`,
               backgroundColor: isCurrent ? '#0ea5e9' : isCompleted ? '#f59e0b' : isNextToUnlock ? '#fbbf24' : '#a8a29e'

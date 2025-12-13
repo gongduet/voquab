@@ -732,6 +732,68 @@ module.exports = {
 
 ---
 
+## DASHBOARD COMPONENTS
+
+### ActivityHeatmap
+
+5-week grid (35 days) ending on Saturday of current week showing daily review activity.
+
+**Features:**
+- Colors scale based on user's daily target from `user_settings.daily_goal_words`
+- Today: `ring-2 ring-primary-500 shadow-md`
+- Future dates: `opacity-40`, dashed border
+- Shows "X / 28 days" practiced stat
+- Uses local time consistently
+
+**Color Scaling:**
+```javascript
+// Color based on percentage of daily goal achieved
+const getActivityColor = (count, dailyTarget) => {
+  const pct = count / dailyTarget
+  if (pct === 0) return 'bg-neutral-100'
+  if (pct < 0.25) return 'bg-primary-100'
+  if (pct < 0.5) return 'bg-primary-200'
+  if (pct < 0.75) return 'bg-primary-300'
+  if (pct < 1.0) return 'bg-primary-400'
+  return 'bg-primary-500' // Goal achieved
+}
+```
+
+### ReviewForecast
+
+7-day bar chart showing upcoming scheduled reviews.
+
+**Features:**
+- Pixel-based bar heights for reliable rendering
+- Max bar height: 96px
+- Today highlighted with `primary-500` color and "TODAY" label
+- Compact layout with no wasted whitespace
+
+**Bar Height Calculation:**
+```javascript
+const maxBarHeight = 96 // pixels
+const barHeight = count > 0
+  ? Math.max(8, Math.round((count / maxCount) * maxBarHeight))
+  : 3 // minimal indicator for zero
+```
+
+**Layout:**
+- Container height: 140px
+- Day labels: absolute positioned at bottom
+- Count labels: above each bar
+
+### ChapterCarousel
+
+Horizontal scrolling carousel showing chapter progress.
+
+**Features:**
+- Combined lemma + phrase counts (e.g., "161/161")
+- Excludes stop words from totals
+- Chapter unlock at 95% of previous chapter completion
+- Progress ring visualization
+
+---
+
 ## RELATED DOCUMENTS
 
 - See **09_COMPONENT_LIBRARY.md** for component implementations
@@ -743,7 +805,8 @@ module.exports = {
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
+- 2025-12-13: Added Dashboard Components section (ActivityHeatmap, ReviewForecast, ChapterCarousel) (Claude)
+- Status: Active
 
 ---
 

@@ -398,9 +398,11 @@ COMMENT ON TABLE user_phrase_progress IS 'FSRS-based progress tracking for idiom
 **Purpose:** Allows users to study phrases as flashcards with the same FSRS scheduling as lemmas.
 
 **Phrase Integration:**
-- Phrases appear in Learn sessions after 20% of chapter lemmas introduced
-- 80/20 lemma-to-phrase ratio in sessions (12 lemmas, 3 phrases per 15-card session)
+- Phrases appear in Learn sessions as soon as chapter is unlocked (proportional mix)
+- Proportional lemma-to-phrase ratio based on available unexposed items
 - Same FSRS algorithm applies to phrases
+
+> **Note:** There is no `introduced` column. To determine if a card has been introduced, check `reps >= 1`.
 
 ---
 
@@ -525,6 +527,8 @@ COMMENT ON COLUMN user_lemma_progress.reps IS 'Total number of times this card h
 COMMENT ON COLUMN user_lemma_progress.lapses IS 'Number of times user pressed Again (forgot)';
 COMMENT ON COLUMN user_lemma_progress.last_seen_at IS 'Last exposure (review OR oversampling)';
 ```
+
+> **Note:** There is no `introduced` column. To determine if a card has been introduced, check `reps >= 1`.
 
 **FSRS State Values:**
 

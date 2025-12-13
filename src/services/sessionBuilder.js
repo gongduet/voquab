@@ -53,8 +53,6 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
     }
   }
 
-  console.log('📊 Session size from settings:', sessionSize)
-
   switch (mode) {
     case SessionMode.REVIEW:
       return buildReviewSession(userId, sessionSize)
@@ -308,13 +306,6 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
   const lemmaCount = Math.round(sessionSize * lemmaRatio)
   const phraseCount = sessionSize - lemmaCount // Remainder to phrases
 
-  console.log('📊 Proportions:', {
-    lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
-    phraseRatio: (phraseRatio * 100).toFixed(1) + '%',
-    lemmaCount,
-    phraseCount
-  })
-
   // 5. Lemmas and phrases are already sorted by sentence order from getUnexposed* functions
 
   // 6. Select proportional amounts
@@ -338,12 +329,6 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
   // 8. Combine and shuffle for variety
   const session = shuffleArray([...lemmaCardsWithSentences, ...selectedPhrases])
 
-  console.log('🃏 Final session:', {
-    total: session.length,
-    lemmas: lemmaCardsWithSentences.length,
-    phrases: selectedPhrases.length
-  })
-
   const stats = {
     unintroducedAvailable: totalPool,
     selected: session.length,
@@ -352,8 +337,6 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
     lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
     phraseRatio: (phraseRatio * 100).toFixed(1) + '%'
   }
-
-  console.log('📗 Learn session built:', stats)
 
   return {
     cards: session,
@@ -401,7 +384,7 @@ async function getUnlockedChapterIds(userId) {
   for (let i = 0; i < chapters.length - 1; i++) {
     const currentChapter = chapters[i]
 
-    // Get lemmas for current chapter
+    // Get sentences for current chapter
     const { data: sentences } = await supabase
       .from('sentences')
       .select('sentence_id')
@@ -411,15 +394,37 @@ async function getUnlockedChapterIds(userId) {
 
     if (sentenceIds.length === 0) continue
 
+    // Get lemmas for this chapter EXCLUDING stop words
     const { data: words } = await supabase
       .from('words')
-      .select('lemma_id')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
       .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
 
     const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-    const introducedCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
-    const totalCount = chapterLemmaIds.length
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
 
+    // Also get phrases for this chapter
+    const { data: phraseOccurrences } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
+
+    // Get user's introduced phrases for this chapter
+    const { data: userPhraseProgress } = await supabase
+      .from('user_phrase_progress')
+      .select('phrase_id')
+      .eq('user_id', userId)
+      .gte('reps', 1)
+      .in('phrase_id', chapterPhraseIds)
+
+    const introducedPhraseCount = userPhraseProgress?.length || 0
+
+    // Combined totals (lemmas + phrases)
+    const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedCount = introducedLemmaCount + introducedPhraseCount
     const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
 
     // 95% threshold to unlock next chapter
@@ -973,12 +978,21 @@ export async function getUnlockedChapters(userId) {
 
   const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
 
+  // Get user's introduced phrases
+  const { data: userPhraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedPhraseIds = new Set((userPhraseProgress || []).map(p => p.phrase_id))
+
   const unlockedChapters = [1] // First chapter always unlocked
 
   for (let i = 0; i < chapters.length - 1; i++) {
     const currentChapter = chapters[i]
 
-    // Get lemmas for current chapter
+    // Get lemmas for current chapter (EXCLUDING stop words)
     const { data: sentences } = await supabase
       .from('sentences')
       .select('sentence_id')
@@ -986,15 +1000,29 @@ export async function getUnlockedChapters(userId) {
 
     const sentenceIds = (sentences || []).map(s => s.sentence_id)
 
+    if (sentenceIds.length === 0) continue
+
     const { data: words } = await supabase
       .from('words')
-      .select('lemma_id')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
       .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
 
     const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-    const introducedCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
-    const totalCount = chapterLemmaIds.length
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
 
+    // Get phrases for current chapter
+    const { data: phraseOccurrences } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
+    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+
+    // Combined calculation
+    const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedCount = introducedLemmaCount + introducedPhraseCount
     const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
 
     // 95% threshold to unlock next chapter

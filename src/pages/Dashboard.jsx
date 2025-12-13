@@ -24,6 +24,11 @@ export default function Dashboard() {
     newAvailable: 0,
     // ChapterCarousel
     chapters: [],
+    totalChapters: 0,
+    currentChapterIndex: 0,
+    allChaptersLoaded: false,
+    _allChaptersCache: null,
+    _absoluteCurrentIndex: 0,
     // ActivityHeatmap
     activityData: [],
     currentStreak: 0,
@@ -75,7 +80,12 @@ export default function Dashboard() {
       setDashboardData({
         ...heroStats,
         ...quickActionStats,
-        chapters: chaptersData,
+        chapters: chaptersData.chapters,
+        totalChapters: chaptersData.totalChapters,
+        currentChapterIndex: chaptersData.currentChapterIndex,
+        allChaptersLoaded: false,
+        _allChaptersCache: chaptersData._allChaptersCache,
+        _absoluteCurrentIndex: chaptersData._absoluteCurrentIndex,
         activityData: activityData.data,
         currentStreak: activityData.currentStreak,
         bestStreak: activityData.bestStreak,
@@ -89,6 +99,18 @@ export default function Dashboard() {
       console.error('Error loading dashboard data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  function handleLoadAllChapters() {
+    if (dashboardData._allChaptersCache) {
+      // Use cached data - instant!
+      setDashboardData(prev => ({
+        ...prev,
+        chapters: prev._allChaptersCache,
+        currentChapterIndex: prev._absoluteCurrentIndex,
+        allChaptersLoaded: true
+      }))
     }
   }
 
@@ -134,6 +156,10 @@ export default function Dashboard() {
         <section className="mb-8">
           <ChapterCarousel
             chapters={dashboardData.chapters}
+            totalChapters={dashboardData.totalChapters}
+            currentChapterIndex={dashboardData.currentChapterIndex}
+            allChaptersLoaded={dashboardData.allChaptersLoaded}
+            onLoadAllChapters={handleLoadAllChapters}
             loading={loading}
           />
         </section>
@@ -212,15 +238,6 @@ async function fetchHeroStats(userId) {
   const phraseMastered = phraseProgress?.filter(p => (p.stability || 0) >= 21).length || 0
   const masteredCount = lemmaMastered + phraseMastered
 
-  console.log('[fetchHeroStats] Results:', {
-    totalLemmas,
-    totalPhrases,
-    lemmaIntroduced,
-    phraseIntroduced,
-    lemmaMastered,
-    phraseMastered
-  })
-
   return {
     masteredCount,
     introducedCount,
@@ -241,8 +258,6 @@ async function fetchQuickActionStats(userId) {
     .eq('user_id', userId)
     .lte('due_date', now)
 
-  console.log('🔍 [QuickActionStats] Lemmas due:', { lemmasDue, error: lemmasDueError })
-
   // Phrases due today
   const { count: phrasesDue, error: phrasesDueError } = await supabase
     .from('user_phrase_progress')
@@ -250,11 +265,7 @@ async function fetchQuickActionStats(userId) {
     .eq('user_id', userId)
     .lte('due_date', now)
 
-  console.log('🔍 [QuickActionStats] Phrases due:', { phrasesDue, error: phrasesDueError })
-
   const dueCount = (lemmasDue || 0) + (phrasesDue || 0)
-
-  console.log('🔍 [QuickActionStats] Total due:', dueCount)
 
   // Get user's introduced lemma IDs (reps >= 1 means reviewed at least once)
   const { data: existingProgress } = await supabase
@@ -344,153 +355,174 @@ async function fetchQuickActionStats(userId) {
 }
 
 /**
- * Fetch chapters with progress for carousel
- * Always returns at least Chapter 1 even if no data
+ * Fetch chapters with progress for carousel - PARALLEL APPROACH
+ * Fetches all chapters in parallel for speed, but uses per-chapter queries for accuracy
+ *
+ * @param {string} userId - User ID
+ * @returns {Object} - { chapters, currentChapterIndex, totalChapters }
  */
 async function fetchChaptersProgress(userId) {
-  // Get all chapters
+  console.time('fetchChaptersProgress')
+
+  // Get all chapters first
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')
     .select('chapter_id, chapter_number, title')
     .order('chapter_number', { ascending: true })
 
-  if (chaptersError) {
+  if (chaptersError || !chapters || chapters.length === 0) {
     console.error('❌ [fetchChaptersProgress] chapters query failed:', chaptersError)
+    return {
+      chapters: [{
+        chapter_number: 1,
+        title: 'Chapter 1',
+        introduced: 0,
+        total_lemmas: 0,
+        isUnlocked: true,
+        isNextToUnlock: false
+      }],
+      currentChapterIndex: 0,
+      totalChapters: 1
+    }
   }
 
-  console.log('[fetchChaptersProgress] Raw chapters data:', {
-    count: chapters?.length,
-    chapters: chapters?.slice(0, 3) // Log first 3 chapters
+  // Get user's introduced lemmas and phrases ONCE (these are small queries)
+  const [lemmaProgressResult, phraseProgressResult] = await Promise.all([
+    supabase
+      .from('user_lemma_progress')
+      .select('lemma_id')
+      .eq('user_id', userId)
+      .gte('reps', 1),
+    supabase
+      .from('user_phrase_progress')
+      .select('phrase_id')
+      .eq('user_id', userId)
+      .gte('reps', 1)
+  ])
+
+  const introducedLemmaIds = new Set((lemmaProgressResult.data || []).map(p => p.lemma_id))
+  const introducedPhraseIds = new Set((phraseProgressResult.data || []).map(p => p.phrase_id))
+
+  console.log('👤 User progress:', {
+    lemmas: introducedLemmaIds.size,
+    phrases: introducedPhraseIds.size
   })
 
-  // Ensure we always have at least a placeholder for Chapter 1
-  if (!chapters || chapters.length === 0) {
-    console.warn('⚠️ [fetchChaptersProgress] No chapters found, returning placeholder')
-    return [{
-      chapter_number: 1,
-      title: 'Chapter 1',
-      introduced: 0,
-      total_lemmas: 0,
-      isUnlocked: true,
-      isNextToUnlock: false
-    }]
-  }
-
-  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
-  const { data: userProgress, error: progressError } = await supabase
-    .from('user_lemma_progress')
-    .select('lemma_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
-
-  if (progressError) {
-    console.error('❌ [fetchChaptersProgress] user_lemma_progress query failed:', progressError)
-  }
-
-  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
-
-  // Get user's introduced phrases (reps >= 1 means reviewed at least once)
-  const { data: userPhraseProgress, error: phraseProgressError } = await supabase
-    .from('user_phrase_progress')
-    .select('phrase_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
-
-  if (phraseProgressError) {
-    console.error('❌ [fetchChaptersProgress] user_phrase_progress query failed:', phraseProgressError)
-  }
-
-  const introducedPhraseIds = new Set((userPhraseProgress || []).map(p => p.phrase_id))
-
-  // Calculate progress for each chapter
-  const chaptersWithProgress = []
-  let previousChapterComplete = true
-
-  for (const chapter of chapters) {
+  // Fetch chapter stats in parallel (all 27 chapters at once)
+  const chapterStatsPromises = chapters.map(async (chapter) => {
     // Get sentences for this chapter
-    const { data: sentences, error: sentencesError } = await supabase
+    const { data: sentences } = await supabase
       .from('sentences')
       .select('sentence_id')
       .eq('chapter_id', chapter.chapter_id)
 
-    if (sentencesError) {
-      console.error(`❌ [fetchChaptersProgress] sentences query failed for chapter ${chapter.chapter_number}:`, sentencesError)
-    }
-
     const sentenceIds = (sentences || []).map(s => s.sentence_id)
 
-    // Get lemmas for this chapter (skip if no sentences)
-    let chapterLemmaIds = []
-    let chapterPhraseIds = []
+    if (sentenceIds.length === 0) {
+      return {
+        chapter_number: chapter.chapter_number,
+        title: chapter.title,
+        introduced: 0,
+        total_lemmas: 0,
+        lemmaCount: 0,
+        phraseCount: 0
+      }
+    }
 
-    if (sentenceIds.length > 0) {
-      // Get words with lemma stop_word status - filter out stop words
-      const { data: words, error: wordsError } = await supabase
+    // Get lemmas (excluding stop words) and phrases in parallel
+    const [wordsResult, phrasesResult] = await Promise.all([
+      supabase
         .from('words')
         .select('lemma_id, lemmas!inner(is_stop_word)')
         .in('sentence_id', sentenceIds)
-        .eq('lemmas.is_stop_word', false)
-
-      if (wordsError) {
-        console.error(`❌ [fetchChaptersProgress] words query failed for chapter ${chapter.chapter_number}:`, wordsError)
-      }
-
-      chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-
-      // Get phrases for this chapter
-      const { data: phraseOccurrences, error: phrasesError } = await supabase
+        .eq('lemmas.is_stop_word', false),
+      supabase
         .from('phrase_occurrences')
         .select('phrase_id')
         .in('sentence_id', sentenceIds)
+    ])
 
-      if (phrasesError) {
-        console.error(`❌ [fetchChaptersProgress] phrases query failed for chapter ${chapter.chapter_number}:`, phrasesError)
-      }
+    // Get unique lemmas and phrases for this chapter
+    const chapterLemmaIds = [...new Set((wordsResult.data || []).map(w => w.lemma_id))]
+    const chapterPhraseIds = [...new Set((phrasesResult.data || []).map(po => po.phrase_id))]
 
-      chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
-    }
-
-    // Count introduced lemmas
+    // Count introduced
     const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
-
-    // Count introduced phrases
     const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
 
-    // Combined totals
-    const introduced = introducedLemmaCount + introducedPhraseCount
-    const total = chapterLemmaIds.length + chapterPhraseIds.length
-    const introductionRate = total > 0 ? introduced / total : 0
-
-    // Determine unlock state - Chapter 1 is always unlocked
-    const isUnlocked = chapter.chapter_number === 1 || previousChapterComplete
-    const isNextToUnlock = !isUnlocked && previousChapterComplete
-
-    console.log(`📊 Chapter ${chapter.chapter_number}:`, {
-      lemmas: chapterLemmaIds.length,
-      phrases: chapterPhraseIds.length,
-      total,
-      introducedLemmas: introducedLemmaCount,
-      introducedPhrases: introducedPhraseCount,
-      introduced,
-      rate: total > 0 ? Math.round((introduced / total) * 100) : 0
-    })
-
-    chaptersWithProgress.push({
+    return {
       chapter_number: chapter.chapter_number,
       title: chapter.title,
-      introduced,
-      total_lemmas: total,  // This is now lemmas + phrases
+      introduced: introducedLemmaCount + introducedPhraseCount,
+      total_lemmas: chapterLemmaIds.length + chapterPhraseIds.length,
+      lemmaCount: chapterLemmaIds.length,
+      phraseCount: chapterPhraseIds.length
+    }
+  })
+
+  // Wait for all chapter stats
+  const chapterStats = await Promise.all(chapterStatsPromises)
+
+  // Debug: Log first 3 chapters
+  console.log('📊 Chapter stats sample:', chapterStats.slice(0, 3).map(c => ({
+    ch: c.chapter_number,
+    total: c.total_lemmas,
+    lemmas: c.lemmaCount,
+    phrases: c.phraseCount,
+    introduced: c.introduced
+  })))
+
+  // Build final chapters array with unlock logic
+  const chaptersWithProgress = []
+  let previousChapterComplete = true
+
+  for (const stats of chapterStats) {
+    const completionRate = stats.total_lemmas > 0 ? stats.introduced / stats.total_lemmas : 0
+
+    const isUnlocked = stats.chapter_number === 1 || previousChapterComplete
+    const isNextToUnlock = !isUnlocked && previousChapterComplete
+
+    chaptersWithProgress.push({
+      chapter_number: stats.chapter_number,
+      title: stats.title,
+      introduced: stats.introduced,
+      total_lemmas: stats.total_lemmas,
       isUnlocked,
-      isNextToUnlock
+      isNextToUnlock,
+      completionRate
     })
 
-    // Update for next iteration - chapter is complete if 95%+ introduced
-    previousChapterComplete = introductionRate >= 0.95
+    // Update for next iteration (95% threshold)
+    previousChapterComplete = completionRate >= 0.95
   }
 
-  console.log('[fetchChaptersProgress] Processed chapters:', chaptersWithProgress.length)
+  // Find current chapter: first unlocked with < 100% completion
+  let currentChapterIndex = chaptersWithProgress.findIndex(
+    ch => ch.isUnlocked && ch.completionRate < 1.0
+  )
 
-  return chaptersWithProgress
+  if (currentChapterIndex === -1) {
+    currentChapterIndex = 0
+  }
+
+  console.timeEnd('fetchChaptersProgress')
+  console.log(`📚 [fetchChaptersProgress] Current chapter: ${currentChapterIndex + 1}, Total: ${chapters.length}`)
+
+  // Return with "1 back, current, 2 forward" logic for visible chapters
+  const startIndex = Math.max(0, currentChapterIndex - 1)
+  const endIndex = Math.min(chaptersWithProgress.length, startIndex + 4)
+  const adjustedStartIndex = Math.max(0, endIndex - 4)
+
+  const visibleChapters = chaptersWithProgress.slice(adjustedStartIndex, adjustedStartIndex + 4)
+  const visibleCurrentIndex = currentChapterIndex - adjustedStartIndex
+
+  return {
+    chapters: visibleChapters,
+    currentChapterIndex: visibleCurrentIndex,
+    totalChapters: chapters.length,
+    _allChaptersCache: chaptersWithProgress,
+    _absoluteCurrentIndex: currentChapterIndex
+  }
 }
 
 /**
@@ -524,11 +556,6 @@ async function fetchActivityData(userId) {
   if (phraseError) {
     console.error('❌ [fetchActivityData] phrase reviews query failed:', phraseError)
   }
-
-  console.log('[fetchActivityData] Reviews found:', {
-    lemmaReviews: lemmaReviews?.length || 0,
-    phraseReviews: phraseReviews?.length || 0
-  })
 
   // Combine and count by date
   const dateCounts = {}
@@ -688,8 +715,6 @@ async function fetchForecastData(userId) {
     })
   }
 
-  console.log('[fetchForecastData] Forecast:', days.map(d => `${d.label}: ${d.count}`).join(', '))
-
   return days
 }
 
@@ -764,9 +789,6 @@ async function fetchCategoryData(userId) {
   if (phraseError) {
     console.error('❌ [fetchCategoryData] phrase count query failed:', phraseError)
   }
-
-  // Debug logging
-  console.log('[fetchCategoryData] Results:', { lemmas: lemmaData?.length || 0, phrases: phraseCount || 0 })
 
   if (phraseCount && phraseCount > 0) {
     categories['phrase'] = phraseCount

@@ -1,0 +1,180 @@
+Claude Code Prompt: Fix Session Builder Unlock Calculation (v13)
+Task: Fix the chapter unlock calculation in sessionBuilder.js to exclude stop words and include phrases, matching the Dashboard logic.
+The Problem
+getUnlockedChapterIds function calculates unlock percentage using ALL lemmas (including stop words), but users can only learn NON-stop-word lemmas. This makes it impossible to reach 95% completion:
+
+Total lemmas with stop words: 175
+Learnable lemmas (non-stop): 141
+Max possible rate: 141/175 = 80.5% < 95%
+
+Result: Chapter 2 never unlocks in session builder, even though Dashboard shows it as unlocked.
+Files to Modify
+src/services/sessionBuilder.js
+Fix 1: Update getUnlockedChapterIds (around line 355-421)
+Replace the chapter completion calculation inside the for loop (around line 387-417) with:
+javascriptfor (let i = 0; i < chapters.length - 1; i++) {
+  const currentChapter = chapters[i]
+
+  // Get sentences for current chapter
+  const { data: sentences } = await supabase
+    .from('sentences')
+    .select('sentence_id')
+    .eq('chapter_id', currentChapter.chapter_id)
+
+  const sentenceIds = (sentences || []).map(s => s.sentence_id)
+
+  if (sentenceIds.length === 0) continue
+
+  // Get lemmas for this chapter EXCLUDING stop words
+  const { data: words } = await supabase
+    .from('words')
+    .select('lemma_id, lemmas!inner(is_stop_word)')
+    .in('sentence_id', sentenceIds)
+    .eq('lemmas.is_stop_word', false)
+
+  const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+  const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+  
+  // Also get phrases for this chapter
+  const { data: phraseOccurrences } = await supabase
+    .from('phrase_occurrences')
+    .select('phrase_id')
+    .in('sentence_id', sentenceIds)
+  
+  const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
+  
+  // Get user's introduced phrases
+  const { data: userPhraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+    .in('phrase_id', chapterPhraseIds)
+  
+  const introducedPhraseCount = userPhraseProgress?.length || 0
+  
+  // Combined totals (lemmas + phrases)
+  const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
+  const introducedCount = introducedLemmaCount + introducedPhraseCount
+  const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
+
+  console.log(`📊 Chapter ${currentChapter.chapter_number} unlock check:`, {
+    lemmas: `${introducedLemmaCount}/${chapterLemmaIds.length}`,
+    phrases: `${introducedPhraseCount}/${chapterPhraseIds.length}`,
+    total: `${introducedCount}/${totalCount}`,
+    rate: (introductionRate * 100).toFixed(1) + '%'
+  })
+
+  // 95% threshold to unlock next chapter
+  if (introductionRate >= 0.95) {
+    const nextChapter = chapters[i + 1]
+    if (nextChapter) {
+      unlockedChapterIds.push(nextChapter.chapter_id)
+    }
+  } else {
+    // Stop - can't unlock further chapters
+    break
+  }
+}
+Fix 2: Update getUnlockedChapters export function (around line 939-996)
+Apply the same fix - exclude stop words and include phrases:
+javascriptexport async function getUnlockedChapters(userId) {
+  // Get all chapters
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number')
+    .order('chapter_number', { ascending: true })
+
+  if (!chapters || chapters.length === 0) {
+    return [1] // First chapter always unlocked
+  }
+
+  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
+  const { data: userProgress } = await supabase
+    .from('user_lemma_progress')
+    .select('lemma_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
+
+  // Get user's introduced phrases
+  const { data: userPhraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedPhraseIds = new Set((userPhraseProgress || []).map(p => p.phrase_id))
+
+  const unlockedChapters = [1] // First chapter always unlocked
+
+  for (let i = 0; i < chapters.length - 1; i++) {
+    const currentChapter = chapters[i]
+
+    // Get lemmas for current chapter (EXCLUDING stop words)
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', currentChapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+
+    if (sentenceIds.length === 0) continue
+
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+
+    // Get phrases for current chapter
+    const { data: phraseOccurrences } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
+    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+
+    // Combined calculation
+    const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedCount = introducedLemmaCount + introducedPhraseCount
+    const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
+
+    // 95% threshold to unlock next chapter
+    if (introductionRate >= 0.95) {
+      const nextChapter = chapters[i + 1]
+      if (nextChapter && !unlockedChapters.includes(nextChapter.chapter_number)) {
+        unlockedChapters.push(nextChapter.chapter_number)
+      }
+    } else {
+      // Stop - can't unlock further chapters
+      break
+    }
+  }
+
+  return unlockedChapters.sort((a, b) => a - b)
+}
+```
+
+### Expected Console Output After Fix
+
+When clicking "Learn New":
+```
+📊 Chapter 1 unlock check: { lemmas: '141/141', phrases: '20/20', total: '161/161', rate: '100.0%' }
+📚 Unlocked chapters: 2
+📖 Unexposed lemmas: 206
+📝 Unexposed phrases: 35
+Expected Behavior After Fix
+
+"Learn New" button takes user directly to flashcard session
+Session contains Chapter 2 words and phrases
+No more "No New Words" screen when there are actually words available
+Session builder and Dashboard use consistent unlock logic
+
+
+This is the root cause. Once the stop word filter is added to the unlock calculation, Chapter 2 will properly unlock and cards will be available.

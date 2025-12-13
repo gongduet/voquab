@@ -175,7 +175,7 @@ const retrievability = Math.pow(0.9, daysSince / stability) * 100
 3. Ordered by chapter, then frequency
 4. Limited to session size
 
-**Includes phrases:** After 20% of chapter lemmas introduced (see Phrases Integration)
+**Includes phrases:** Proportionally mixed with lemmas from unlocked chapters
 
 **When to use:** When you want to expand vocabulary
 
@@ -258,20 +258,26 @@ return allCards.slice(0, sessionSize)
 
 ### Learn Mode Composition
 
-With phrases integration (after 20% chapter threshold):
+Proportional phrase/lemma mixing based on available unexposed items:
 
 ```javascript
 const sessionSize = userSettings.cards_per_session || 25
 
-// 80/20 split when phrases available
-const lemmaCount = hasPhraseChapters ? Math.ceil(sessionSize * 0.8) : sessionSize
-const phraseCount = hasPhraseChapters ? Math.floor(sessionSize * 0.2) : 0
+// Get unexposed counts from unlocked chapters
+const unexposedLemmas = await getUnexposedLemmas(userId, unlockedChapterIds)
+const unexposedPhrases = await getUnexposedPhrases(userId, unlockedChapterIds)
 
-// Fetch lemmas
-const lemmaCards = await getUnintroducedLemmas(userId, lemmaCount)
+// Calculate proportional split
+const totalPool = unexposedLemmas.length + unexposedPhrases.length
+const lemmaRatio = unexposedLemmas.length / totalPool
+const phraseRatio = unexposedPhrases.length / totalPool
 
-// Fetch phrases (if eligible)
-const phraseCards = await getUnintroducedPhrases(userId, phraseCount)
+const lemmaCount = Math.round(sessionSize * lemmaRatio)
+const phraseCount = sessionSize - lemmaCount
+
+// Build session with proportional mix
+const lemmaCards = unexposedLemmas.slice(0, lemmaCount)
+const phraseCards = unexposedPhrases.slice(0, phraseCount)
 
 return shuffle([...lemmaCards, ...phraseCards])
 ```
@@ -293,12 +299,9 @@ Multi-word expressions where the combined meaning differs from individual words.
 
 ### When Do Phrases Appear?
 
-**Threshold:** 20% of chapter lemmas introduced
+**Availability:** Phrases are available immediately when a chapter is unlocked.
 
-**Example:**
-- Chapter 1 has 52 lemmas
-- User has learned 11 lemmas (21%)
-- Chapter 1 phrases now eligible for Learn sessions
+**Proportional Selection:** Learn sessions mix lemmas and phrases proportionally based on available unexposed items in unlocked chapters. If there are 100 unexposed lemmas and 20 unexposed phrases, approximately 83% of cards will be lemmas and 17% will be phrases.
 
 ### Phrase Card Format
 
