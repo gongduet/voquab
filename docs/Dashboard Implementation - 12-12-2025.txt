@@ -1,0 +1,150 @@
+CLAUDE CODE HANDOFF: Dashboard Implementation
+OVERVIEW
+Convert the HTML mockup into a responsive React dashboard that serves as the new landing page for authenticated users.
+Reference: The HTML mockup provided uses the correct Voquab color palette. Use it as visual reference but implement using our existing Tailwind config and component patterns.
+Location: Create src/pages/Dashboard.jsx and supporting components in src/components/dashboard/
+
+RESPONSIVE STRATEGY
+The mockup is mobile (375px). Scale up for larger screens:
+BreakpointLayout ChangesMobile (< 640px)Single column, horizontal scroll for chaptersTablet (640-1024px)2-column grid for stats, chapters in 2-col gridDesktop (> 1024px)3-column layout, max-width container (1024px), centered
+
+COMPONENT STRUCTURE
+src/
+  pages/
+    Dashboard.jsx          # Main page, fetches data, composes components
+  components/
+    dashboard/
+      index.js             # Re-exports
+      HeroStats.jsx        # Circular progress ring + mastery %
+      QuickActions.jsx     # Review Due / Learn New buttons
+      ActivityHeatmap.jsx  # Calendar heatmap card
+      ChapterCarousel.jsx  # Horizontal chapter cards
+      ReviewForecast.jsx   # Bar chart of upcoming reviews
+      CategoryPills.jsx    # Nouns/Verbs/Adj/Phrases counts
+      DashboardHeader.jsx  # Logo, streak, avatar, settings
+
+DATA REQUIREMENTS
+Each component needs specific data from Supabase. Use the MCP server to query:
+HeroStats:
+sql-- Total mastered lemmas (stability > 21 days)
+SELECT COUNT(*) FROM user_lemma_progress 
+WHERE user_id = [current_user] AND stability >= 21;
+
+-- Total introduced lemmas
+SELECT COUNT(*) FROM user_lemma_progress 
+WHERE user_id = [current_user] AND introduced = true;
+
+-- Total lemmas available
+SELECT COUNT(*) FROM lemmas;
+QuickActions:
+sql-- Cards due today
+SELECT COUNT(*) FROM user_lemma_progress 
+WHERE user_id = [current_user] 
+AND due_date <= NOW();
+
+-- New words available (not yet introduced in current unlocked chapters)
+-- This requires joining with chapter unlock logic
+ActivityHeatmap:
+sql-- Reviews per day for last 35 days
+SELECT DATE(last_seen_at) as date, COUNT(*) as reviews
+FROM user_lemma_progress
+WHERE user_id = [current_user]
+AND last_seen_at >= NOW() - INTERVAL '35 days'
+GROUP BY DATE(last_seen_at);
+ChapterCarousel:
+sql-- Chapter progress
+SELECT 
+  c.chapter_number,
+  c.title_spanish,
+  COUNT(ulp.id) FILTER (WHERE ulp.introduced = true) as introduced,
+  COUNT(l.id) as total_lemmas
+FROM chapters c
+LEFT JOIN lemmas l ON l.chapter_id = c.id
+LEFT JOIN user_lemma_progress ulp ON ulp.lemma_id = l.id AND ulp.user_id = [current_user]
+GROUP BY c.id
+ORDER BY c.chapter_number;
+CategoryPills:
+sql-- Count by part of speech for introduced lemmas
+SELECT 
+  l.part_of_speech,
+  COUNT(*) as count
+FROM user_lemma_progress ulp
+JOIN lemmas l ON l.id = ulp.lemma_id
+WHERE ulp.user_id = [current_user] AND ulp.introduced = true
+GROUP BY l.part_of_speech;
+
+STYLING NOTES
+Use existing Tailwind classes:
+
+bg-primary-500 not bg-sky-blue
+bg-secondary-500 not bg-star-gold
+text-neutral-900 not text-charcoal
+bg-neutral-50 not bg-warm-white
+
+Shadows: Use Tailwind's shadow, shadow-md, shadow-lg
+Rounded corners: rounded-xl for cards, rounded-2xl for buttons/large elements
+Icons: Use lucide-react (already installed)
+
+KEY IMPLEMENTATION DETAILS
+1. Circular Progress Ring (HeroStats):
+jsx// SVG approach from mockup works well
+// Calculate stroke-dashoffset based on percentage
+const circumference = 2 * Math.PI * 88; // radius = 88
+const offset = circumference - (percentage / 100) * circumference;
+2. Heatmap Grid:
+
+5 columns (weeks) x 7 rows (days)
+Color intensity: bg-primary-100 to bg-primary-600
+Today: add ring highlight ring-2 ring-primary-300
+
+3. Chapter Cards:
+
+Horizontal scroll on mobile: overflow-x-auto flex gap-4
+Grid on tablet+: md:grid md:grid-cols-2 lg:grid-cols-3
+Locked state: opacity-60 + lock icon
+
+4. Review Forecast:
+
+Simple bar chart, can use divs with dynamic height
+Or integrate a lightweight chart library if preferred
+
+
+ROUTING UPDATE
+Update App.jsx to make Dashboard the default authenticated route:
+jsx// After login, redirect to /dashboard instead of /flashcards
+<Route path="/dashboard" element={<Dashboard />} />
+<Route path="/" element={<Navigate to="/dashboard" />} />
+
+NAVIGATION
+The mockup shows bottom nav with: Home, Read, +, Stats, Profile
+For now, implement as a simple header with existing nav pattern. Bottom nav can be a future mobile enhancement.
+
+QUICK WINS FOR PHASE 1
+
+Start with static mockup converted to React components
+Wire up real data one component at a time
+HeroStats and QuickActions are highest priority (most visible)
+Heatmap and Forecast can show placeholder data initially
+
+
+FILES TO MODIFY
+
+src/App.jsx - Add Dashboard route
+src/pages/Dashboard.jsx - New file
+src/components/dashboard/* - New folder with components
+Potentially src/hooks/useDashboardData.js for data fetching
+
+
+ACCEPTANCE CRITERIA
+
+ Dashboard renders on /dashboard route
+ Responsive: single column mobile, multi-column tablet/desktop
+ HeroStats shows real mastery percentage
+ QuickActions buttons link to /flashcards with correct mode
+ Chapter cards show real progress from database
+ Streak displays correctly (can be placeholder initially)
+ No console errors
+ Accessible (proper headings, alt text, focus states)
+
+
+Ready for Claude Code. Want me to save this as a markdown file you can reference, or is this format good for copy/paste?

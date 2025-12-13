@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
 import Book from './pages/Book'
 import ReadingMode from './pages/ReadingMode'
 import Flashcards from './pages/Flashcards'
@@ -25,6 +26,22 @@ function App() {
           <Route path="/styletest" element={<StyleTest />} />
           <Route
             path="/"
+            element={
+              <ProtectedRoute>
+                <Navigate to="/dashboard" replace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/home"
             element={
               <ProtectedRoute>
                 <Home />

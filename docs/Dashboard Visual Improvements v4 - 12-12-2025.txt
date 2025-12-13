@@ -1,0 +1,96 @@
+Claude Code Prompt: URGENT - Phrase Progress Not Saving
+Priority: CRITICAL - Blocking feature
+Problem: When reviewing phrases in flashcard sessions:
+
+Phrases always show "New Phrase" badge (never marked as introduced)
+No "+X days" floating animation appears when clicking "Got It"
+user_phrase_progress table has ZERO entries
+Phrase reviews are not being persisted to the database
+
+Impact: Users are reviewing phrases but getting no credit, no FSRS scheduling, no progress tracking.
+
+Debug Steps
+Step 1: Trace the code path
+Find where phrase progress should be saved. Check these files:
+
+src/hooks/flashcard/useProgressTracking.js - Does it handle phrases differently than lemmas?
+src/services/fsrsService.js - Is there phrase-specific logic?
+src/hooks/flashcard/useFlashcardSession.js - How are phrases identified and processed?
+
+Step 2: Check card type identification
+When a card is reviewed, how does the code know if it's a phrase vs lemma?
+javascript// Look for something like:
+if (card.type === 'phrase') {
+  // update user_phrase_progress
+} else {
+  // update user_lemma_progress
+}
+Step 3: Check the Supabase insert/update
+Find where user_lemma_progress is updated and verify equivalent code exists for user_phrase_progress:
+javascript// For lemmas (likely exists)
+await supabase
+  .from('user_lemma_progress')
+  .upsert({ user_id, lemma_id, ... })
+
+// For phrases (likely missing or broken)
+await supabase
+  .from('user_phrase_progress')
+  .upsert({ user_id, phrase_id, ... })
+Step 4: Check the FloatingFeedback trigger
+The "+X days" animation not appearing suggests the success callback isn't firing for phrases. Find where FloatingFeedback is triggered and verify it fires for both card types.
+
+Likely Root Causes
+
+Missing phrase branch: Progress tracking only handles lemmas, no code path for phrases
+Wrong field name: Code might look for card.lemma_id but phrases have card.phrase_id
+Type check failing: Card type identification might not recognize phrases
+Table schema mismatch: user_phrase_progress might have different column names than expected
+
+
+Expected Behavior
+When user clicks "Got It" on a phrase:
+
+✅ FSRS calculates next review date
+✅ user_phrase_progress row created/updated with:
+
+user_id
+phrase_id
+introduced = true
+stability, difficulty, due_date, fsrs_state, reps, lapses, last_seen_at
+
+
+✅ FloatingFeedback shows "+X days"
+✅ Next time this phrase appears, no "New Phrase" badge
+
+
+Database Schema Reference
+Verify user_phrase_progress has same FSRS columns as user_lemma_progress:
+sql-- Check the table structure
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'user_phrase_progress';
+Expected columns:
+
+id, user_id, phrase_id
+introduced, stability, difficulty, due_date
+fsrs_state, reps, lapses, last_seen_at
+created_at, updated_at
+
+
+Fix Requirements
+
+Identify the gap: Find exactly where phrase progress diverges from lemma progress
+Implement parity: Ensure phrases follow the same FSRS update flow as lemmas
+Test the fix:
+
+Review a phrase, click "Got It"
+Verify row appears in user_phrase_progress
+Verify "+X days" animation shows
+Review same phrase again - should NOT show "New Phrase" badge
+
+
+Console logging: Add temporary logs to confirm the save is happening:
+
+javascript   console.log('Saving phrase progress:', { phrase_id, user_id, stability, due_date });
+
+Start by searching the codebase for "user_lemma_progress" and checking if equivalent "user_phrase_progress" handling exists alongside it. Report findings before implementing fix.

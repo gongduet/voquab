@@ -1,0 +1,130 @@
+Claude Code Prompt: Dashboard Visual Improvements
+Task: Fix visibility and usability issues on the Dashboard based on user testing feedback.
+Reference: Current implementation in src/components/dashboard/
+
+ISSUE 1: Quick Action Buttons Invisible
+Problem: Review and Learn New buttons are barely visible (light gray on light background)
+Fix: These should be the most prominent elements on the page. Use solid, high-contrast colors:
+jsx// QuickActions.jsx
+// Review button: solid primary blue
+className="bg-primary-500 hover:bg-primary-600 text-white shadow-md"
+
+// Learn New button: solid secondary gold  
+className="bg-secondary-500 hover:bg-secondary-600 text-white shadow-md"
+Add icons inside buttons (BookOpen for Review, Sparkles or Plus for Learn New) and make them taller (h-14 minimum).
+
+ISSUE 2: Chapters Section Overwhelming
+Problem: Showing all 27 chapters creates scroll fatigue and visual overload.
+Fix: Implement expand/collapse with smart defaults:
+Collapsed state (default): Show only:
+
+Current chapter (highest unlocked with < 95% progress)
+Next locked chapter (to show what's coming)
+"View all 27 chapters" expand button
+
+Expanded state: Show all chapters in current grid layout
+jsx// ChapterCarousel.jsx
+const [isExpanded, setIsExpanded] = useState(false);
+
+// Find current chapter (first unlocked with progress < 95%)
+const currentChapter = chapters.find(ch => ch.isUnlocked && ch.progress < 0.95);
+const currentIndex = chapters.indexOf(currentChapter);
+
+// Collapsed: show current + next
+const visibleChapters = isExpanded 
+  ? chapters 
+  : chapters.slice(currentIndex, currentIndex + 2);
+
+// Add expand button
+<button 
+  onClick={() => setIsExpanded(!isExpanded)}
+  className="text-primary-500 font-medium text-sm"
+>
+  {isExpanded ? 'Show less' : `View all ${chapters.length} chapters`}
+</button>
+
+ISSUE 3: Activity Heatmap Low Contrast
+Problem: Light grays on light background are invisible.
+Fix: Use stronger color progression:
+jsx// ActivityHeatmap.jsx color scale
+const getColorClass = (count) => {
+  if (count === 0) return 'bg-neutral-200'; // Visible empty state
+  if (count <= 5) return 'bg-primary-200';
+  if (count <= 15) return 'bg-primary-300';
+  if (count <= 30) return 'bg-primary-400';
+  if (count <= 50) return 'bg-primary-500';
+  return 'bg-primary-600';
+};
+Also add a subtle border to each cell: border border-neutral-100
+Consider adding the legend (Less/More gradient) at the bottom like GitHub does.
+
+ISSUE 4: Upcoming Reviews Chart Hard to Read
+Problem: Light bars, no visual hierarchy, numbers blend in.
+Fix:
+
+Make bars more prominent:
+
+jsx// Today's bar: solid primary
+className="bg-primary-500"
+
+// Future bars: lighter but still visible
+className="bg-primary-300"
+
+Add labels directly on bars (if tall enough) or below
+Highlight today more clearly:
+
+jsx// Today column wrapper
+<div className="relative">
+  <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-xs font-bold text-primary-600">
+    Today
+  </div>
+  {/* bar */}
+</div>
+
+Add Y-axis context - show max value or scale
+
+
+ISSUE 5: Category Pills (Words by Type) Sparse
+Problem: Only showing Nouns and Verbs, missing other categories.
+Fix:
+
+Query should include all parts of speech
+If a category has 0 count, still show it (grayed out) for completeness
+Add phrases count from user_phrase_progress table
+
+Categories to show: Nouns, Verbs, Adjectives, Adverbs, Phrases, Other
+
+ISSUE 6: Chapter Cards Need Better Visual States
+Problem: Hard to distinguish unlocked vs locked, current vs completed.
+Fix visual hierarchy:
+StateVisual TreatmentCurrent (in progress)White bg, primary-500 border, primary progress bar, "Study" button prominentCompleted (95%+)White bg, secondary-500 checkmark, gold accent, subtleLockedneutral-100 bg, neutral-400 text, lock icon, no button
+jsx// Current chapter ring
+className="ring-2 ring-primary-500"
+
+// Completed chapter subtle glow
+className="border-secondary-200"
+
+ISSUE 7: Overall Page Contrast
+Problem: Too much light gray, lacks visual anchors.
+Fixes:
+
+Section headers: Make bolder (font-bold text-neutral-900)
+Card backgrounds: Keep white but add subtle border (border border-neutral-200)
+Page background: Keep bg-neutral-50 but ensure cards pop
+Stats numbers: Use text-neutral-900 font-bold not gray
+
+
+SUMMARY OF CHANGES
+Files to modify:
+
+src/components/dashboard/QuickActions.jsx - Bold colors
+src/components/dashboard/ChapterCarousel.jsx - Expand/collapse, visual states
+src/components/dashboard/ActivityHeatmap.jsx - Stronger color scale
+src/components/dashboard/ReviewForecast.jsx - Better contrast, today highlight
+src/components/dashboard/CategoryPills.jsx - Show all categories
+src/components/dashboard/HeroStats.jsx - Ensure ring and text are high contrast
+
+Test by:
+
+Squinting at the screen - can you still see the important elements?
+Taking a screenshot and converting to grayscale - is hierarchy still clear?

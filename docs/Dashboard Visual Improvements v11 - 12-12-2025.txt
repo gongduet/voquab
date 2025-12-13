@@ -1,0 +1,271 @@
+Claude Code Prompt: Fix ReviewForecast Component (v11)
+Task: Rewrite the ReviewForecast component to fix bar rendering, remove duplicate button, and improve layout.
+Issues to Fix
+
+Bars not rendering - Only numbers show, no visual bars
+Duplicate button - Remove "Review X cards" (use top Review button instead)
+Wasted whitespace - Bottom of component has unused space
+Timezone - Use local time consistently (like ActivityHeatmap)
+Today highlight - Make more prominent
+
+Replace Entire File
+Replace src/components/dashboard/ReviewForecast.jsx with:
+jsximport { Calendar } from 'lucide-react'
+
+/**
+ * ReviewForecast - Bar chart showing upcoming reviews by day
+ * 
+ * Shows next 7 days of scheduled reviews
+ */
+export default function ReviewForecast({ forecastData = [], loading = false }) {
+  // Generate default 7-day forecast if none provided
+  const displayData = forecastData.length > 0 ? forecastData : generateDefaultForecast()
+
+  // Get max count for scaling bars (minimum 10 to avoid tiny bars for small counts)
+  const maxCount = Math.max(10, ...displayData.map(d => d.count || 0))
+
+  // Calculate total for the week
+  const weekTotal = displayData.reduce((sum, d) => sum + (d.count || 0), 0)
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-neutral-900">Upcoming Reviews</h3>
+          <span className="text-xs text-neutral-400">Next 7 days</span>
+        </div>
+        <div className="flex items-end gap-2 h-24">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex-1 bg-neutral-200 rounded animate-pulse" style={{ height: `${Math.random() * 60 + 20}%` }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-neutral-100 p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold text-neutral-900">Upcoming Reviews</h3>
+        <span className="text-xs text-neutral-400">Next 7 days</span>
+      </div>
+
+      {/* Bar chart container - fixed height */}
+      <div className="flex items-end gap-1.5" style={{ height: '120px' }}>
+        {displayData.slice(0, 7).map((day, i) => {
+          const isToday = i === 0
+          const count = day.count || 0
+          
+          // Calculate bar height as percentage of container
+          // Minimum 4px for zero, scale up to 85% of container for max
+          const barHeight = count > 0 
+            ? Math.max(12, (count / maxCount) * 85) 
+            : 4
+
+          return (
+            <div
+              key={i}
+              className="flex-1 flex flex-col items-center"
+            >
+              {/* Today label */}
+              {isToday && (
+                <span className="text-[9px] font-bold text-primary-500 mb-0.5">
+                  TODAY
+                </span>
+              )}
+
+              {/* Count above bar */}
+              <span
+                className={`text-xs font-semibold mb-1 ${
+                  isToday 
+                    ? 'text-primary-600' 
+                    : count > 0 
+                      ? 'text-neutral-700' 
+                      : 'text-neutral-300'
+                }`}
+              >
+                {count}
+              </span>
+
+              {/* Bar - using explicit pixel height for reliability */}
+              <div 
+                className="w-full flex-1 flex items-end"
+                style={{ minHeight: '60px' }}
+              >
+                <div
+                  className={`w-full rounded-t transition-all duration-300 ${
+                    isToday ? 'shadow-sm' : ''
+                  }`}
+                  style={{
+                    height: `${barHeight}%`,
+                    backgroundColor: isToday 
+                      ? '#0ea5e9'  // primary-500
+                      : count > 0 
+                        ? '#7dd3fc'  // primary-300
+                        : '#e5e5e5', // neutral-200
+                    minHeight: count > 0 ? '8px' : '3px'
+                  }}
+                />
+              </div>
+
+              {/* Day label */}
+              <span
+                className={`text-[11px] mt-1.5 ${
+                  isToday 
+                    ? 'font-bold text-primary-600' 
+                    : 'font-medium text-neutral-400'
+                }`}
+              >
+                {day.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Total summary - compact */}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-neutral-100">
+        <span className="text-xs text-neutral-500 flex items-center gap-1">
+          <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+          Total this week
+        </span>
+        <span className="text-lg font-bold text-neutral-900">
+          {weekTotal}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Generate default 7-day forecast using LOCAL time
+ */
+function generateDefaultForecast() {
+  const days = []
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  
+  // Use local time for consistency with ActivityHeatmap
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() + i)
+
+    // Format as YYYY-MM-DD in local time
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+
+    days.push({
+      date: dateStr,
+      label: i === 0 ? 'Today' : dayLabels[date.getDay()],
+      count: 0
+    })
+  }
+
+  return days
+}
+Also Fix: Dashboard.jsx fetchForecastData (Local Time)
+In src/pages/Dashboard.jsx, update the fetchForecastData function to use local time for date boundaries. Find the function (around line 580-630) and update the date handling:
+javascript/**
+ * Fetch forecast data for next 7 days (includes lemmas + phrases)
+ * Uses LOCAL time for day boundaries to match user perception
+ */
+async function fetchForecastData(userId) {
+  const days = []
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  
+  // Use local time for day boundaries
+  const now = new Date()
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  for (let i = 0; i < 7; i++) {
+    const dayStart = new Date(todayLocal)
+    dayStart.setDate(todayLocal.getDate() + i)
+    
+    const dayEnd = new Date(dayStart)
+    dayEnd.setDate(dayStart.getDate() + 1)
+
+    // Format for display
+    const dateStr = formatLocalDate(dayStart)
+
+    // Query uses ISO strings (UTC) but we're querying for local day boundaries
+    const startISO = dayStart.toISOString()
+    const endISO = dayEnd.toISOString()
+
+    // Lemmas due in this time window
+    const { count: lemmaCount, error: lemmaError } = await supabase
+      .from('user_lemma_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('due_date', startISO)
+      .lt('due_date', endISO)
+
+    if (lemmaError && i === 0) {
+      console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
+    }
+
+    // Phrases due in this time window
+    const { count: phraseCount, error: phraseError } = await supabase
+      .from('user_phrase_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('due_date', startISO)
+      .lt('due_date', endISO)
+
+    if (phraseError && i === 0) {
+      console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+    }
+
+    days.push({
+      date: dateStr,
+      label: i === 0 ? 'Today' : dayLabels[dayStart.getDay()],
+      count: (lemmaCount || 0) + (phraseCount || 0)
+    })
+  }
+
+  console.log('[fetchForecastData] Forecast:', days.map(d => `${d.label}: ${d.count}`).join(', '))
+
+  return days
+}
+
+/**
+ * Format date as YYYY-MM-DD in local time
+ */
+function formatLocalDate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+```
+
+Note: Add the `formatLocalDate` helper function if it doesn't already exist in Dashboard.jsx.
+
+---
+
+### Expected Results
+
+| Issue | Expected Outcome |
+|-------|------------------|
+| Bars rendering | Blue bars visible, height proportional to count |
+| Today bar | Primary-500 color, "TODAY" label above |
+| Button removed | No "Review X cards" button at bottom |
+| Whitespace | Compact layout, no excess space |
+| Total | Shows week total with calendar icon |
+
+### Visual Preview
+```
+Upcoming Reviews                    Next 7 days
+
+TODAY
+  0      32     131      0       0       0       0
+  ▃      ▅      █       ▁       ▁       ▁       ▁
+Today   Sat    Sun    Mon     Tue     Wed     Thu
+
+📅 Total this week                           163
+
+This completes the dashboard fixes. After this, both Activity and Upcoming Reviews should render correctly.

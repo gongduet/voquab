@@ -261,117 +261,39 @@ async function addSentencesToPhraseCards(cards) {
 
 /**
  * Build a learn session with new/unintroduced words + phrases
+ * Uses PROPORTIONAL selection: if pool is 80% lemmas / 20% phrases, session is ~80/20
+ * Priority within each type: sentence order (words/phrases appear in book order)
  *
  * @param {string} userId - User ID
  * @param {number} sessionSize - Max cards in session
  * @returns {Object} - { cards, stats, mode }
  */
 export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SIZE) {
-  // Get unlocked chapters
-  const unlockedChapters = await getUnlockedChapters(userId)
+  // 1. Get unlocked chapter IDs
+  const unlockedChapterIds = await getUnlockedChapterIds(userId)
+  console.log('📚 Unlocked chapters:', unlockedChapterIds.length)
 
-  if (unlockedChapters.length === 0) {
-    // First chapter is always unlocked
-    unlockedChapters.push(1)
+  if (unlockedChapterIds.length === 0) {
+    return {
+      cards: [],
+      stats: { unintroducedAvailable: 0, selected: 0 },
+      mode: SessionMode.LEARN,
+      message: 'No chapters available.'
+    }
   }
 
-  // Get lemma IDs the user has already started
-  const { data: existingProgress } = await supabase
-    .from('user_lemma_progress')
-    .select('lemma_id')
-    .eq('user_id', userId)
+  // 2. Get unexposed lemmas from unlocked chapters (sorted by sentence order)
+  const unexposedLemmas = await getUnexposedLemmas(userId, unlockedChapterIds)
+  console.log('📖 Unexposed lemmas:', unexposedLemmas.length)
 
-  const existingLemmaIds = new Set((existingProgress || []).map(p => p.lemma_id))
+  // 3. Get unexposed phrases from unlocked chapters (sorted by sentence order)
+  const unexposedPhrases = await getUnexposedPhrases(userId, unlockedChapterIds)
+  console.log('📝 Unexposed phrases:', unexposedPhrases.length)
 
-  // Fetch unintroduced lemmas from unlocked chapters
-  // We need to find lemmas that appear in sentences from unlocked chapters
-  const { data: chaptersData } = await supabase
-    .from('chapters')
-    .select('chapter_id, chapter_number')
-    .in('chapter_number', unlockedChapters)
-
-  const chapterIds = (chaptersData || []).map(c => c.chapter_id)
-  const chapterIdToNumber = {}
-  for (const ch of chaptersData || []) {
-    chapterIdToNumber[ch.chapter_id] = ch.chapter_number
-  }
-
-  // Get sentence IDs from these chapters
-  const { data: sentences } = await supabase
-    .from('sentences')
-    .select('sentence_id, chapter_id')
-    .in('chapter_id', chapterIds)
-
-  const sentenceIds = (sentences || []).map(s => s.sentence_id)
-
-  // Get lemma IDs from words in these sentences
-  const { data: wordsData } = await supabase
-    .from('words')
-    .select('lemma_id')
-    .in('sentence_id', sentenceIds)
-
-  const chapterLemmaIds = [...new Set((wordsData || []).map(w => w.lemma_id))]
-
-  // Filter to unintroduced lemmas
-  const unintroducedLemmaIds = chapterLemmaIds.filter(id => !existingLemmaIds.has(id))
-
-  // Check if chapters are ready for phrases (20% of lemmas introduced)
-  const chaptersReadyForPhrases = await getChaptersReadyForPhrases(userId, unlockedChapters)
-
-  // Calculate lemma vs phrase count (80/20 split if phrases available)
-  const hasPhraseChapters = chaptersReadyForPhrases.length > 0
-  const lemmaCount = hasPhraseChapters ? Math.ceil(sessionSize * 0.8) : sessionSize
-  const phraseCount = hasPhraseChapters ? Math.floor(sessionSize * 0.2) : 0
-
-  // Fetch ALL unintroduced lemmas that are NOT stop words, then limit
-  const { data: lemmas } = await supabase
-    .from('lemmas')
-    .select('*')
-    .in('lemma_id', unintroducedLemmaIds)
-    .eq('is_stop_word', false)
-    .limit(lemmaCount)
-
-  console.log('📗 Learn session query:', {
-    unintroducedCount: unintroducedLemmaIds.length,
-    nonStopWordCount: lemmas?.length,
-    sessionSize,
-    lemmaCount,
-    phraseCount,
-    chaptersReadyForPhrases
-  })
-
-  // Build card objects for new words
-  const newCards = (lemmas || []).map(lemma => ({
-    lemma_id: lemma.lemma_id,
-    lemma: lemma.lemma_text,
-    english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
-    part_of_speech: lemma.part_of_speech,
-    // New card defaults
-    stability: null,
-    difficulty: null,
-    due_date: null,
-    fsrs_state: FSRSState.NEW,
-    reps: 0,
-    lapses: 0,
-    last_seen_at: null,
-    isExposure: false,
-    isNew: true,
-    card_type: 'lemma'
-  }))
-
-  // Fetch unintroduced phrases if chapters are ready
-  let phraseCards = []
-  if (phraseCount > 0) {
-    phraseCards = await getUnintroducedPhrases(userId, chaptersReadyForPhrases, phraseCount)
-  }
-
-  // Add sentences to lemma cards
-  const lemmaCardsWithSentences = await addSentencesToCards(newCards)
-
-  // Combine and shuffle
-  const allCards = shuffleArray([...lemmaCardsWithSentences, ...phraseCards])
-
-  if (allCards.length === 0) {
+  // 4. Calculate proportional counts
+  const totalPool = unexposedLemmas.length + unexposedPhrases.length
+  if (totalPool === 0) {
+    console.log('⚠️ No unexposed cards available')
     return {
       cards: [],
       stats: { unintroducedAvailable: 0, selected: 0 },
@@ -380,39 +302,389 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
     }
   }
 
+  const lemmaRatio = unexposedLemmas.length / totalPool
+  const phraseRatio = unexposedPhrases.length / totalPool
+
+  const lemmaCount = Math.round(sessionSize * lemmaRatio)
+  const phraseCount = sessionSize - lemmaCount // Remainder to phrases
+
+  console.log('📊 Proportions:', {
+    lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
+    phraseRatio: (phraseRatio * 100).toFixed(1) + '%',
+    lemmaCount,
+    phraseCount
+  })
+
+  // 5. Lemmas and phrases are already sorted by sentence order from getUnexposed* functions
+
+  // 6. Select proportional amounts
+  const selectedLemmas = unexposedLemmas.slice(0, lemmaCount).map(l => ({
+    ...l,
+    card_type: 'lemma',
+    isNew: true,
+    isExposure: false
+  }))
+
+  const selectedPhrases = unexposedPhrases.slice(0, phraseCount).map(p => ({
+    ...p,
+    card_type: 'phrase',
+    isNew: true,
+    isExposure: false
+  }))
+
+  // 7. Add sentences to lemma cards
+  const lemmaCardsWithSentences = await addSentencesToCards(selectedLemmas)
+
+  // 8. Combine and shuffle for variety
+  const session = shuffleArray([...lemmaCardsWithSentences, ...selectedPhrases])
+
+  console.log('🃏 Final session:', {
+    total: session.length,
+    lemmas: lemmaCardsWithSentences.length,
+    phrases: selectedPhrases.length
+  })
+
   const stats = {
-    unintroducedAvailable: unintroducedLemmaIds.length,
-    selected: allCards.length,
+    unintroducedAvailable: totalPool,
+    selected: session.length,
     lemmaCount: lemmaCardsWithSentences.length,
-    phraseCount: phraseCards.length,
-    unlockedChapters: unlockedChapters.length,
-    chaptersReadyForPhrases: chaptersReadyForPhrases.length
+    phraseCount: selectedPhrases.length,
+    lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
+    phraseRatio: (phraseRatio * 100).toFixed(1) + '%'
   }
 
   console.log('📗 Learn session built:', stats)
 
   return {
-    cards: allCards,
+    cards: session,
     stats,
     mode: SessionMode.LEARN
   }
 }
 
 /**
- * Check which chapters are ready for phrases (20%+ lemmas introduced)
+ * Get unlocked chapter IDs for a user
+ * A chapter is unlocked when 95% of the previous chapter's words are introduced
  *
  * @param {string} userId - User ID
- * @param {Array<number>} unlockedChapters - Array of unlocked chapter numbers
- * @returns {Array<number>} - Array of chapter numbers ready for phrases
+ * @returns {Array<string>} - Array of unlocked chapter UUIDs
  */
-async function getChaptersReadyForPhrases(userId, unlockedChapters) {
-  const readyChapters = []
+async function getUnlockedChapterIds(userId) {
+  // Get all chapters
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number')
+    .order('chapter_number', { ascending: true })
 
-  // Get user's introduced lemmas
+  if (!chapters || chapters.length === 0) {
+    // Return first chapter if it exists
+    const { data: firstChapter } = await supabase
+      .from('chapters')
+      .select('chapter_id')
+      .eq('chapter_number', 1)
+      .single()
+    return firstChapter ? [firstChapter.chapter_id] : []
+  }
+
+  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
   const { data: userProgress } = await supabase
     .from('user_lemma_progress')
     .select('lemma_id')
     .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
+
+  // First chapter always unlocked
+  const unlockedChapterIds = [chapters[0].chapter_id]
+
+  for (let i = 0; i < chapters.length - 1; i++) {
+    const currentChapter = chapters[i]
+
+    // Get lemmas for current chapter
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', currentChapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+
+    if (sentenceIds.length === 0) continue
+
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+    const introducedCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+    const totalCount = chapterLemmaIds.length
+
+    const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
+
+    // 95% threshold to unlock next chapter
+    if (introductionRate >= 0.95) {
+      const nextChapter = chapters[i + 1]
+      if (nextChapter) {
+        unlockedChapterIds.push(nextChapter.chapter_id)
+      }
+    } else {
+      // Stop - can't unlock further chapters
+      break
+    }
+  }
+
+  return unlockedChapterIds
+}
+
+/**
+ * Get unexposed lemmas from unlocked chapters, sorted by sentence order
+ *
+ * @param {string} userId - User ID
+ * @param {Array<string>} chapterIds - Array of unlocked chapter UUIDs
+ * @returns {Array<Object>} - Array of lemma card objects sorted by sentence order
+ */
+async function getUnexposedLemmas(userId, chapterIds) {
+  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
+  const { data: userProgress } = await supabase
+    .from('user_lemma_progress')
+    .select('lemma_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
+
+  // Get sentences from unlocked chapters with their order info
+  const { data: sentences } = await supabase
+    .from('sentences')
+    .select('sentence_id, sentence_order, chapter_id')
+    .in('chapter_id', chapterIds)
+    .order('sentence_order', { ascending: true })
+
+  if (!sentences || sentences.length === 0) return []
+
+  const sentenceIds = sentences.map(s => s.sentence_id)
+
+  // Build a map of sentence_id -> {chapter_id, sentence_order}
+  const sentenceInfo = {}
+  for (const s of sentences) {
+    sentenceInfo[s.sentence_id] = {
+      chapter_id: s.chapter_id,
+      sentence_order: s.sentence_order
+    }
+  }
+
+  // Get chapter numbers for sorting
+  const { data: chaptersData } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number')
+    .in('chapter_id', chapterIds)
+
+  const chapterNumbers = {}
+  for (const c of chaptersData || []) {
+    chapterNumbers[c.chapter_id] = c.chapter_number
+  }
+
+  // Get words with their lemma info
+  const { data: wordsData } = await supabase
+    .from('words')
+    .select(`
+      word_id,
+      word_text,
+      sentence_id,
+      lemma_id,
+      lemmas!inner (
+        lemma_id,
+        lemma_text,
+        definitions,
+        part_of_speech,
+        is_stop_word
+      )
+    `)
+    .in('sentence_id', sentenceIds)
+    .eq('lemmas.is_stop_word', false)
+
+  if (!wordsData || wordsData.length === 0) return []
+
+  // Filter to unexposed lemmas and dedupe, keeping first occurrence (sorted by sentence order)
+  const seen = new Set()
+  const unexposedLemmas = []
+
+  // Sort by chapter number then sentence order
+  const sortedWords = wordsData.sort((a, b) => {
+    const aInfo = sentenceInfo[a.sentence_id] || {}
+    const bInfo = sentenceInfo[b.sentence_id] || {}
+    const aChapter = chapterNumbers[aInfo.chapter_id] || 0
+    const bChapter = chapterNumbers[bInfo.chapter_id] || 0
+
+    if (aChapter !== bChapter) return aChapter - bChapter
+    return (aInfo.sentence_order || 0) - (bInfo.sentence_order || 0)
+  })
+
+  for (const word of sortedWords) {
+    const lemmaId = word.lemma_id
+    if (introducedLemmaIds.has(lemmaId) || seen.has(lemmaId)) continue
+
+    seen.add(lemmaId)
+    const lemma = word.lemmas
+
+    unexposedLemmas.push({
+      lemma_id: lemma.lemma_id,
+      lemma: lemma.lemma_text,
+      english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
+      part_of_speech: lemma.part_of_speech,
+      // Track sentence order for sorting
+      chapter_number: chapterNumbers[sentenceInfo[word.sentence_id]?.chapter_id] || 0,
+      sentence_order: sentenceInfo[word.sentence_id]?.sentence_order || 0,
+      // New card defaults
+      stability: null,
+      difficulty: null,
+      due_date: null,
+      fsrs_state: FSRSState.NEW,
+      reps: 0,
+      lapses: 0,
+      last_seen_at: null
+    })
+  }
+
+  return unexposedLemmas
+}
+
+/**
+ * Get unexposed phrases from unlocked chapters, sorted by sentence order
+ * Uses phrase_occurrences -> sentences -> chapters path
+ *
+ * @param {string} userId - User ID
+ * @param {Array<string>} chapterIds - Array of unlocked chapter UUIDs
+ * @returns {Array<Object>} - Array of phrase card objects sorted by sentence order
+ */
+async function getUnexposedPhrases(userId, chapterIds) {
+  // Get user's introduced phrases (reps >= 1 means reviewed at least once)
+  const { data: userProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const introducedPhraseIds = new Set((userProgress || []).map(p => p.phrase_id))
+
+  // Get sentences from unlocked chapters
+  const { data: sentences } = await supabase
+    .from('sentences')
+    .select('sentence_id, sentence_order, sentence_text, sentence_translation, chapter_id')
+    .in('chapter_id', chapterIds)
+    .order('sentence_order', { ascending: true })
+
+  if (!sentences || sentences.length === 0) return []
+
+  const sentenceIds = sentences.map(s => s.sentence_id)
+
+  // Build a map of sentence_id -> sentence info
+  const sentenceInfo = {}
+  for (const s of sentences) {
+    sentenceInfo[s.sentence_id] = {
+      chapter_id: s.chapter_id,
+      sentence_order: s.sentence_order,
+      sentence_text: s.sentence_text,
+      sentence_translation: s.sentence_translation
+    }
+  }
+
+  // Get chapter numbers for sorting
+  const { data: chaptersData } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number')
+    .in('chapter_id', chapterIds)
+
+  const chapterNumbers = {}
+  for (const c of chaptersData || []) {
+    chapterNumbers[c.chapter_id] = c.chapter_number
+  }
+
+  // Get phrase occurrences from these sentences
+  const { data: occurrences } = await supabase
+    .from('phrase_occurrences')
+    .select(`
+      phrase_id,
+      sentence_id,
+      start_position,
+      phrases!inner (
+        phrase_id,
+        phrase_text,
+        definitions
+      )
+    `)
+    .in('sentence_id', sentenceIds)
+
+  if (!occurrences || occurrences.length === 0) return []
+
+  // Sort by chapter number then sentence order
+  const sortedOccurrences = occurrences.sort((a, b) => {
+    const aInfo = sentenceInfo[a.sentence_id] || {}
+    const bInfo = sentenceInfo[b.sentence_id] || {}
+    const aChapter = chapterNumbers[aInfo.chapter_id] || 0
+    const bChapter = chapterNumbers[bInfo.chapter_id] || 0
+
+    if (aChapter !== bChapter) return aChapter - bChapter
+    return (aInfo.sentence_order || 0) - (bInfo.sentence_order || 0)
+  })
+
+  // Filter to unexposed phrases and dedupe, keeping first occurrence
+  const seen = new Set()
+  const unexposedPhrases = []
+
+  for (const occ of sortedOccurrences) {
+    const phraseId = occ.phrase_id
+    if (introducedPhraseIds.has(phraseId) || seen.has(phraseId)) continue
+
+    seen.add(phraseId)
+    const phrase = occ.phrases
+    const sentInfo = sentenceInfo[occ.sentence_id] || {}
+
+    unexposedPhrases.push({
+      phrase_id: phrase.phrase_id,
+      lemma: phrase.phrase_text,  // Use lemma field for display consistency
+      english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
+      part_of_speech: 'PHRASE',
+      word_in_sentence: phrase.phrase_text,
+      // Sentence info for display
+      example_sentence: sentInfo.sentence_text,
+      example_sentence_translation: sentInfo.sentence_translation,
+      // Track sentence order for sorting
+      chapter_number: chapterNumbers[sentInfo.chapter_id] || 0,
+      sentence_order: sentInfo.sentence_order || 0,
+      // New card defaults
+      stability: null,
+      difficulty: null,
+      due_date: null,
+      fsrs_state: FSRSState.NEW,
+      reps: 0,
+      lapses: 0,
+      last_seen_at: null
+    })
+  }
+
+  return unexposedPhrases
+}
+
+/**
+ * Check which chapters are ready for phrases (20%+ lemmas introduced)
+ * NOTE: This function is no longer used - phrases are now included from all unlocked chapters
+ *
+ * @param {string} userId - User ID
+ * @param {Array<number>} unlockedChapters - Array of unlocked chapter numbers
+ * @returns {Array<number>} - Array of chapter numbers ready for phrases
+ * @deprecated Use getUnexposedPhrases with unlocked chapter IDs instead
+ */
+async function getChaptersReadyForPhrases(userId, unlockedChapters) {
+  const readyChapters = []
+
+  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
+  const { data: userProgress } = await supabase
+    .from('user_lemma_progress')
+    .select('lemma_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
 
   const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
 
@@ -464,11 +736,12 @@ async function getChaptersReadyForPhrases(userId, unlockedChapters) {
  * @returns {Array<Object>} - Array of phrase card objects
  */
 async function getUnintroducedPhrases(userId, chapterNumbers, limit) {
-  // Get phrase IDs the user has already started
+  // Get phrase IDs the user has already introduced (reps >= 1)
   const { data: existingPhraseProgress } = await supabase
     .from('user_phrase_progress')
     .select('phrase_id')
     .eq('user_id', userId)
+    .gte('reps', 1)
 
   const existingPhraseIds = new Set((existingPhraseProgress || []).map(p => p.phrase_id))
 
@@ -691,11 +964,12 @@ export async function getUnlockedChapters(userId) {
     return [1] // First chapter always unlocked
   }
 
-  // Get user's introduced lemmas
+  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
   const { data: userProgress } = await supabase
     .from('user_lemma_progress')
     .select('lemma_id')
     .eq('user_id', userId)
+    .gte('reps', 1)
 
   const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
 

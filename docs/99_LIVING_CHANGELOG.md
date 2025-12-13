@@ -23,18 +23,118 @@ This changelog tracks all significant changes to Voquab. It follows [Keep a Chan
 ## [Unreleased]
 
 ### Foundation Phase (Current)
-Working on database redesign and comprehensive documentation before MVP launch.
-
-#### Added
-- New simplified database schema (lemmas + words architecture)
-- Comprehensive documentation suite (28 documents planned)
-- Content pipeline specification
-- Learning algorithm specification (10 mastery levels, health system)
-- Design system documentation (Little Prince aesthetic)
+Working on final polish and testing before MVP launch.
 
 #### In Progress
 - Component library build-out
-- Comprehensive chapter-by-chapter quality review
+- End-to-end testing
+
+---
+
+## [2025-12-13] - FSRS Algorithm Implementation & Phrases Integration
+
+### 🚀 Major Features
+
+#### FSRS Algorithm Implemented
+Replaced custom mastery/health system with research-backed FSRS (Free Spaced Repetition Scheduler).
+
+**Benefits:**
+- 20-30% fewer reviews for same retention (research-proven)
+- Uses ts-fsrs library with default FSRS-6 parameters
+- 8 database columns instead of previous 14 (simplified architecture)
+- Stability-based intervals (0.5 days to 365+ days)
+- Difficulty adaptation (1-10 scale)
+- Four FSRS states: New, Learning, Review, Relearning
+
+**New FSRS Columns:**
+- `stability` (REAL) - Days until 90% recall probability
+- `difficulty` (REAL) - Item complexity 1-10
+- `due_date` (TIMESTAMPTZ) - When card should be reviewed
+- `fsrs_state` (SMALLINT) - 0=New, 1=Learning, 2=Review, 3=Relearning
+- `reps` (INTEGER) - Total repetitions
+- `lapses` (INTEGER) - Times failed
+- `last_seen_at` (TIMESTAMPTZ) - Last exposure (review or oversampling)
+
+#### Phrases Integration
+Multi-word expressions now appear in flashcard sessions.
+
+**Features:**
+- Phrases introduced after 20% of chapter lemmas learned
+- 80/20 lemma-to-phrase ratio in sessions (12 lemmas, 3 phrases per 15-card deck)
+- Separate tracking in `user_phrase_progress` table
+- Same FSRS scheduling as lemmas
+- Purple "Phrase" badge for visual distinction
+- Links: phrases → phrase_occurrences → sentences
+
+#### Exposure Insurance
+Oversampling prevents stable words from being forgotten.
+
+**Logic:**
+- High-activity users (100+ reviews/day): 10 exposure cards per session
+- Medium-activity (50-99 reviews/day): 5 exposure cards
+- Low-activity (<50 reviews/day): 2 exposure cards
+- Stable cards (30+ day stability) resurface every 7-21 days
+- Amber "Exposure" badge indicates oversampling
+
+### 🐛 Bug Fixes
+- Fixed word duplication in sentences ("el fracaso el fracaso" → "el fracaso")
+- Fixed card counts not respecting user settings (was random 12-16, now respects setting)
+- Fixed verb conjugations not bolding in sentences (now bolds actual form: "vivía" not "vivir")
+- Fixed "Again" button incrementing progress incorrectly (now requeues without advancing)
+- Fixed stop word filtering in session builder (was including stop words)
+
+### 🎨 UI/UX Improvements
+- Part of speech moved from front to back of card (full word instead of abbreviation)
+- Spanish and English sentences both italic for consistency
+- English word bolding removed (translations not always literal)
+- Floating "+X days" animation replaces ugly yellow notification box
+- "New Word" badge moved inside card (top-right corner)
+- Badge styling matches header design (cleaner, more subtle)
+- Mode toggle hidden during active session (prevents accidental exit)
+- Sentence text increased to 18px (better readability)
+
+### 🗄️ Database Changes
+- Added 7 FSRS columns to `user_lemma_progress` and `user_phrase_progress`
+- Created indexes for efficient due card queries and exposure filtering
+- Added `get_chapter_progress()` SQL function for chapter unlocking
+- Marked old columns as deprecated (`mastery_level`, `health`, `correct_reviews`)
+
+### 📝 Migration
+- Successfully migrated 73 existing user progress records to FSRS
+- Preserved all user data (no loss of progress)
+- Mapped mastery levels to stability values
+- Calculated initial due dates from health values
+
+### 🎯 Study Modes
+- **Review Due:** FSRS-scheduled cards + exposure oversampling
+- **Learn New:** Unintroduced lemmas + phrases (80/20 mix after 20% threshold)
+- **Chapter Focus:** Planned for future (60% due + 20% exposure + 20% overflow)
+
+### 📊 Session Composition
+- Default: 25 cards per session (user-configurable in settings)
+- Respects user preference from `user_settings` table
+- Adapts based on available cards (won't show 25 if only 6 available)
+
+### 🔧 Technical Improvements
+- Installed framer-motion for smooth animations
+- Created modular service architecture (`fsrsService.js`, `sessionBuilder.js`)
+- Separated concerns: scheduling, session building, progress tracking
+- Comprehensive error handling and edge case coverage
+
+### 📚 New Documentation
+- Created `FSRS_IMPLEMENTATION_SPEC.md` (comprehensive algorithm guide)
+- Created `FLASHCARD_BUG_FIXES_SPEC.md` (detailed fix documentation)
+
+### ⚠️ Breaking Changes
+- Old `mastery_level` and `health` columns deprecated (will be removed in 30 days)
+- Card selection algorithm completely replaced (FSRS-based)
+- Progress tracking now uses FSRS state machine instead of custom logic
+
+### 🔮 Future Improvements (Planned)
+- Per-user FSRS parameter optimization (after 400+ reviews)
+- Chapter Focus study mode implementation
+- Homepage dashboard with comprehensive progress tracking
+- Personalized difficulty estimation for new words
 
 ---
 

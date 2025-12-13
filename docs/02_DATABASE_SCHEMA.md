@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 12, 2025
+**Last Updated:** December 13, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -358,26 +358,49 @@ COMMENT ON TABLE phrase_occurrences IS 'Tracks where phrases appear in text';
 
 ### user_phrase_progress
 
-Tracks user mastery of phrases (parallel to user_lemma_progress).
+Tracks user's FSRS-based progress for phrases (parallel to user_lemma_progress).
 
 ```sql
 CREATE TABLE user_phrase_progress (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   phrase_id UUID NOT NULL REFERENCES phrases(phrase_id) ON DELETE CASCADE,
+
+  -- FSRS Scheduling Columns (Active)
+  stability REAL,                    -- Days until 90% recall probability
+  difficulty REAL,                   -- Item complexity on 1-10 scale
+  due_date TIMESTAMPTZ,             -- When card should be reviewed
+  fsrs_state SMALLINT DEFAULT 0,    -- 0=New, 1=Learning, 2=Review, 3=Relearning
+  reps INTEGER DEFAULT 0,           -- Total number of reviews
+  lapses INTEGER DEFAULT 0,         -- Number of times "Again" pressed
+  last_seen_at TIMESTAMPTZ,         -- Last time card shown (review or exposure)
+
+  -- Deprecated Columns (will be removed after 30 days)
   mastery_level INTEGER DEFAULT 0 CHECK (mastery_level >= 0 AND mastery_level <= 100),
   health INTEGER DEFAULT 0 CHECK (health >= 0 AND health <= 100),
-  total_reviews INTEGER DEFAULT 0,
   last_reviewed_at TIMESTAMPTZ,
+
+  -- Still active
+  total_reviews INTEGER DEFAULT 0,
   review_history JSONB DEFAULT '[]'::jsonb,
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (user_id, phrase_id)
 );
 
-COMMENT ON TABLE user_phrase_progress IS 'User mastery tracking for idiomatic phrases';
+-- FSRS Indexes for phrase queries
+CREATE INDEX idx_phrase_progress_due ON user_phrase_progress(user_id, due_date);
+CREATE INDEX idx_phrase_progress_exposure ON user_phrase_progress(user_id, stability, fsrs_state, last_seen_at);
+
+COMMENT ON TABLE user_phrase_progress IS 'FSRS-based progress tracking for idiomatic phrases';
 ```
 
-**Purpose:** Allow users to study phrases as flashcards alongside individual lemmas.
+**Purpose:** Allows users to study phrases as flashcards with the same FSRS scheduling as lemmas.
+
+**Phrase Integration:**
+- Phrases appear in Learn sessions after 20% of chapter lemmas introduced
+- 80/20 lemma-to-phrase ratio in sessions (12 lemmas, 3 phrases per 15-card session)
+- Same FSRS algorithm applies to phrases
 
 ---
 
@@ -455,57 +478,77 @@ COMMENT ON COLUMN validation_reports.has_multiple_meanings IS 'True if word has 
 
 ### user_lemma_progress
 
-Tracks user's mastery and health for each lemma.
+Tracks user's FSRS-based progress for each lemma.
 
 ```sql
 CREATE TABLE user_lemma_progress (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   lemma_id UUID NOT NULL REFERENCES lemmas(lemma_id) ON DELETE CASCADE,
-  
-  -- Mastery tracking
-  mastery_level INTEGER DEFAULT 0 CHECK (mastery_level >= 0 AND mastery_level <= 100),
-  last_correct_review_at TIMESTAMPTZ,
-  
-  -- Health tracking
-  health INTEGER DEFAULT 0 CHECK (health >= 0 AND health <= 100),
-  last_reviewed_at TIMESTAMPTZ,
-  
-  -- Review counts
+
+  -- FSRS Scheduling Columns (Active)
+  stability REAL,                    -- Days until 90% recall probability
+  difficulty REAL,                   -- Item complexity on 1-10 scale
+  due_date TIMESTAMPTZ,             -- When card should be reviewed
+  fsrs_state SMALLINT DEFAULT 0,    -- 0=New, 1=Learning, 2=Review, 3=Relearning
+  reps INTEGER DEFAULT 0,           -- Total number of reviews
+  lapses INTEGER DEFAULT 0,         -- Number of times "Again" pressed
+  last_seen_at TIMESTAMPTZ,         -- Last time card shown (review or exposure)
+
+  -- Deprecated Columns (will be removed after 30 days - 2025-01-13)
+  mastery_level INTEGER DEFAULT 0 CHECK (mastery_level >= 0 AND mastery_level <= 100),  -- Use stability instead
+  health INTEGER DEFAULT 0 CHECK (health >= 0 AND health <= 100),                        -- Use retrievability calc
+  correct_reviews INTEGER DEFAULT 0,                                                      -- Use (reps - lapses)
+  last_correct_review_at TIMESTAMPTZ,  -- Replaced by due_date
+  last_reviewed_at TIMESTAMPTZ,         -- Replaced by last_seen_at
+  review_due DATE,                      -- Replaced by due_date (TIMESTAMPTZ)
+
+  -- Still active
   total_reviews INTEGER DEFAULT 0,
-  correct_reviews INTEGER DEFAULT 0,
-  
-  -- Spaced repetition
-  review_due DATE,
-  
-  -- Struggling word detection
   failed_in_last_3_sessions BOOLEAN DEFAULT FALSE,
-  
-  -- Review history (last 20 reviews)
   review_history JSONB DEFAULT '[]'::jsonb,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   PRIMARY KEY (user_id, lemma_id)
 );
 
-COMMENT ON COLUMN user_lemma_progress.health IS 'Starts at 0 for new words, increases with reviews, decays over time';
-COMMENT ON COLUMN user_lemma_progress.review_history IS 'Array of last 20 reviews: [{date, difficulty, mastery_before, mastery_after}]';
+-- FSRS Indexes for efficient queries
+CREATE INDEX idx_user_progress_due ON user_lemma_progress(user_id, due_date);
+CREATE INDEX idx_user_progress_exposure ON user_lemma_progress(user_id, stability, fsrs_state, last_seen_at);
+
+COMMENT ON COLUMN user_lemma_progress.stability IS 'FSRS: Days until 90% recall probability. Higher = better learned.';
+COMMENT ON COLUMN user_lemma_progress.difficulty IS 'FSRS: Item complexity 1-10. Higher = harder to learn.';
+COMMENT ON COLUMN user_lemma_progress.due_date IS 'FSRS: When card should be reviewed. NULL = new card.';
+COMMENT ON COLUMN user_lemma_progress.fsrs_state IS 'FSRS state: 0=New, 1=Learning, 2=Review, 3=Relearning';
+COMMENT ON COLUMN user_lemma_progress.reps IS 'Total number of times this card has been reviewed';
+COMMENT ON COLUMN user_lemma_progress.lapses IS 'Number of times user pressed Again (forgot)';
+COMMENT ON COLUMN user_lemma_progress.last_seen_at IS 'Last exposure (review OR oversampling)';
 ```
 
-**Example:**
+**FSRS State Values:**
+
+| State | Value | Description |
+|-------|-------|-------------|
+| New | 0 | Never reviewed |
+| Learning | 1 | Just started, short intervals |
+| Review | 2 | In regular review cycle |
+| Relearning | 3 | Failed, back to short intervals |
+
+**Example (FSRS):**
 
 ```json
 {
   "user_id": "user-abc",
-  "lemma_id": "uuid-1", // "vivir"
-  "mastery_level": 45,
-  "health": 70,
-  "total_reviews": 12,
-  "correct_reviews": 9,
-  "last_reviewed_at": "2025-11-30T14:30:00Z",
-  "review_due": "2025-12-03",
-  "failed_in_last_3_sessions": false
+  "lemma_id": "uuid-1",
+  "stability": 14.5,
+  "difficulty": 4.2,
+  "due_date": "2025-12-27T14:30:00Z",
+  "fsrs_state": 2,
+  "reps": 8,
+  "lapses": 1,
+  "last_seen_at": "2025-12-13T14:30:00Z",
+  "total_reviews": 8
 }
 ```
 
@@ -1008,7 +1051,8 @@ WHERE ucp.user_id = :user_id AND ucp.chapter_id = :chapter_id;
 
 - 2025-11-30: Initial draft (Claude)
 - 2025-12-06: Added validation_reports table for AI quality assurance (Claude)
-- 2025-12-12: Updated validation_reports schema to match actual columns (has_multiple_meanings, alternative_meanings, reviewed_by_human) (Claude)
+- 2025-12-12: Updated validation_reports schema to match actual columns (Claude)
+- 2025-12-13: **Major update** - Added FSRS columns to user_lemma_progress and user_phrase_progress, marked old mastery/health columns as deprecated (Claude)
 - Status: Active
 
 ---

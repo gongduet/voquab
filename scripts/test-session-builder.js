@@ -80,19 +80,30 @@ async function testReviewSession(userId) {
   return true
 }
 
-// Test: New cards query (for Learn mode)
+// Test: New cards query (for Learn mode) with proportional phrase/lemma mix
 async function testLearnSession(userId) {
   console.log()
-  console.log('📋 Test 2: Learn session - finding new cards...')
+  console.log('📋 Test 2: Learn session - proportional phrase/lemma mix...')
 
-  // Get existing lemma IDs
+  // Get existing lemma IDs (reps >= 1)
   const { data: existingProgress } = await supabase
     .from('user_lemma_progress')
     .select('lemma_id')
     .eq('user_id', userId)
+    .gte('reps', 1)
 
   const existingLemmaIds = new Set((existingProgress || []).map(p => p.lemma_id))
   console.log(`  ✅ User has ${existingLemmaIds.size} introduced lemmas`)
+
+  // Get existing phrase IDs (reps >= 1)
+  const { data: existingPhraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .gte('reps', 1)
+
+  const existingPhraseIds = new Set((existingPhraseProgress || []).map(p => p.phrase_id))
+  console.log(`  ✅ User has ${existingPhraseIds.size} introduced phrases`)
 
   // Get chapter 1
   const { data: chapter } = await supabase
@@ -114,17 +125,46 @@ async function testLearnSession(userId) {
 
   const sentenceIds = (sentences || []).map(s => s.sentence_id)
 
-  // Get lemmas from these sentences
+  // Get lemmas from these sentences (non-stop words)
   const { data: words } = await supabase
     .from('words')
-    .select('lemma_id')
+    .select('lemma_id, lemmas!inner(is_stop_word)')
     .in('sentence_id', sentenceIds)
+    .eq('lemmas.is_stop_word', false)
 
   const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-  const unintroducedCount = chapterLemmaIds.filter(id => !existingLemmaIds.has(id)).length
+  const introducedLemmas = chapterLemmaIds.filter(id => existingLemmaIds.has(id))
 
-  console.log(`  ✅ Chapter 1 has ${chapterLemmaIds.length} total lemmas`)
-  console.log(`  ✅ ${unintroducedCount} unintroduced lemmas available for learning`)
+  console.log(`  ✅ Chapter 1 has ${chapterLemmaIds.length} total lemmas (non-stop)`)
+  console.log(`  ✅ ${introducedLemmas.length} introduced lemmas`)
+
+  // Get phrases from these sentences via phrase_occurrences
+  const { data: phraseOccurrences } = await supabase
+    .from('phrase_occurrences')
+    .select('phrase_id')
+    .in('sentence_id', sentenceIds)
+
+  const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(o => o.phrase_id))]
+  const introducedPhrases = chapterPhraseIds.filter(id => existingPhraseIds.has(id))
+
+  console.log(`  ✅ Chapter 1 has ${chapterPhraseIds.length} total phrases`)
+  console.log(`  ✅ ${introducedPhrases.length} introduced phrases`)
+
+  // Calculate chapter progress (like fetchChaptersProgress does)
+  const totalIntroduced = introducedLemmas.length + introducedPhrases.length
+  const totalInChapter = chapterLemmaIds.length + chapterPhraseIds.length
+  const rate = totalInChapter > 0 ? Math.round((totalIntroduced / totalInChapter) * 100) : 0
+
+  console.log()
+  console.log(`  📊 Chapter 1 Progress: ${totalIntroduced}/${totalInChapter} (${rate}%)`)
+  console.log(`     Lemmas: ${introducedLemmas.length}/${chapterLemmaIds.length}`)
+  console.log(`     Phrases: ${introducedPhrases.length}/${chapterPhraseIds.length}`)
+
+  if (rate >= 95) {
+    console.log('  🔓 Chapter 2 should be UNLOCKED (>= 95%)')
+  } else {
+    console.log(`  🔒 Chapter 2 locked (need ${Math.ceil(totalInChapter * 0.95) - totalIntroduced} more)`)
+  }
 
   return true
 }

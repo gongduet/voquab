@@ -1,0 +1,236 @@
+Comprehensive Dashboard Issues Analysis
+CRITICAL (Blocking)
+1. Quick Action Buttons Still Invisible
+This has failed twice. Need to debug why Tailwind classes aren't applying. Likely causes:
+
+Tailwind not compiling the primary/secondary color classes
+Parent container overriding styles
+Conditional rendering issue
+
+2. Chapter 1 Progress Bar Not Filling
+Shows "65%" text but bar appears empty. This is likely a Tailwind dynamic class issue:
+jsx// ❌ This won't work - Tailwind can't parse dynamic classes
+className={`w-[${progress}%]`}
+
+// ✅ Must use inline style for dynamic widths
+style={{ width: `${progress}%` }}
+
+DATA INTEGRATION (Phrases Missing)
+The dashboard currently only counts lemmas. Phrases need to be folded in everywhere:
+ComponentCurrentShould IncludeHeroStats "Learning"user_lemma_progress count+ user_phrase_progressQuickActions "Due"lemmas due+ phrases dueQuickActions "New"unintroduced lemmas+ unintroduced phrasesActivity Heatmaplemma reviews+ phrase reviewsCategoryPills "Phrases"shows 0query user_phrase_progressChapter progresslemmas per chapter+ phrases per chapter
+Unified approach: When querying activity/progress, UNION or combine both tables.
+
+LAYOUT ISSUES
+3. Expand/Collapse Button Position
+Currently at bottom. Move to top of Chapters section, next to the "Chapters" heading:
+jsx<div className="flex justify-between items-center mb-4">
+  <h2>Chapters</h2>
+  <button onClick={toggle}>
+    {isExpanded ? 'Show less' : `View all ${chapters.length}`}
+  </button>
+</div>
+4. Chapter Cards Layout
+Single column is too spread out. Return to 2-column grid:
+jsx<div className="grid grid-cols-2 gap-4">
+  {chapters.map(ch => <ChapterCard />)}
+</div>
+Cards should be compact, not full-width.
+
+VISUAL REFINEMENT
+5. Borders/Shadows Too Heavy
+Current: border border-neutral-200 shadow-md (too prominent)
+Target: border border-neutral-100 shadow-sm or just shadow (subtle)
+The goal is cards that "float" slightly, not boxes with heavy outlines.
+
+ACTIVITY HEATMAP FIXES
+6. No Review Counts on Cells
+Add the count number inside cells with activity:
+jsx<div className={colorClass}>
+  {count > 0 && <span className="text-[8px]">{count}</span>}
+</div>
+7. No Streak Information
+Add below the heatmap grid:
+jsx<div className="flex justify-between text-sm mt-3 pt-3 border-t">
+  <span>🔥 Current streak: <strong>7 days</strong></span>
+  <span>Best: <strong>23 days</strong></span>
+</div>
+Streak calculation: consecutive days with at least 1 review, counting backward from today.
+8. Heatmap Colors Not Differentiating
+All cells look the same gray. Either:
+
+Data isn't loading (check console)
+Color thresholds too high
+Color classes not being applied
+
+
+DATA ACCURACY
+9. Words by Type Missing Categories
+Only Nouns (52) and Verbs (36) have counts. Others show 0.
+Check: What values exist in lemmas.part_of_speech?
+sqlSELECT DISTINCT part_of_speech, COUNT(*) 
+FROM lemmas 
+GROUP BY part_of_speech;
+The query might be case-sensitive or using different labels (e.g., "noun" vs "NOUN" vs "Noun").
+
+TERMINOLOGY CONSISTENCY
+10. "Words" vs "Words & Phrases"
+Throughout the UI, we say "words" but we're tracking both. Options:
+
+Keep "words" as shorthand (simpler)
+Change to "items" or "vocabulary" (accurate)
+Show "113 words + 12 phrases" separately (verbose but clear)
+
+Recommendation: Keep "words" for simplicity but ensure the counts include phrases.
+
+Claude Code Prompt
+Task: Fix remaining Dashboard issues. Priority order below.
+Priority 1: Quick Actions Buttons (CRITICAL)
+The buttons are still invisible. Debug and fix:
+
+Check tailwind.config.js - verify primary and secondary colors are defined with all shades (50-900)
+In QuickActions.jsx, temporarily use inline styles to confirm rendering:
+
+jsx<button 
+  style={{ 
+    backgroundColor: '#0ea5e9', 
+    color: 'white',
+    height: '7rem',
+    borderRadius: '0.75rem'
+  }}
+  className="flex-1 flex flex-col items-center justify-center gap-2 font-bold shadow-md"
+>
+
+If inline styles work, the issue is Tailwind config. Rebuild with npm run build or restart dev server.
+Check for any parent container with opacity, visibility, or color overrides.
+
+Priority 2: Progress Bar Dynamic Width
+In ChapterCarousel.jsx, progress bars likely use dynamic Tailwind classes which don't work. Fix:
+jsx// ❌ Remove this pattern
+className={`w-[${Math.round(progress * 100)}%]`}
+
+// ✅ Use inline style instead
+<div 
+  className="h-2 bg-primary-500 rounded-full transition-all"
+  style={{ width: `${Math.round(progress * 100)}%` }}
+/>
+Priority 3: Integrate Phrases Throughout
+Update these queries to include user_phrase_progress:
+HeroStats - "Learning" count:
+sqlSELECT 
+  (SELECT COUNT(*) FROM user_lemma_progress WHERE user_id = $1 AND introduced = true) +
+  (SELECT COUNT(*) FROM user_phrase_progress WHERE user_id = $1 AND introduced = true) 
+AS learning_count
+QuickActions - Due count:
+sqlSELECT 
+  (SELECT COUNT(*) FROM user_lemma_progress WHERE user_id = $1 AND due_date <= NOW()) +
+  (SELECT COUNT(*) FROM user_phrase_progress WHERE user_id = $1 AND due_date <= NOW())
+AS due_count
+ActivityHeatmap - Reviews per day:
+sqlSELECT date, SUM(reviews) as reviews FROM (
+  SELECT DATE(last_seen_at) as date, COUNT(*) as reviews
+  FROM user_lemma_progress WHERE user_id = $1 AND last_seen_at >= NOW() - INTERVAL '35 days'
+  GROUP BY DATE(last_seen_at)
+  UNION ALL
+  SELECT DATE(last_seen_at) as date, COUNT(*) as reviews  
+  FROM user_phrase_progress WHERE user_id = $1 AND last_seen_at >= NOW() - INTERVAL '35 days'
+  GROUP BY DATE(last_seen_at)
+) combined GROUP BY date
+CategoryPills - Phrases count:
+sql-- Add phrase count
+SELECT COUNT(*) FROM user_phrase_progress WHERE user_id = $1 AND introduced = true
+Priority 4: Chapter Layout Fixes
+Move expand/collapse to top:
+jsx<section>
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-lg font-bold text-neutral-900">Chapters</h2>
+    <button 
+      onClick={() => setIsExpanded(!isExpanded)}
+      className="text-primary-500 text-sm font-medium flex items-center gap-1"
+    >
+      {isExpanded ? (
+        <>Show less <ChevronUp className="w-4 h-4" /></>
+      ) : (
+        <>View all {chapters.length} <ChevronDown className="w-4 h-4" /></>
+      )}
+    </button>
+  </div>
+  
+  <div className="grid grid-cols-2 gap-3">
+    {visibleChapters.map(ch => <ChapterCard />)}
+  </div>
+</section>
+Make chapter cards compact:
+
+Reduce padding from p-4 to p-3
+Smaller text: text-sm for title, text-xs for stats
+Remove or shrink the Study button
+
+Priority 5: Activity Heatmap Enhancements
+Add review counts inside cells:
+jsx<div className={`${colorClass} w-6 h-6 rounded flex items-center justify-center`}>
+  {count > 0 && (
+    <span className="text-[8px] font-bold text-white">{count}</span>
+  )}
+</div>
+Add streak info:
+jsx// After the heatmap grid
+<div className="flex justify-between text-sm mt-3 pt-3 border-t border-neutral-100">
+  <span className="text-neutral-600">
+    🔥 Current streak: <span className="font-bold text-neutral-900">{currentStreak} days</span>
+  </span>
+  <span className="text-neutral-600">
+    Best: <span className="font-bold text-neutral-900">{bestStreak} days</span>
+  </span>
+</div>
+Calculate streaks:
+javascript// In Dashboard.jsx or a utility
+function calculateStreaks(activityData) {
+  // Sort by date descending
+  const sorted = [...activityData].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  let currentStreak = 0;
+  let today = new Date().toISOString().split('T')[0];
+  
+  // Check if today has activity, if not check yesterday
+  // Count consecutive days backward
+  // ... implementation
+  
+  return { currentStreak, bestStreak };
+}
+Priority 6: Reduce Visual Weight
+Soften borders and shadows:
+jsx// Cards throughout dashboard
+className="bg-white rounded-xl border border-neutral-100 shadow-sm"
+// Instead of: border-neutral-200 shadow-md
+Current chapter highlight - softer:
+jsxclassName="ring-1 ring-primary-200 border-primary-100"
+// Instead of: ring-2 ring-primary-500
+Priority 7: Words by Type Data
+Query the database to see what part_of_speech values exist:
+sqlSELECT DISTINCT part_of_speech, COUNT(*) as count
+FROM lemmas
+GROUP BY part_of_speech
+ORDER BY count DESC;
+Map whatever values exist to the display categories. May need normalization:
+javascriptconst categoryMap = {
+  'noun': 'Nouns',
+  'NOUN': 'Nouns', 
+  'verb': 'Verbs',
+  'VERB': 'Verbs',
+  'adj': 'Adjectives',
+  'ADJ': 'Adjectives',
+  // etc.
+};
+
+Files to Modify
+
+src/components/dashboard/QuickActions.jsx - Fix button visibility
+src/components/dashboard/ChapterCarousel.jsx - Layout, expand position, progress bar
+src/components/dashboard/ActivityHeatmap.jsx - Streaks, cell counts, colors
+src/components/dashboard/CategoryPills.jsx - Add phrases, fix POS mapping
+src/components/dashboard/HeroStats.jsx - Include phrases in count
+src/pages/Dashboard.jsx - Update queries to include phrases
+tailwind.config.js - Verify color definitions
+
+
+Start with Priority 1 (Quick Actions) since it's completely broken. Debug with inline styles first, then fix the root cause.

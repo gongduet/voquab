@@ -1,0 +1,145 @@
+Claude Code Prompt: Dashboard Refinements Round 2
+Context: Dashboard is looking much better but needs data fixes, polish, and small UX improvements based on user testing.
+
+PRIORITY 1: Data Accuracy Issues
+1.1 Phrases Not Included Anywhere
+"Phrases: 0" in Words by Type, but there are 859 approved phrases. All dashboard queries need to include user_phrase_progress:
+
+Words by Type: Add phrase count from user_phrase_progress WHERE introduced = true
+Learning count (127): Should include introduced phrases
+Total count (2455): Should include total phrases available
+Review due count: Should include phrases with due_date <= NOW()
+New available count: Should include unintroduced phrases
+
+1.2 "New Available" Count Seems Wrong
+Shows "16 available" but Chapter 1 has ~50 words remaining (175 - 125 = 50). Debug the query logic:
+
+What's the criteria for "new available"?
+Is it limited to current chapter only?
+Are phrases being counted?
+Console.log the query results to verify
+
+1.3 Heatmap Data Incorrect
+User reviewed many more than 20 cards today but heatmap shows 20. The query should count ALL reviews from both tables:
+sqlSELECT DATE(last_seen_at) as date, COUNT(*) as reviews FROM (
+  SELECT last_seen_at FROM user_lemma_progress 
+  WHERE user_id = $1 AND last_seen_at >= NOW() - INTERVAL '35 days'
+  UNION ALL
+  SELECT last_seen_at FROM user_phrase_progress 
+  WHERE user_id = $1 AND last_seen_at >= NOW() - INTERVAL '35 days'
+) combined
+GROUP BY DATE(last_seen_at)
+Note: This counts records with last_seen_at today, but if the user reviewed 50 cards and only 20 have last_seen_at = today, the other 30 might have been "Again" responses that didn't update last_seen_at. Check if last_seen_at updates on every review or only on successful reviews.
+
+PRIORITY 2: Missing Functionality
+2.1 Add "Review Now" Button to Upcoming Reviews Card
+jsx// In ReviewForecast.jsx, add a button when there are due cards
+{todayCount > 0 && (
+  <button 
+    onClick={() => navigate('/flashcards?mode=review')}
+    className="w-full mt-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 rounded-lg"
+  >
+    Review {todayCount} cards
+  </button>
+)}
+2.2 Upcoming Reviews Bar Chart Not Rendering
+The numbers show (13, 21, 93, 0, 0, 0, 0) but there are no visual bars. Fix the bar rendering:
+jsx// Calculate max for scaling
+const maxCount = Math.max(...dailyCounts, 1);
+
+// Render bars with dynamic height
+<div 
+  className="bg-primary-400 rounded-t w-full"
+  style={{ height: `${(count / maxCount) * 100}%` }}
+/>
+2.3 Highlight Today in Heatmap
+Add a visual indicator for today's cell:
+jsxconst isToday = cellDate === new Date().toISOString().split('T')[0];
+
+<div className={`
+  ${colorClass} 
+  ${isToday ? 'ring-2 ring-primary-500 ring-offset-1' : ''}
+`}>
+
+PRIORITY 3: UI Polish
+3.1 Grammar Fix: Singular/Plural for Streak
+jsx// In ActivityHeatmap.jsx
+<span>{currentStreak} {currentStreak === 1 ? 'day' : 'days'}</span>
+3.2 Remove Redundant Badge on Learn New Button
+Currently shows both a pill badge "16" AND text "16 available". Remove the floating badge, keep only the text:
+jsx// QuickActions.jsx - Remove the absolute positioned badge
+// Keep only the button content with "X available" text
+<button className="...">
+  <Sparkles />
+  <span>Learn New</span>
+  <span className="text-sm opacity-80">{newCount} available</span>
+</button>
+Apply same pattern to Review button - remove badge, keep "X due" text.
+3.3 Add Spacing Between Hero Stats and Quick Actions
+jsx// In Dashboard.jsx, add margin between components
+<HeroStats ... />
+<div className="mt-6"> {/* Add this wrapper or increase margin */}
+  <QuickActions ... />
+</div>
+Or add mb-6 to the HeroStats component container.
+3.4 Expand/Collapse Chevron Should Flip
+jsximport { ChevronDown, ChevronUp } from 'lucide-react';
+
+<button onClick={() => setIsExpanded(!isExpanded)}>
+  {isExpanded ? (
+    <>Show less <ChevronUp className="w-4 h-4" /></>
+  ) : (
+    <>View all {chapters.length} <ChevronDown className="w-4 h-4" /></>
+  )}
+</button>
+3.5 Chapter Titles from Database
+Replace generic "Capítulo 1" with actual Spanish chapter titles from the chapters table:
+jsx// Should already have title_spanish in the chapter data
+<h3>{chapter.title_spanish || `Capítulo ${chapter.chapter_number}`}</h3>
+Verify the chapters query includes title_spanish field.
+3.6 TODAY Column Styling in Upcoming Reviews
+Make the today column more prominent:
+jsx<div className={`
+  flex flex-col items-center
+  ${isToday ? 'bg-primary-50 rounded-lg p-2 -m-2' : ''}
+`}>
+  {isToday && <span className="text-[10px] font-bold text-primary-600 mb-1">TODAY</span>}
+  <span className="text-lg font-bold">{count}</span>
+  <span className="text-xs text-neutral-500">{dayLabel}</span>
+</div>
+
+PRIORITY 4: Nice to Have
+4.1 "Other: 9" Category Clarity
+Consider renaming or adding a title attribute:
+jsx<span title="Prepositions, conjunctions, etc.">Other {count}</span>
+4.2 Consider 0% Mastered Messaging
+With 127 words learning but 0% mastered (21-day threshold), new users may feel discouraged. Options:
+
+Add helper text: "Mastery requires 21+ days of retention"
+Show "Learning" progress more prominently
+Consider intermediate milestone (e.g., "Familiar" at 7 days)
+
+This is a design decision for Peter - flag for discussion rather than implement.
+
+Files to Modify
+
+src/pages/Dashboard.jsx - Fix queries to include phrases, add spacing
+src/components/dashboard/QuickActions.jsx - Remove redundant badges
+src/components/dashboard/ActivityHeatmap.jsx - Today highlight, grammar fix, verify data query
+src/components/dashboard/ReviewForecast.jsx - Fix bar rendering, add Review button, today styling
+src/components/dashboard/ChapterCarousel.jsx - Chevron flip, use title_spanish
+src/components/dashboard/CategoryPills.jsx - Verify phrase count query
+
+
+Testing Checklist
+After changes:
+
+ Phrases count shows > 0 in Words by Type
+ Heatmap today count matches actual reviews done today
+ "New available" count seems reasonable for chapter progress
+ Bars visible in Upcoming Reviews chart
+ Today highlighted in both heatmap and forecast
+ "1 day" not "1 days"
+ No redundant badges on buttons
+ Visible gap between hero stats and action buttons
+ Review button in Upcoming Reviews navigates to flashcards

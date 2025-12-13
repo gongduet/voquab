@@ -30,16 +30,44 @@ export default function useProgressTracking(userId) {
 
     try {
       // Determine if this is a phrase or lemma card
-      const isPhrase = card.card_type === 'phrase'
+      // Check both card_type AND presence of phrase_id (for robustness)
+      const isPhrase = card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id)
       const tableName = isPhrase ? 'user_phrase_progress' : 'user_lemma_progress'
       const idField = isPhrase ? 'phrase_id' : 'lemma_id'
       const cardId = isPhrase ? card.phrase_id : (card.lemma_id || card.vocab_id)
+
+      // Debug logging for phrase progress tracking
+      console.log('🔍 updateProgress called:', {
+        card_type: card.card_type,
+        isPhrase,
+        tableName,
+        idField,
+        cardId,
+        phrase_id: card.phrase_id,
+        lemma_id: card.lemma_id,
+        vocab_id: card.vocab_id,
+        lemma: card.lemma,
+        difficulty,
+        allCardKeys: Object.keys(card)
+      })
+
+      // Validate we have a valid cardId
+      if (!cardId) {
+        console.error('❌ No valid card ID found:', { card_type: card.card_type, phrase_id: card.phrase_id, lemma_id: card.lemma_id })
+        return { success: false, error: 'No valid card ID' }
+      }
 
       // Handle exposure cards differently - only update last_seen_at
       if (isExposure || card.isExposure) {
         const exposureUpdate = markCardAsSeen(card)
 
-        const { error } = await supabase
+        console.log('👁️ Exposure upsert to', tableName, ':', {
+          user_id: userId,
+          [idField]: cardId,
+          last_seen_at: exposureUpdate.last_seen_at
+        })
+
+        const { data: expResult, error } = await supabase
           .from(tableName)
           .upsert({
             user_id: userId,
@@ -48,9 +76,14 @@ export default function useProgressTracking(userId) {
           }, {
             onConflict: `user_id,${idField}`
           })
+          .select()
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Exposure upsert error for', tableName, ':', error)
+          throw error
+        }
 
+        console.log('✅ Exposure upsert success:', expResult)
         console.log('👁️ Exposure card seen:', {
           lemma: card.lemma,
           card_type: isPhrase ? 'phrase' : 'lemma',
@@ -85,8 +118,9 @@ export default function useProgressTracking(userId) {
       })
 
       // Build progress update with FSRS fields
+      // Note: user_phrase_progress has fewer columns than user_lemma_progress
       const progressUpdate = {
-        // FSRS fields (new)
+        // FSRS fields (required for both tables)
         stability: scheduledCard.stability,
         difficulty: scheduledCard.difficulty,
         due_date: scheduledCard.due_date,
@@ -95,32 +129,51 @@ export default function useProgressTracking(userId) {
         lapses: scheduledCard.lapses,
         last_seen_at: scheduledCard.last_seen_at,
 
-        // Legacy fields (kept for backward compatibility during migration)
+        // Legacy fields that exist in both tables
         mastery_level: stabilityToMastery(scheduledCard.stability),
-        health: calculateRetrievability(scheduledCard),
-        total_reviews: scheduledCard.total_reviews,
-        last_reviewed_at: scheduledCard.last_reviewed_at,
-        updated_at: new Date().toISOString()
+        health: calculateRetrievability(scheduledCard)
       }
 
-      // Update correct_reviews for non-"again" responses
-      if (difficulty !== 'again' && difficulty !== 'dont-know') {
-        progressUpdate.correct_reviews = (card.correct_reviews || 0) + 1
-        progressUpdate.last_correct_review_at = new Date().toISOString()
+      // These columns only exist in user_lemma_progress, not user_phrase_progress
+      if (!isPhrase) {
+        progressUpdate.total_reviews = scheduledCard.total_reviews
+        progressUpdate.last_reviewed_at = scheduledCard.last_reviewed_at
+        progressUpdate.updated_at = new Date().toISOString()
+
+        // Update correct_reviews for non-"again" responses (lemmas only)
+        if (difficulty !== 'again' && difficulty !== 'dont-know') {
+          progressUpdate.correct_reviews = (card.correct_reviews || 0) + 1
+          progressUpdate.last_correct_review_at = new Date().toISOString()
+        }
       }
 
       // Upsert to database
-      const { error: progressError } = await supabase
+      const upsertData = {
+        user_id: userId,
+        [idField]: cardId,
+        ...progressUpdate
+      }
+
+      console.log('💾 Upserting to', tableName, ':', {
+        user_id: userId,
+        [idField]: cardId,
+        stability: progressUpdate.stability,
+        due_date: progressUpdate.due_date
+      })
+
+      const { data: upsertResult, error: progressError } = await supabase
         .from(tableName)
-        .upsert({
-          user_id: userId,
-          [idField]: cardId,
-          ...progressUpdate
-        }, {
+        .upsert(upsertData, {
           onConflict: `user_id,${idField}`
         })
+        .select()
 
-      if (progressError) throw progressError
+      if (progressError) {
+        console.error('❌ Upsert error for', tableName, ':', progressError)
+        throw progressError
+      }
+
+      console.log('✅ Upsert success for', tableName, ':', upsertResult)
 
       // Update daily stats
       await updateDailyStats(userId)

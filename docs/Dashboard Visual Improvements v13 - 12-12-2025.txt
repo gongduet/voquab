@@ -1,0 +1,123 @@
+Claude Code Prompt: Documentation Update & Living Changelog
+Task: Update project documentation and living changelog to reflect all dashboard and phrase integration work completed on December 12-13, 2025.
+
+Part 1: Update Living Changelog
+Add a new entry to docs/99_LIVING_CHANGELOG.md with the following content at the top of the file (after any header):
+markdown## 2025-12-13: Dashboard Overhaul & Phrase Integration
+
+### Summary
+Major dashboard rebuild with complete phrase integration into the learning system. Fixed critical data bugs, implemented new UI components, and established consistent patterns for lemma+phrase handling throughout the app.
+
+### Critical Fixes
+
+**Database Query Fixes**
+- Replaced non-existent `introduced` column references with `reps >= 1` throughout codebase
+- Fixed chapter progress to include phrases in both total and user progress counts
+- Fixed chapter progress to exclude stop words from totals (was showing 175, now correctly shows 161 for Chapter 1)
+- Chapter unlock now triggers correctly when previous chapter reaches 95%
+
+**Phrase Progress Tracking**
+- Phrase reviews now save correctly to `user_phrase_progress` table
+- FSRS scheduling works for phrases (stability, difficulty, due_date)
+- FloatingFeedback "+X days" animation shows for phrase reviews
+
+**Session Building**
+- Learn New sessions now include proportional mix of lemmas and phrases
+- No more 20% threshold gate - phrases available as soon as chapter unlocks
+- Review sessions combine due lemmas and due phrases, sorted by due_date
+
+### New Dashboard Components
+
+**ActivityHeatmap (Rewritten)**
+- Fixed timezone issue (was showing Friday as Saturday)
+- Colors scale based on user's `daily_goal_words` from `user_settings`
+- Future dates shown with muted styling and dashed borders
+- Added "X / 28 days" practiced stat
+- Today cell has prominent ring + shadow highlight
+- Uses local time consistently
+
+**ReviewForecast (Rewritten)**
+- Fixed bar rendering (was showing only numbers, no bars)
+- Bars use pixel-based heights for reliable rendering
+- Removed duplicate "Review X cards" button (use top Review button instead)
+- Compact layout with no wasted whitespace
+- Uses local time for day boundaries
+
+**ChapterCarousel**
+- Now shows combined lemma + phrase counts (e.g., "161/161" not "141/175")
+- Chapter 1 correctly shows 100% when all lemmas and phrases reviewed
+- Chapter 2 unlocks when Chapter 1 reaches 95%
+
+### Files Modified
+
+**Core Logic**
+- `src/services/sessionBuilder.js` - Proportional phrase/lemma selection, `reps >= 1` fix
+- `src/hooks/flashcard/useProgressTracking.js` - Phrase progress saving
+
+**Dashboard**
+- `src/pages/Dashboard.jsx` - All data fetching functions updated for phrases
+- `src/components/dashboard/ActivityHeatmap.jsx` - Complete rewrite
+- `src/components/dashboard/ReviewForecast.jsx` - Complete rewrite
+- `src/components/dashboard/ChapterCarousel.jsx` - Updated to receive phrase-inclusive data
+
+**Functions Updated in Dashboard.jsx**
+- `fetchHeroStats()` - Includes phrase counts
+- `fetchQuickActionStats()` - Includes phrase due counts
+- `fetchChaptersProgress()` - Calculates lemma + phrase totals, excludes stop words
+- `fetchActivityData()` - Queries both progress tables
+- `fetchForecastData()` - Uses local time, includes phrases
+- `fetchCategoryData()` - Includes phrase category
+- `getUnlockedChapterNumbers()` - Uses `reps >= 1`, includes phrases in calculation
+- `fetchUserSettings()` - New function for daily target
+
+### Database Schema Notes
+
+**No `introduced` column exists** in `user_lemma_progress` or `user_phrase_progress`. 
+Use `reps >= 1` as proxy for "card has been introduced/reviewed at least once".
+
+**Key columns for progress tracking:**
+- `reps` - Number of reviews (>= 1 means introduced)
+- `stability` - FSRS stability value
+- `due_date` - Next scheduled review
+- `last_seen_at` - Timestamp of last review
+
+### Lessons Learned
+
+1. Always verify database schema before writing queries - the `introduced` column bug caused cascading failures
+2. Use local time for user-facing date displays, UTC for database queries
+3. Pixel-based heights more reliable than percentages in flex containers
+4. When combining data from two tables (lemmas + phrases), update ALL related queries consistently
+
+Part 2: Update Relevant Documentation Files
+Update docs/02_DATABASE_SCHEMA.md - Add note about introduced column:
+In the user_lemma_progress and user_phrase_progress table sections, add:
+markdown> **Note:** There is no `introduced` column. To determine if a card has been introduced, check `reps >= 1`.
+Update docs/04_LEARNING_ALGORITHM.md - If there's a section about phrase introduction threshold:
+Update to reflect that the 20% threshold was removed. Phrases are now available immediately when a chapter is unlocked, with proportional mixing based on available unexposed items.
+Update docs/06_UI_DESIGN_SYSTEM.md - Add dashboard component notes if not present:
+markdown### Dashboard Components
+
+**ActivityHeatmap**
+- 5-week grid (35 days) ending on Saturday of current week
+- Colors scale based on user's daily target from `user_settings.daily_goal_words`
+- Today: ring-2 ring-primary-500 shadow-md
+- Future dates: opacity-40, dashed border
+
+**ReviewForecast**
+- 7-day bar chart with pixel-based bar heights
+- Max bar height: 96px
+- Today highlighted with primary-500 color and "TODAY" label
+Update docs/22_ADMIN_DASHBOARD.md - If it references the user dashboard, note that it was rebuilt.
+
+Part 3: Verify and Clean Up
+
+Remove any temporary debug console.log statements added during this session (search for 🔍, 📊, 🗓️ prefixes)
+Ensure all files pass build (npm run build)
+
+
+Summary of documentation updates:
+
+Living changelog: Full session summary
+Database schema: Note about introduced column
+Learning algorithm: Remove 20% phrase threshold reference
+UI design system: Dashboard component specifications

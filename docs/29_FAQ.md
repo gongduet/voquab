@@ -1,7 +1,7 @@
 # 29_FAQ.md
 
-**Document Type:** LIVING DOCUMENT (Updated Continuously)  
-**Last Updated:** November 30, 2025  
+**Document Type:** LIVING DOCUMENT (Updated Continuously)
+**Last Updated:** December 13, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -139,100 +139,107 @@ Voquab is a Spanish vocabulary learning app that teaches through "El Principito"
 
 ## LEARNING METHODOLOGY
 
-### How does Voquab teach vocabulary?
+### How does the spaced repetition algorithm work?
 
-**Our approach:**
-1. **Context first:** See word in actual sentence from book
-2. **Spaced repetition:** Review at optimal intervals
-3. **Dual tracking:** Measure both mastery (quality) and exposure (quantity)
-4. **Health system:** Words "decay" if not reviewed, creating urgency
-5. **Time-gated mastery:** Can't game the system with rapid-fire reviewing
+Voquab uses **FSRS (Free Spaced Repetition Scheduler)**, a research-backed algorithm that optimizes when you review each word:
 
-**You learn by:**
-- Reading chapters
-- Studying flashcards (word + sentence + translation)
-- Marking difficulty (Don't Know, Hard, Medium, Easy)
-- Repeating over time (spaced repetition)
+**How it works:**
+- **Again**: Resets the word to review soon (also requeues to end of current session)
+- **Hard**: Schedule for review in ~1-2 days
+- **Got It**: Schedule for review in ~5+ days (interval increases each time)
 
----
+**The science:**
+- FSRS models memory decay mathematically
+- Predicts the optimal time to review (right before you'd forget)
+- Adapts to your personal learning patterns
+- Research shows 20-30% fewer reviews for same retention
 
-### What are mastery levels?
-
-**10 levels (0-100 scale):**
-- **Level 0 (0-9):** New - never seen correctly
-- **Level 1 (10-19):** Introduced - just met
-- **Level 2 (20-29):** Recognizing - starting to recall
-- **Level 3 (30-39):** Learning - needs practice
-- **Level 4 (40-49):** Familiar - getting comfortable
-- **Level 5 (50-59):** Known - solidly known
-- **Level 6 (60-69):** Strong - strong retention
-- **Level 7 (70-79):** Mastered - automatic recall
-- **Level 8 (80-89):** Expert - effortless
-- **Level 9 (90-94):** Native - near-native fluency
-- **Level 10 (95-100):** Perfect - permanent mastery
-
-**Progression:** Slow and steady. Each level requires time between correct reviews (time gates).
+**Two key numbers tracked:**
+- **Stability**: How long until you might forget (measured in days)
+- **Difficulty**: How hard this word is for you personally (1-10 scale)
 
 ---
 
-### What is word health?
+### Why am I seeing the same word multiple times in one session?
 
-**Health = urgency to review (0-100)**
+If you press **"Again"** (don't know), the word moves to the end of your current session for another attempt. This ensures you get immediate practice without counting it as "progress."
 
-**Concept:** Words are like plants that need watering
-- Fresh words: 100 health (green)
-- Neglected words: Health decays over time
-- Critical words: <20 health (red) - need urgent attention!
-
-**Decay rate:** Based on mastery level
-- Low mastery: Decays fast (25 points/day)
-- High mastery: Decays slow (0.5 points/day)
-
-**Restoration:** Review the word → health restored
-- Don't Know: +10 health
-- Hard: +30 health
-- Medium: +60 health
-- Easy: +100 health (full)
-
-**Why it matters:** Creates natural review schedule, prioritizes struggling words
+**What happens:**
+- Card goes to back of queue
+- Progress counter stays the same (e.g., stays at "2/15")
+- You'll see it again before the session ends
+- Gets another chance to stick in memory
 
 ---
 
-### What are time gates?
+### What are "exposure" cards?
 
-**Rule:** You can't gain mastery points too quickly
+To prevent forgetting, Voquab occasionally shows you words you've mastered (even if not due for review). This keeps them fresh in your memory.
 
-**Example:** 
-- Word at Level 3 (Learning)
-- Time gate: 24 hours
-- You review word correctly → gain +6 mastery
-- Try again 2 hours later → mastery blocked (time gate not met)
-- Health still improves! But mastery waits.
+**How it works:**
+- Only for well-learned words (30+ day stability)
+- Appears with amber **"Exposure"** badge
+- Still uses the three buttons (affects scheduling)
+- More active users get more exposure cards
 
-**Why:** Prevents cramming. True learning requires spaced repetition.
+**Why it matters:**
+- Pure scheduling can leave gaps of months
+- Exposure catches potential forgetting early
+- No surprises when a "mastered" word suddenly feels unfamiliar
 
-**Gates by level:**
-- Level 0-1: No gate / 4 hours
-- Level 2-4: 12 hours / 1 day / 3 days
-- Level 5-7: 7 days / 14 days / 30 days
-- Level 8-10: 60 days / 120 days / 180 days
+---
+
+### When do phrases appear in my learning?
+
+**Phrases** (multi-word expressions like "personas mayores" = "grown-ups") appear after you've learned 20% of a chapter's individual words.
+
+**Why wait?**
+- You need vocabulary foundation first
+- Individual words help you understand phrase components
+- Prevents overwhelm for new learners
+
+**Session composition (when phrases available):**
+- 80% individual words (12 cards in 15-card session)
+- 20% phrases (3 cards in 15-card session)
+
+**Visual indicator:**
+- Purple **"Phrase"** badge on phrase cards
+- **"New Phrase"** badge if it's your first time seeing it
+
+---
+
+### How many cards should I study per day?
+
+You can set this in Settings. Recommendations:
+
+| Level | Cards/Day | Time |
+|-------|-----------|------|
+| Light | 15-25 | 5-10 min |
+| Regular | 25-50 | 10-20 min |
+| Intensive | 50-100 | 20-40 min |
+
+**The algorithm adapts:**
+- More active = more exposure cards to keep words fresh
+- Less active = focused on most important reviews
+- Consistency beats volume (better to do 15 cards daily than 100 once a week)
 
 ---
 
 ### How do chapters unlock?
 
-**Sequential unlocking:** Chapter 2 requires Chapter 1 complete, etc.
+**Requirement:** Introduce 95% of previous chapter's words
 
-**Requirements (need ALL):**
-1. **Encounter 80%** of chapter's words
-2. **PLUS one of these paths:**
-   - **Path A (Quality):** 40 average mastery
-   - **Path B (Quantity):** 50 total reviews
-   - **Path C (Balanced):** 30 mastery AND 30 reviews
+**Example:**
+- Chapter 1 has 52 words
+- You've learned 50 words (96%)
+- Chapter 2 unlocks!
 
-**Why dual paths:** Rewards both fast learners (quality) and persistent learners (quantity)
+**What "introduced" means:**
+- You've seen the word at least once
+- It has a progress record in the system
+- Doesn't require mastery, just exposure
 
-**Track progress:** See unlock % on Book page
+**Track progress:** See unlock percentage on Book page
 
 ---
 
@@ -263,15 +270,16 @@ Voquab is a Spanish vocabulary learning app that teaches through "El Principito"
 
 ### What if I forget a word?
 
-**Mark "Don't Know"** - it's okay!
+**Press "Again"** - it's okay!
 
 **What happens:**
-- Word reappears later in same session (3-7 cards later)
-- Mastery decreases (-5 points)
-- Health gets small boost (+10)
-- Word prioritized for future sessions
+- Word moves to end of current session (you'll see it again)
+- Progress counter stays the same (doesn't advance)
+- Stability resets to short interval (~0.5-2 days)
+- Difficulty increases slightly (+1.0)
+- Word will appear more frequently until you know it
 
-**Don't worry:** Forgetting is part of learning. The system adapts.
+**Don't worry:** Forgetting is part of learning. The FSRS algorithm adapts to show struggling words more often.
 
 ---
 
@@ -336,23 +344,33 @@ Voquab is a Spanish vocabulary learning app that teaches through "El Principito"
 
 ### How does the algorithm work?
 
-**Priority scoring:** Every word gets a score (0-200+) that determines review order
+**FSRS (Free Spaced Repetition Scheduler):**
 
-**Factors:**
-- **Health urgency (35%):** Lower health = higher priority
-- **Frequency in book (30%):** Common words prioritized
-- **Chapter position (15%):** Earlier chapters prioritized
-- **Mastery readiness (10%):** Words ready to level up
-- **Chapter focus (10%):** Current chapter boost
+Voquab uses FSRS, a research-backed algorithm that models human memory mathematically.
 
-**Multipliers:**
-- Critical health (<20): ×1.5
-- Struggling word: ×1.3
-- New word: ×0.8
+**Key concepts:**
+- **Stability**: Days until 90% recall probability
+- **Difficulty**: How hard the item is for you (1-10)
+- **Due date**: Calculated from stability
 
-**Result:** You see the most important words first
+**The formula:**
+```
+Retrievability = 0.9^(days_since_review / stability)
+```
 
-**See:** `04_LEARNING_ALGORITHM.md` for formulas
+**Button effects:**
+| Button | Stability Change | Difficulty Change |
+|--------|------------------|-------------------|
+| Again | Reset to ~0.5-2 days | +1.0 |
+| Hard | ×0.6 | +0.5 |
+| Got It | ×1.5-3.0 | -0.2 |
+
+**Session composition:**
+- Due cards (scheduled by FSRS)
+- Exposure cards (oversampling stable words)
+- New cards (unlearned vocabulary)
+
+**See:** `04_LEARNING_ALGORITHM.md` for complete documentation
 
 ---
 

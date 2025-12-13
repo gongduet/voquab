@@ -1,0 +1,100 @@
+Progress on some things, but Chapter 1 is still wrong:
+MetricExpectedShowingStatusLearning163163✅ FixedWords by TypePhrases 20Phrases 20✅ FixedTotal by type163163✅ FixedReview due2020✅ FixedChapter 1 total161175❌ WrongChapter 1 progress161/161141/175❌ WrongChapter 1 %100%81%❌ WrongChapter 2UnlockedLocked❌ WrongActivity heatmapDataEmpty❌ Still broken
+
+Claude Code Prompt: Fix Chapter Progress Calculation
+Task: Chapter progress is still not including phrases. The query for chapter stats needs to be fixed.
+The Problem
+Chapter 1 shows 141/175 (81%) but should show 161/161 (100%):
+
+175 is wrong: Should be 141 lemmas + 20 phrases = 161
+141 is wrong: Should include 20 introduced phrases = 161
+
+Debug First
+Add logging to find where the wrong numbers come from. In Dashboard.jsx, find fetchChaptersProgress or similar and log:
+javascriptconsole.log('📊 Chapter stats query result:', {
+  chapterNumber: chapter.chapter_number,
+  rawTotal: /* what query returns for total */,
+  rawProgress: /* what query returns for user progress */,
+  totalLemmas: /* lemma count */,
+  totalPhrases: /* phrase count */,
+  userLemmas: /* user's introduced lemmas */,
+  userPhrases: /* user's introduced phrases */
+});
+The Fix
+The chapter progress query must:
+
+Total = lemmas (non-stop) + phrases:
+
+javascript// Get total lemmas for chapter (excluding stop words)
+const { data: chapterLemmas } = await supabase
+  .from('words')
+  .select('lemma_id, lemmas!inner(is_stop_word)')
+  .eq('chapter_id', chapterId)
+  .eq('lemmas.is_stop_word', false);
+
+const uniqueLemmaIds = [...new Set(chapterLemmas?.map(w => w.lemma_id) || [])];
+const totalLemmas = uniqueLemmaIds.length;
+
+// Get total phrases for chapter
+const { data: chapterPhrases } = await supabase
+  .from('phrase_occurrences')
+  .select('phrase_id, sentences!inner(chapter_id)')
+  .eq('sentences.chapter_id', chapterId);
+
+const uniquePhraseIds = [...new Set(chapterPhrases?.map(po => po.phrase_id) || [])];
+const totalPhrases = uniquePhraseIds.length;
+
+const total = totalLemmas + totalPhrases;
+
+Progress = introduced lemmas + introduced phrases:
+
+javascript// User's introduced lemmas from this chapter
+const { data: userLemmas } = await supabase
+  .from('user_lemma_progress')
+  .select('lemma_id')
+  .eq('user_id', userId)
+  .gte('reps', 1)
+  .in('lemma_id', uniqueLemmaIds);
+
+const introducedLemmas = userLemmas?.length || 0;
+
+// User's introduced phrases from this chapter
+const { data: userPhrases } = await supabase
+  .from('user_phrase_progress')
+  .select('phrase_id')
+  .eq('user_id', userId)
+  .gte('reps', 1)
+  .in('phrase_id', uniquePhraseIds);
+
+const introducedPhrases = userPhrases?.length || 0;
+
+const progress = introducedLemmas + introducedPhrases;
+const percentage = total > 0 ? Math.round((progress / total) * 100) : 0;
+
+Chapter unlock logic must also use combined total:
+
+javascript// Chapter unlocks when previous chapter is 95%+ complete
+const previousChapterComplete = previousChapterPercentage >= 95;
+// OR Chapter 1 is always unlocked
+const isUnlocked = chapter.chapter_number === 1 || previousChapterComplete;
+Where is 175 Coming From?
+The number 175 suggests either:
+
+Counting stop words (141 non-stop + 34 stop words = 175?)
+Using a different query that doesn't filter
+
+Search for where 175 or the total is calculated and fix the query.
+Files to Check
+
+src/pages/Dashboard.jsx - fetchChaptersProgress function
+src/components/dashboard/ChapterCarousel.jsx - if it has its own query
+
+Expected Result
+After fix:
+
+Chapter 1: 161/161 (100%)
+Chapter 2: Unlocked (since Ch1 is 100%)
+"Learn New" shows Chapter 2's available words/phrases
+
+
+Find the chapter stats query, add logging, then fix to include phrases in both total and progress.

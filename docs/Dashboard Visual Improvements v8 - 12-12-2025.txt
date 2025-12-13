@@ -1,0 +1,118 @@
+Claude Code Prompt: Fix Chapter Progress Calculation (v8)
+Task: Fix fetchChaptersProgress in src/pages/Dashboard.jsx to correctly calculate chapter totals and progress including phrases and excluding stop words.
+Current Code Location
+fetchChaptersProgress function starts at line 339.
+Exact Changes Required
+Change 1: After getting words (around line 400-411), filter out stop words
+Replace this section:
+javascript// Get lemmas for this chapter (skip if no sentences)
+let chapterLemmaIds = []
+if (sentenceIds.length > 0) {
+  const { data: words, error: wordsError } = await supabase
+    .from('words')
+    .select('lemma_id')
+    .in('sentence_id', sentenceIds)
+
+  if (wordsError) {
+    console.error(`❌ [fetchChaptersProgress] words query failed for chapter ${chapter.chapter_number}:`, wordsError)
+  }
+
+  chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+}
+
+const introduced = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+const total = chapterLemmaIds.length
+With this:
+javascript// Get lemmas for this chapter (skip if no sentences)
+let chapterLemmaIds = []
+let chapterPhraseIds = []
+
+if (sentenceIds.length > 0) {
+  // Get words with lemma stop_word status
+  const { data: words, error: wordsError } = await supabase
+    .from('words')
+    .select('lemma_id, lemmas!inner(is_stop_word)')
+    .in('sentence_id', sentenceIds)
+    .eq('lemmas.is_stop_word', false)  // Filter out stop words
+
+  if (wordsError) {
+    console.error(`❌ [fetchChaptersProgress] words query failed for chapter ${chapter.chapter_number}:`, wordsError)
+  }
+
+  chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+
+  // Get phrases for this chapter
+  const { data: phraseOccurrences, error: phrasesError } = await supabase
+    .from('phrase_occurrences')
+    .select('phrase_id')
+    .in('sentence_id', sentenceIds)
+
+  if (phrasesError) {
+    console.error(`❌ [fetchChaptersProgress] phrases query failed for chapter ${chapter.chapter_number}:`, phrasesError)
+  }
+
+  chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
+}
+
+// Count introduced lemmas
+const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+
+// Count introduced phrases
+const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+
+// Combined totals
+const introduced = introducedLemmaCount + introducedPhraseCount
+const total = chapterLemmaIds.length + chapterPhraseIds.length
+Change 2: Add phrase progress fetch (around line 368-379)
+After fetching userProgress for lemmas, add:
+javascript// Get user's introduced phrases (reps >= 1 means reviewed at least once)
+const { data: userPhraseProgress, error: phraseProgressError } = await supabase
+  .from('user_phrase_progress')
+  .select('phrase_id')
+  .eq('user_id', userId)
+  .gte('reps', 1)
+
+if (phraseProgressError) {
+  console.error('❌ [fetchChaptersProgress] user_phrase_progress query failed:', phraseProgressError)
+}
+
+const introducedPhraseIds = new Set((userPhraseProgress || []).map(p => p.phrase_id))
+Change 3: Add debug logging before return (around line 421-428)
+Update the object being pushed:
+javascriptconsole.log(`📊 Chapter ${chapter.chapter_number}:`, {
+  lemmas: chapterLemmaIds.length,
+  phrases: chapterPhraseIds.length,
+  total,
+  introducedLemmas: introducedLemmaCount,
+  introducedPhrases: introducedPhraseCount,
+  introduced,
+  rate: total > 0 ? Math.round((introduced / total) * 100) : 0
+})
+
+chaptersWithProgress.push({
+  chapter_number: chapter.chapter_number,
+  title: chapter.title,
+  introduced,
+  total_lemmas: total,  // This is now lemmas + phrases
+  isUnlocked,
+  isNextToUnlock
+})
+```
+
+### Expected Console Output After Fix
+```
+📊 Chapter 1: { lemmas: 141, phrases: 20, total: 161, introducedLemmas: 141, introducedPhrases: 20, introduced: 161, rate: 100 }
+Expected UI Result
+
+Chapter 1: 161/161 (100%)
+Chapter 2: Unlocked (since Chapter 1 >= 95%)
+"Learn New" shows Chapter 2's available words
+
+Also Fix: getUnlockedChapterNumbers (lines 738-789)
+This function has the same bug. Apply similar fixes:
+
+Filter stop words when getting lemmas
+Include phrases in total and introduced counts
+
+
+This is the precise fix. The issue is in fetchChaptersProgress which doesn't filter stop words and doesn't include phrases.

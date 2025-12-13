@@ -1,0 +1,257 @@
+Claude Code Prompt: Fix Session Building with Proportional Phrase/Lemma Mix
+Task: Rewrite session building to correctly include phrases alongside lemmas with proportional representation.
+Core Rules
+Learn New Session:
+
+Pool: All unexposed lemmas + unexposed phrases from unlocked chapters
+Proportional selection: If pool is 80% lemmas / 20% phrases, session should be ~80% lemmas / ~20% phrases
+Priority within each type: Sentence order (words/phrases appear in order they show up in the book)
+No threshold: If chapter is unlocked, ALL its lemmas and phrases are available
+
+Review Session:
+
+Pool: All due lemmas + due phrases (where due_date <= now)
+Priority: FSRS scheduling (most overdue first, then lower stability)
+Mixed together: Lemmas and phrases sorted by same rules, no special ratio needed
+
+Dashboard Counts:
+
+"Learn New" = unexposed lemmas + unexposed phrases from unlocked chapters
+"Review Due" = due lemmas + due phrases
+
+
+Implementation: buildLearnSession
+javascriptasync function buildLearnSession(userId, sessionSize = 15) {
+  // 1. Get unlocked chapter IDs
+  const unlockedChapterIds = await getUnlockedChapterIds(userId);
+  console.log('📚 Unlocked chapters:', unlockedChapterIds);
+  
+  // 2. Get unexposed lemmas from unlocked chapters
+  const unexposedLemmas = await getUnexposedLemmas(userId, unlockedChapterIds);
+  console.log('📖 Unexposed lemmas:', unexposedLemmas.length);
+  
+  // 3. Get unexposed phrases from unlocked chapters
+  const unexposedPhrases = await getUnexposedPhrases(userId, unlockedChapterIds);
+  console.log('📝 Unexposed phrases:', unexposedPhrases.length);
+  
+  // 4. Calculate proportional counts
+  const totalPool = unexposedLemmas.length + unexposedPhrases.length;
+  if (totalPool === 0) {
+    console.log('⚠️ No unexposed cards available');
+    return [];
+  }
+  
+  const lemmaRatio = unexposedLemmas.length / totalPool;
+  const phraseRatio = unexposedPhrases.length / totalPool;
+  
+  const lemmaCount = Math.round(sessionSize * lemmaRatio);
+  const phraseCount = sessionSize - lemmaCount; // Remainder to phrases
+  
+  console.log('📊 Proportions:', { 
+    lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
+    phraseRatio: (phraseRatio * 100).toFixed(1) + '%',
+    lemmaCount, 
+    phraseCount 
+  });
+  
+  // 5. Sort each pool by sentence order (chapter, then sentence position)
+  const sortedLemmas = unexposedLemmas.sort((a, b) => {
+    if (a.chapter_number !== b.chapter_number) return a.chapter_number - b.chapter_number;
+    return a.sentence_order - b.sentence_order;
+  });
+  
+  const sortedPhrases = unexposedPhrases.sort((a, b) => {
+    if (a.chapter_number !== b.chapter_number) return a.chapter_number - b.chapter_number;
+    return a.sentence_order - b.sentence_order;
+  });
+  
+  // 6. Select proportional amounts
+  const selectedLemmas = sortedLemmas.slice(0, lemmaCount).map(l => ({
+    ...l,
+    card_type: 'lemma'
+  }));
+  
+  const selectedPhrases = sortedPhrases.slice(0, phraseCount).map(p => ({
+    ...p,
+    card_type: 'phrase'
+  }));
+  
+  // 7. Combine and shuffle for variety (or keep sorted by sentence order)
+  const session = [...selectedLemmas, ...selectedPhrases];
+  
+  // Optional: shuffle so lemmas and phrases are interleaved
+  // session.sort(() => Math.random() - 0.5);
+  
+  console.log('🃏 Final session:', {
+    total: session.length,
+    lemmas: selectedLemmas.length,
+    phrases: selectedPhrases.length
+  });
+  
+  return session;
+}
+Implementation: getUnexposedPhrases
+javascriptasync function getUnexposedPhrases(userId, chapterIds) {
+  // 1. Get all phrases from unlocked chapters via phrase_occurrences -> sentences -> chapters
+  const { data: chapterPhrases, error } = await supabase
+    .from('phrase_occurrences')
+    .select(`
+      phrase_id,
+      start_position,
+      sentences!inner (
+        sentence_id,
+        sentence_order,
+        sentence_text,
+        sentence_translation,
+        chapters!inner (
+          chapter_id,
+          chapter_number
+        )
+      ),
+      phrases!inner (
+        phrase_id,
+        phrase_text,
+        definitions
+      )
+    `)
+    .in('sentences.chapters.chapter_id', chapterIds);
+  
+  if (error) {
+    console.error('❌ Error fetching chapter phrases:', error);
+    return [];
+  }
+  
+  // 2. Get phrases user has already been introduced to
+  const { data: introducedPhrases } = await supabase
+    .from('user_phrase_progress')
+    .select('phrase_id')
+    .eq('user_id', userId)
+    .eq('introduced', true);
+  
+  const introducedIds = new Set(introducedPhrases?.map(p => p.phrase_id) || []);
+  
+  // 3. Filter to unexposed and format for session
+  const unexposed = chapterPhrases
+    ?.filter(po => !introducedIds.has(po.phrase_id))
+    .map(po => ({
+      phrase_id: po.phrases.phrase_id,
+      phrase_text: po.phrases.phrase_text,
+      definitions: po.phrases.definitions,
+      sentence_text: po.sentences.sentence_text,
+      sentence_translation: po.sentences.sentence_translation,
+      sentence_order: po.sentences.sentence_order,
+      chapter_number: po.sentences.chapters.chapter_number
+    })) || [];
+  
+  // 4. Dedupe (phrase may appear in multiple sentences)
+  const seen = new Set();
+  return unexposed.filter(p => {
+    if (seen.has(p.phrase_id)) return false;
+    seen.add(p.phrase_id);
+    return true;
+  });
+}
+Implementation: buildReviewSession
+javascriptasync function buildReviewSession(userId, sessionSize = 15) {
+  const now = new Date().toISOString();
+  
+  // 1. Get due lemmas with full card data
+  const { data: dueLemmas } = await supabase
+    .from('user_lemma_progress')
+    .select(`
+      *,
+      lemmas (
+        lemma_id,
+        lemma_text,
+        definitions,
+        part_of_speech
+      )
+    `)
+    .eq('user_id', userId)
+    .lte('due_date', now)
+    .order('due_date', { ascending: true });
+  
+  // 2. Get due phrases with full card data
+  const { data: duePhrases } = await supabase
+    .from('user_phrase_progress')
+    .select(`
+      *,
+      phrases (
+        phrase_id,
+        phrase_text,
+        definitions
+      )
+    `)
+    .eq('user_id', userId)
+    .lte('due_date', now)
+    .order('due_date', { ascending: true });
+  
+  // 3. Format and tag card types
+  const lemmaCards = (dueLemmas || []).map(l => ({
+    ...l,
+    ...l.lemmas,
+    card_type: 'lemma'
+  }));
+  
+  const phraseCards = (duePhrases || []).map(p => ({
+    ...p,
+    ...p.phrases,
+    card_type: 'phrase'
+  }));
+  
+  // 4. Combine and sort by due_date (most overdue first)
+  const pool = [...lemmaCards, ...phraseCards]
+    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+  
+  console.log('📋 Review pool:', {
+    total: pool.length,
+    lemmas: lemmaCards.length,
+    phrases: phraseCards.length
+  });
+  
+  // 5. Take top N for session
+  return pool.slice(0, sessionSize);
+}
+Dashboard: Update "New Available" Count
+In Dashboard.jsx, update fetchNewAvailableCount:
+javascriptasync function fetchNewAvailableCount(userId, unlockedChapterIds) {
+  // Unexposed lemmas
+  const unexposedLemmaCount = await getUnexposedLemmaCount(userId, unlockedChapterIds);
+  
+  // Unexposed phrases (same chapters - no threshold!)
+  const unexposedPhraseCount = await getUnexposedPhraseCount(userId, unlockedChapterIds);
+  
+  console.log('🆕 New available:', { 
+    lemmas: unexposedLemmaCount, 
+    phrases: unexposedPhraseCount,
+    total: unexposedLemmaCount + unexposedPhraseCount
+  });
+  
+  return unexposedLemmaCount + unexposedPhraseCount;
+}
+
+Files to Modify
+
+src/services/sessionBuilder.js - Rewrite buildLearnSession and buildReviewSession
+src/pages/Dashboard.jsx - Update new available count to include phrases
+Add/update helper functions: getUnexposedPhrases, getUnexposedLemmas
+
+Testing Checklist
+After implementation:
+
+ "Learn New" count includes unexposed phrases from unlocked chapters
+ Clicking "Learn New" returns session with proportional lemma/phrase mix
+ Phrases sorted by sentence order (appear in book order)
+ Console logs show correct proportions
+ "Review Due" count includes due phrases
+ Review session includes both lemmas and phrases sorted by due_date
+ Phrase progress saves correctly (from earlier fix)
+
+Debug Logging
+Keep these console.logs in place until confirmed working:
+
+Pool sizes (lemmas, phrases, total)
+Proportional calculation
+Final session composition
+
+Start by checking current sessionBuilder.js implementation, then update to match this spec.

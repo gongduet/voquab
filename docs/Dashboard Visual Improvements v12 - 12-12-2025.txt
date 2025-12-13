@@ -1,0 +1,117 @@
+Claude Code Prompt: Fix Forecast Bar Heights (v12)
+Task: Make the ReviewForecast bars taller and use more vertical space. Ensure 131 is visually much taller than 32.
+The Problem
+Current bars are compressed at the bottom of the container. The percentage-based height calculation inside a flex container doesn't work reliably. The bars need to use explicit pixel heights.
+The Fix
+In src/components/dashboard/ReviewForecast.jsx, replace the bar chart section (the <div> with style={{ height: '120px' }} and everything inside it) with this:
+jsx{/* Bar chart container - fixed height, no flex */}
+<div className="relative" style={{ height: '140px' }}>
+  <div className="absolute inset-0 flex items-end gap-1.5 pb-6">
+    {displayData.slice(0, 7).map((day, i) => {
+      const isToday = i === 0
+      const count = day.count || 0
+      
+      // Calculate bar height in pixels
+      // Available height for bars: 140px - 24px (pb-6 for labels) - 20px (for count) = ~96px
+      const maxBarHeight = 96
+      const barHeight = count > 0 
+        ? Math.max(8, Math.round((count / maxCount) * maxBarHeight))
+        : 3
+
+      return (
+        <div
+          key={i}
+          className="flex-1 flex flex-col items-center justify-end h-full"
+        >
+          {/* Today label - positioned at top */}
+          {isToday && (
+            <span className="text-[9px] font-bold text-primary-500 mb-auto">
+              TODAY
+            </span>
+          )}
+
+          {/* Count above bar */}
+          <span
+            className={`text-xs font-semibold mb-1 ${
+              isToday 
+                ? 'text-primary-600' 
+                : count > 0 
+                  ? 'text-neutral-700' 
+                  : 'text-neutral-300'
+            }`}
+          >
+            {count}
+          </span>
+
+          {/* Bar - explicit pixel height */}
+          <div
+            className={`w-full rounded-t transition-all duration-300 ${
+              isToday ? 'shadow-sm' : ''
+            }`}
+            style={{
+              height: `${barHeight}px`,
+              backgroundColor: isToday 
+                ? '#0ea5e9'  // primary-500
+                : count > 0 
+                  ? '#7dd3fc'  // primary-300
+                  : '#e5e5e5', // neutral-200
+            }}
+          />
+        </div>
+      )
+    })}
+  </div>
+  
+  {/* Day labels - absolute positioned at bottom */}
+  <div className="absolute bottom-0 left-0 right-0 flex gap-1.5">
+    {displayData.slice(0, 7).map((day, i) => {
+      const isToday = i === 0
+      return (
+        <span
+          key={i}
+          className={`flex-1 text-center text-[11px] ${
+            isToday 
+              ? 'font-bold text-primary-600' 
+              : 'font-medium text-neutral-400'
+          }`}
+        >
+          {day.label}
+        </span>
+      )
+    })}
+  </div>
+</div>
+```
+
+### Key Changes
+
+| Before | After |
+|--------|-------|
+| `height: '120px'` with flex | `height: '140px'` with absolute positioning |
+| Percentage-based bar heights | Pixel-based bar heights |
+| Bar container with `flex-1` | Explicit `justify-end` and `h-full` |
+| Labels inside flex children | Labels in separate absolute div |
+| Max 85% scaling | Full 96px available for tallest bar |
+
+### Math Check
+
+With `maxCount = 131` and `maxBarHeight = 96px`:
+- Sunday (131): `(131/131) * 96 = 96px` (full height)
+- Saturday (32): `(32/131) * 96 = 23px` (~24% of Sunday)
+- Today (0): `3px` (minimal indicator)
+
+This gives clear visual distinction: Sunday should be ~4x taller than Saturday.
+
+### Expected Visual Result
+```
+Upcoming Reviews                    Next 7 days
+
+TODAY
+  0      32     131      0       0       0       0
+  ▁      ▂      █       ▁       ▁       ▁       ▁
+Today   Sat    Sun    Mon     Tue     Wed     Thu
+
+📅 Total this week                           163
+Sunday's bar should nearly touch the numbers, Saturday's bar should be about 1/4 that height.
+
+This is the complete fix. No other changes needed.

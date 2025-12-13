@@ -1,0 +1,63 @@
+Task: Fix cascading dashboard failures caused by database schema mismatch
+STOP: Before making any code changes, run this diagnostic first:
+sql-- 1. Check user_phrase_progress schema
+SELECT column_name, data_type 
+FROM information_schema.columns
+WHERE table_name = 'user_phrase_progress'
+ORDER BY ordinal_position;
+
+-- 2. Check if any phrase progress exists
+SELECT COUNT(*) FROM user_phrase_progress;
+
+-- 3. Check if chapters exist
+SELECT chapter_number, title FROM chapters ORDER BY chapter_number LIMIT 5;
+
+-- 4. Check if user_lemma_progress has data
+SELECT COUNT(*) FROM user_lemma_progress;
+
+-- 5. Check if phrases exist and are linked to chapters
+SELECT COUNT(*) FROM phrases p
+JOIN phrase_occurrences po ON p.phrase_id = po.phrase_id;
+Report the results of these queries before proceeding.
+
+After Diagnostics, Fix in This Order:
+Fix 1: Schema Alignment
+If user_phrase_progress is missing columns, add them:
+sqlALTER TABLE user_phrase_progress 
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW(),
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW(),
+ADD COLUMN IF NOT EXISTS introduced BOOLEAN DEFAULT FALSE;
+-- Add any other missing columns
+Fix 2: Add Error Logging to Dashboard
+In src/pages/Dashboard.jsx, wrap EVERY Supabase query with error logging:
+javascriptconst { data, error } = await supabase.from('...').select('...')
+if (error) {
+  console.error('❌ [QueryName] failed:', error)
+  // Don't silently return empty - surface the error
+}
+Fix 3: Fix Chapter Query
+The chapters query must ALWAYS return at least Chapter 1. Find fetchChapterData and:
+
+Log the raw response
+Remove any filters that might exclude all chapters
+Ensure it doesn't depend on user progress existing
+
+Fix 4: Fix Phrase Upsert
+In useProgressTracking.js, after fixing schema:
+
+Verify the upsert data object matches the actual table columns
+Check for RLS policy issues with:
+
+sql-- Check RLS policies
+SELECT * FROM pg_policies WHERE tablename = 'user_phrase_progress';
+Fix 5: Verify Activity and Forecast Queries
+After above fixes, check if activity heatmap and upcoming reviews populate. If not, debug those queries individually.
+
+Expected Outcome:
+
+Dashboard shows chapters (at minimum Chapter 1)
+Activity heatmap shows today's reviews
+Phrase progress saves successfully
+"Phrases" count > 0 in Words by Type
+
+Report diagnostic results first, then implement fixes.

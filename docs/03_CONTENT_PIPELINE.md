@@ -1,7 +1,7 @@
 # 03_CONTENT_PIPELINE.md
 
-**Last Updated:** November 30, 2025  
-**Status:** Draft  
+**Last Updated:** December 13, 2025
+**Status:** Active
 **Owner:** Claude + Peter
 
 ---
@@ -1481,10 +1481,72 @@ python pipeline.py --quality-report --chapter 1 --output report.json
 
 ---
 
+## PHRASE INTEGRATION IN LEARNING
+
+### Threshold for Introduction
+
+Phrases are introduced to users after they've learned 20% of a chapter's individual words.
+
+**Example:**
+- Chapter 1 has 52 unique lemmas
+- After user learns 11 lemmas (21%), Chapter 1 phrases become available
+- This ensures users have vocabulary foundation before tackling complex phrases
+
+### Session Composition with Phrases
+
+**80/20 Split (when phrases available):**
+- 80% lemmas (12 cards in 15-card session)
+- 20% phrases (3 cards in 15-card session)
+
+**Ratio adjusts based on availability:**
+- If fewer than 3 phrases available, use what's there
+- If no phrases available (chapter not at 20%), 100% lemmas
+
+### Phrase Selection Logic
+
+```javascript
+// Check which chapters are ready for phrases
+const chaptersReadyForPhrases = await getChaptersReadyForPhrases(userId, unlockedChapters)
+
+// Calculate split
+const hasPhraseChapters = chaptersReadyForPhrases.length > 0
+const lemmaCount = hasPhraseChapters ? Math.ceil(sessionSize * 0.8) : sessionSize
+const phraseCount = hasPhraseChapters ? Math.floor(sessionSize * 0.2) : 0
+```
+
+### Phrase Progress Tracking
+
+**Separate table:** `user_phrase_progress`
+
+**Same FSRS columns as user_lemma_progress:**
+- `stability`, `difficulty`, `due_date`
+- `fsrs_state`, `reps`, `lapses`
+- `last_seen_at`
+
+**Same scheduling algorithm:**
+- FSRS determines review intervals
+- Same button responses (Again/Hard/Got It)
+- Same exposure insurance logic
+
+### Phrase Card Display
+
+**Front (Spanish):**
+- Phrase text: "personas mayores"
+- Example sentence (phrase highlighted)
+- "New Phrase" badge (if first time) or "Phrase" badge (purple)
+
+**Back (English):**
+- Definition: "grown-ups, adults"
+- Part of speech: "phrase"
+- Translated sentence
+
+---
+
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
 - 2025-12-06: Added Steps 10-11 for AI dictionary form validation (Claude)
+- 2025-12-13: Added "Phrase Integration in Learning" section documenting 20% threshold and 80/20 session split (Claude)
 - Status: Active
 
 ---

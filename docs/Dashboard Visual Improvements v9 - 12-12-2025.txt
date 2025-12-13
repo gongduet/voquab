@@ -1,0 +1,81 @@
+Claude Code Prompt: Fix Activity Heatmap Timezone Issue (v9)
+Task: Fix timezone mismatch in src/components/dashboard/ActivityHeatmap.jsx that causes the heatmap to show empty.
+The Problem
+The generateLast35Days() function creates dates using local time converted to UTC, but activity data dates are pure UTC from the database. These don't match, so activityMap.get(day.date) returns undefined for all days.
+The Fix
+Replace the generateLast35Days function (around line 110-135) with this UTC-consistent version:
+javascript/**
+ * Generate array of last 35 days with date strings (UTC-consistent)
+ */
+function generateLast35Days() {
+  const days = []
+  
+  // Use UTC dates consistently to match database timestamps
+  const now = new Date()
+  const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const todayStr = todayUTC.toISOString().split('T')[0]
+  
+  // Start from 34 days ago
+  const startDate = new Date(todayUTC)
+  startDate.setUTCDate(startDate.getUTCDate() - 34)
+  
+  // Adjust to start on Sunday (using UTC day)
+  const dayOfWeek = startDate.getUTCDay()
+  startDate.setUTCDate(startDate.getUTCDate() - dayOfWeek)
+  
+  for (let i = 0; i < 35; i++) {
+    const date = new Date(startDate)
+    date.setUTCDate(startDate.getUTCDate() + i)
+    const dateStr = date.toISOString().split('T')[0]
+    
+    days.push({
+      date: dateStr,
+      isToday: dateStr === todayStr
+    })
+  }
+  
+  return days
+}
+Also Add Debug Logging (Temporary)
+At the top of the component function, add:
+javascriptexport default function ActivityHeatmap({
+  activityData = [],
+  currentStreak = 0,
+  bestStreak = 0,
+  loading = false
+}) {
+  // Debug logging
+  console.log('🗓️ [ActivityHeatmap] Received data:', {
+    activityDataLength: activityData.length,
+    activityData: activityData.slice(0, 5),  // First 5 items
+    currentStreak,
+    bestStreak
+  })
+  
+  // Generate last 35 days
+  const days = generateLast35Days()
+  
+  // Debug: log generated dates
+  console.log('🗓️ [ActivityHeatmap] Generated days:', {
+    first: days[0]?.date,
+    last: days[days.length - 1]?.date,
+    todayCell: days.find(d => d.isToday)?.date
+  })
+
+  // ... rest of component
+```
+
+### Expected Result
+
+After fix:
+- Activity heatmap shows colored cells for Dec 12 (100 reviews) and Dec 13 (63 reviews)
+- Today's cell has a blue ring around it
+- Streak shows correctly
+
+### Verification
+
+Console should show:
+```
+🗓️ [ActivityHeatmap] Received data: { activityDataLength: 2, activityData: [...], ... }
+🗓️ [ActivityHeatmap] Generated days: { first: "2025-11-09", last: "2025-12-13", todayCell: "2025-12-13" }
+And the todayCell date should match one of the dates in activityData.
