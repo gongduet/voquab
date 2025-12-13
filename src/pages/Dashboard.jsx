@@ -526,65 +526,60 @@ async function fetchChaptersProgress(userId) {
 }
 
 /**
- * Fetch activity data for heatmap (last 35 days)
- * Queries both user_lemma_progress and user_phrase_progress for last_seen_at dates
- * Also calculates current and best streak
+ * Fetch activity data for heatmap - uses user_review_history for accurate counts
+ * Counts UNIQUE cards reviewed per day (not total reviews)
  */
 async function fetchActivityData(userId) {
+  // Get reviews from last 35 days
   const thirtyFiveDaysAgo = new Date()
   thirtyFiveDaysAgo.setDate(thirtyFiveDaysAgo.getDate() - 35)
-  const cutoffDate = thirtyFiveDaysAgo.toISOString()
 
-  // Fetch lemma reviews in last 35 days
-  const { data: lemmaReviews, error: lemmaError } = await supabase
-    .from('user_lemma_progress')
-    .select('last_seen_at')
+  const { data: reviews, error } = await supabase
+    .from('user_review_history')
+    .select('reviewed_at, lemma_id, phrase_id')
     .eq('user_id', userId)
-    .gte('last_seen_at', cutoffDate)
+    .gte('reviewed_at', thirtyFiveDaysAgo.toISOString())
+    .order('reviewed_at', { ascending: false })
 
-  if (lemmaError) {
-    console.error('❌ [fetchActivityData] lemma reviews query failed:', lemmaError)
+  if (error) {
+    console.error('❌ [fetchActivityData] query failed:', error)
+    return { data: [], currentStreak: 0, bestStreak: 0 }
   }
 
-  // Fetch phrase reviews in last 35 days
-  const { data: phraseReviews, error: phraseError } = await supabase
-    .from('user_phrase_progress')
-    .select('last_seen_at')
-    .eq('user_id', userId)
-    .gte('last_seen_at', cutoffDate)
+  // Group by date and count UNIQUE lemmas + phrases per day
+  const activityByDate = {}
 
-  if (phraseError) {
-    console.error('❌ [fetchActivityData] phrase reviews query failed:', phraseError)
-  }
+  for (const review of reviews || []) {
+    // Convert to local date string
+    const reviewDate = new Date(review.reviewed_at)
+    const dateStr = formatLocalDate(reviewDate)
 
-  // Combine and count by date
-  const dateCounts = {}
+    if (!activityByDate[dateStr]) {
+      activityByDate[dateStr] = {
+        lemmas: new Set(),
+        phrases: new Set()
+      }
+    }
 
-  for (const review of lemmaReviews || []) {
-    if (review.last_seen_at) {
-      const date = review.last_seen_at.split('T')[0]
-      dateCounts[date] = (dateCounts[date] || 0) + 1
+    // Add to appropriate set (Sets automatically dedupe)
+    if (review.lemma_id) {
+      activityByDate[dateStr].lemmas.add(review.lemma_id)
+    }
+    if (review.phrase_id) {
+      activityByDate[dateStr].phrases.add(review.phrase_id)
     }
   }
 
-  for (const review of phraseReviews || []) {
-    if (review.last_seen_at) {
-      const date = review.last_seen_at.split('T')[0]
-      dateCounts[date] = (dateCounts[date] || 0) + 1
-    }
-  }
+  // Convert to array format for heatmap
+  const activityData = Object.entries(activityByDate).map(([date, sets]) => ({
+    date,
+    reviews: sets.lemmas.size + sets.phrases.size
+  }))
 
-  // Convert to array format
-  const activityData = Object.entries(dateCounts)
-    .map(([date, reviews]) => ({ date, reviews }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  // Debug logging
-  const today = new Date().toISOString().split('T')[0]
-  console.log('[Dashboard] Activity data - today:', today, 'count:', dateCounts[today] || 0, 'total records:', activityData.length)
+  console.log('[fetchActivityData] Unique cards per day:', activityData.slice(0, 5))
 
   // Calculate streaks
-  const { currentStreak, bestStreak } = calculateStreaks(activityData)
+  const { currentStreak, bestStreak } = calculateStreaks(activityByDate)
 
   return {
     data: activityData,
@@ -596,64 +591,66 @@ async function fetchActivityData(userId) {
 /**
  * Calculate current and best streaks from activity data
  */
-function calculateStreaks(activityData) {
-  if (!activityData || activityData.length === 0) {
+function calculateStreaks(activityByDate) {
+  // Get sorted dates that have activity
+  const activeDates = Object.keys(activityByDate)
+    .filter(date => {
+      const sets = activityByDate[date]
+      return sets.lemmas.size + sets.phrases.size > 0
+    })
+    .sort((a, b) => new Date(b) - new Date(a)) // Most recent first
+
+  if (activeDates.length === 0) {
     return { currentStreak: 0, bestStreak: 0 }
   }
 
-  // Create a set of dates with activity
-  const activeDates = new Set(
-    activityData
-      .filter(d => d.reviews > 0)
-      .map(d => d.date)
-  )
+  // Check if today or yesterday has activity (for current streak)
+  const today = formatLocalDate(new Date())
+  const yesterday = formatLocalDate(new Date(Date.now() - 86400000))
 
-  // Calculate current streak (counting backward from today)
   let currentStreak = 0
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  let bestStreak = 0
+  let tempStreak = 0
 
-  // Check today and yesterday to start
-  const todayStr = today.toISOString().split('T')[0]
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().split('T')[0]
+  // Calculate current streak (must include today or yesterday)
+  if (activeDates.includes(today) || activeDates.includes(yesterday)) {
+    const startDate = activeDates.includes(today) ? today : yesterday
+    let checkDate = new Date(startDate)
 
-  // Start counting from today or yesterday
-  let checkDate = activeDates.has(todayStr) ? today : yesterday
-
-  while (true) {
-    const dateStr = checkDate.toISOString().split('T')[0]
-    if (activeDates.has(dateStr)) {
-      currentStreak++
-      checkDate.setDate(checkDate.getDate() - 1)
-    } else {
-      break
+    while (true) {
+      const dateStr = formatLocalDate(checkDate)
+      if (activityByDate[dateStr] &&
+          (activityByDate[dateStr].lemmas.size + activityByDate[dateStr].phrases.size) > 0) {
+        currentStreak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
     }
   }
 
   // Calculate best streak
-  let bestStreak = 0
-  let tempStreak = 0
-  let prevDate = null
+  for (let i = 0; i < activeDates.length; i++) {
+    const currentDate = new Date(activeDates[i])
 
-  const sortedDates = [...activeDates].sort()
-  for (const dateStr of sortedDates) {
-    const date = new Date(dateStr)
-    if (prevDate) {
-      const dayDiff = (date - prevDate) / (1000 * 60 * 60 * 24)
-      if (dayDiff === 1) {
+    if (i === 0) {
+      tempStreak = 1
+    } else {
+      const prevDate = new Date(activeDates[i - 1])
+      const diffDays = Math.round((prevDate - currentDate) / 86400000)
+
+      if (diffDays === 1) {
         tempStreak++
       } else {
-        bestStreak = Math.max(bestStreak, tempStreak)
         tempStreak = 1
       }
-    } else {
-      tempStreak = 1
     }
-    prevDate = date
+
+    bestStreak = Math.max(bestStreak, tempStreak)
   }
-  bestStreak = Math.max(bestStreak, tempStreak)
+
+  // Current streak is also a candidate for best streak
+  bestStreak = Math.max(bestStreak, currentStreak)
 
   return { currentStreak, bestStreak }
 }

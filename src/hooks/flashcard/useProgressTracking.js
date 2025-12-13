@@ -20,14 +20,19 @@ export default function useProgressTracking(userId) {
    * Log a review event to user_review_history for activity tracking
    */
   async function logReviewEvent(card, difficulty) {
+    // Use same robust detection as updateProgress
+    const isPhrase = card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id)
+
     const reviewData = {
       user_id: userId,
       reviewed_at: new Date().toISOString(),
       difficulty: difficulty,
       // Set the appropriate ID based on card type
-      lemma_id: card.card_type === 'lemma' ? card.lemma_id : null,
-      phrase_id: card.card_type === 'phrase' ? card.phrase_id : null
+      lemma_id: isPhrase ? null : (card.lemma_id || null),
+      phrase_id: isPhrase ? card.phrase_id : null
     }
+
+    console.log('📝 Logging review event:', reviewData)
 
     const { error } = await supabase
       .from('user_review_history')

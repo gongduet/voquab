@@ -1,0 +1,20 @@
+Claude Code Prompt: Fix Activity Data Property Name (v19)
+Task: Fix the property name mismatch between Dashboard and ActivityHeatmap.
+The Problem:
+
+Dashboard.jsx returns { date, count }
+ActivityHeatmap.jsx expects { date, reviews }
+
+The Fix (in Dashboard.jsx):
+Find line 574-577 in src/pages/Dashboard.jsx:
+javascriptconst activityData = Object.entries(activityByDate).map(([date, sets]) => ({
+  date,
+  count: sets.lemmas.size + sets.phrases.size
+}))
+Change to:
+javascriptconst activityData = Object.entries(activityByDate).map(([date, sets]) => ({
+  date,
+  reviews: sets.lemmas.size + sets.phrases.size
+}))
+
+That's it - one word change. After this fix, the heatmap should show 15 for today (12 lemmas + 3 phrases).
