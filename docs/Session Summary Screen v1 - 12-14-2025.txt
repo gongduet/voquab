@@ -1,0 +1,423 @@
+Claude Code Prompt: Session Summary Screen (v21 - Final)
+Task: Create a Notion-inspired session summary screen that replaces the current basic completion view. This involves creating 1 new file and modifying 2 existing files.
+
+Overview
+Current state: When a flashcard session completes, users see a basic celebration screen with emoji, card count, and rating breakdown.
+Target state: A clean, Notion-inspired summary with:
+
+Success rate and card count metrics
+Rating breakdown (Again/Hard/Got It)
+"Needs Focus" section showing trouble words (or "Perfect session!" if all correct)
+Two action buttons with smart labels based on remaining cards
+
+
+Part 1: Create src/components/flashcard/SessionSummary.jsx
+Create this new file:
+jsximport { useNavigate } from 'react-router-dom'
+import { CheckCircle } from 'lucide-react'
+
+/**
+ * SessionSummary - Notion-inspired session completion screen
+ * 
+ * Design: Clean, sophisticated, adult-oriented (not gamified)
+ * Colors: Sky blue primary (#0ea5e9), amber secondary (#f59e0b), stone neutrals
+ */
+export default function SessionSummary({
+  totalCards = 0,
+  ratings = { again: 0, hard: 0, gotIt: 0 },
+  troubleWords = [],
+  dueCount = 0,
+  newAvailable = 0,
+  onNewSession,
+  onDashboard
+}) {
+  const navigate = useNavigate()
+  
+  // Calculate success rate: (gotIt + hard) / total
+  const successRate = totalCards > 0 
+    ? Math.round(((ratings.gotIt + ratings.hard) / totalCards) * 100) 
+    : 0
+  
+  const hasTroubleWords = troubleWords.length > 0
+  const hasMoreToReview = dueCount > 0
+  const hasNewToLearn = newAvailable > 0
+  
+  // Format today's date
+  const today = new Date().toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'long', 
+    day: 'numeric' 
+  })
+
+  const handleNewSession = () => {
+    if (onNewSession) {
+      onNewSession()
+    } else {
+      window.location.reload()
+    }
+  }
+
+  const handleDashboard = () => {
+    if (onDashboard) {
+      onDashboard()
+    } else {
+      navigate('/')
+    }
+  }
+
+  return (
+    <div 
+      className="min-h-screen px-6 py-12 max-w-lg mx-auto"
+      style={{ 
+        fontFamily: "'Inter', system-ui, sans-serif",
+        backgroundColor: '#fafaf9',
+        color: '#171717'
+      }}
+    >
+      {/* Header */}
+      <header className="mb-10">
+        <div className="flex items-center gap-2 mb-2">
+          <span 
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: '#0ea5e9' }}
+          />
+          <p 
+            className="text-xs font-medium uppercase tracking-wider"
+            style={{ color: '#737373' }}
+          >
+            Session Complete
+          </p>
+        </div>
+        <h1 
+          className="text-3xl font-semibold tracking-tight mb-2"
+          style={{ color: '#171717' }}
+        >
+          Summary
+        </h1>
+        <p 
+          className="text-sm font-medium"
+          style={{ color: '#737373' }}
+        >
+          {today}
+        </p>
+      </header>
+
+      {/* Metrics Grid */}
+      <section 
+        className="grid grid-cols-3 gap-px border rounded-xl overflow-hidden mb-8 shadow-sm"
+        style={{ backgroundColor: '#e7e5e4', borderColor: '#e7e5e4' }}
+      >
+        <div className="bg-white p-4 flex flex-col items-center justify-center">
+          <span className="text-2xl font-semibold" style={{ color: '#171717' }}>
+            {successRate}%
+          </span>
+          <span className="text-xs font-medium mt-1" style={{ color: '#737373' }}>
+            Success
+          </span>
+        </div>
+        <div className="bg-white p-4 flex flex-col items-center justify-center">
+          <span className="text-2xl font-semibold" style={{ color: '#171717' }}>
+            {totalCards}
+          </span>
+          <span className="text-xs font-medium mt-1" style={{ color: '#737373' }}>
+            Cards
+          </span>
+        </div>
+        <div className="bg-white p-4 flex flex-col items-center justify-center">
+          <span className="text-2xl font-semibold" style={{ color: '#98c1a3' }}>
+            {ratings.gotIt}
+          </span>
+          <span className="text-xs font-medium mt-1" style={{ color: '#737373' }}>
+            Got It
+          </span>
+        </div>
+      </section>
+
+      {/* Rating Breakdown */}
+      <section className="mb-8">
+        <h2 
+          className="text-sm font-semibold mb-4 pb-2"
+          style={{ color: '#171717', borderBottom: '1px solid #e7e5e4' }}
+        >
+          Responses
+        </h2>
+        <div className="flex justify-around">
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold" style={{ color: '#6d6875' }}>
+              {ratings.again}
+            </span>
+            <span className="text-xs mt-1" style={{ color: '#737373' }}>Again</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold" style={{ color: '#e5989b' }}>
+              {ratings.hard}
+            </span>
+            <span className="text-xs mt-1" style={{ color: '#737373' }}>Hard</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold" style={{ color: '#98c1a3' }}>
+              {ratings.gotIt}
+            </span>
+            <span className="text-xs mt-1" style={{ color: '#737373' }}>Got It</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Words to Revisit OR Perfect Session */}
+      {hasTroubleWords ? (
+        <section className="mb-8">
+          <div 
+            className="flex items-center justify-between mb-4 pb-2"
+            style={{ borderBottom: '1px solid #e7e5e4' }}
+          >
+            <h2 className="text-sm font-semibold" style={{ color: '#171717' }}>
+              Needs Focus
+            </h2>
+            <span 
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: '#fef3c7', color: '#f59e0b' }}
+            >
+              {troubleWords.length} {troubleWords.length === 1 ? 'Word' : 'Words'}
+            </span>
+          </div>
+          
+          <div className="flex flex-col gap-3">
+            {troubleWords.slice(0, 3).map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-1 py-1">
+                <div className="flex justify-between items-baseline">
+                  <span 
+                    className="font-semibold"
+                    style={{ color: '#171717', fontSize: '15px' }}
+                  >
+                    {item.lemma}
+                  </span>
+                  {item.partOfSpeech && (
+                    <span 
+                      className="italic"
+                      style={{ color: '#a3a3a3', fontSize: '10px' }}
+                    >
+                      {item.partOfSpeech.toLowerCase()}
+                    </span>
+                  )}
+                </div>
+                {item.context && (
+                  <p 
+                    className="leading-relaxed line-clamp-1"
+                    style={{ color: '#737373', fontSize: '13px' }}
+                  >
+                    {item.context}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <section className="mb-8">
+          <div 
+            className="rounded-xl p-6 text-center border"
+            style={{ backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }}
+          >
+            <CheckCircle 
+              className="w-8 h-8 mx-auto mb-2" 
+              style={{ color: '#10b981' }}
+            />
+            <p 
+              className="font-semibold"
+              style={{ color: '#065f46', fontSize: '15px' }}
+            >
+              Perfect session!
+            </p>
+            <p 
+              className="mt-1"
+              style={{ color: '#047857', fontSize: '13px' }}
+            >
+              Every card answered correctly
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Action Buttons */}
+      <div 
+        className="mt-auto pt-6 space-y-3"
+        style={{ borderTop: '1px solid #e7e5e4' }}
+      >
+        {/* Primary: Review More or Learn New */}
+        {(hasMoreToReview || hasNewToLearn) && (
+          <button
+            onClick={handleNewSession}
+            className="w-full text-white font-medium py-3.5 rounded-xl shadow-sm transition-all active:scale-[0.99]"
+            style={{ backgroundColor: '#0ea5e9', fontSize: '14px' }}
+          >
+            {hasMoreToReview 
+              ? `Review More (${dueCount} due)` 
+              : `Learn New Words (${newAvailable})`
+            }
+          </button>
+        )}
+        
+        {/* Secondary/Primary: Dashboard */}
+        <button
+          onClick={handleDashboard}
+          className="w-full font-medium py-3.5 rounded-xl transition-all active:scale-[0.99]"
+          style={{ 
+            backgroundColor: (hasMoreToReview || hasNewToLearn) ? 'transparent' : '#0ea5e9',
+            color: (hasMoreToReview || hasNewToLearn) ? '#525252' : 'white',
+            border: (hasMoreToReview || hasNewToLearn) ? '1px solid #d6d3d1' : 'none',
+            fontSize: '14px'
+          }}
+        >
+          {(hasMoreToReview || hasNewToLearn) ? 'Back to Dashboard' : 'Return to Dashboard'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+Part 2: Update src/pages/Flashcards.jsx
+2a. Add import at top of file (around line 10, with other component imports):
+javascriptimport SessionSummary from '../components/flashcard/SessionSummary'
+2b. Add state for tracking trouble words.
+Find the floating feedback state declarations (around line 35-37):
+javascriptconst [feedbackMessage, setFeedbackMessage] = useState('')
+const [showFeedback, setShowFeedback] = useState(false)
+const [feedbackPosition, setFeedbackPosition] = useState({ x: 0, y: 0 })
+Add this new state immediately after:
+javascript// Track trouble words for session summary
+const [troubleWords, setTroubleWords] = useState([])
+2c. Reset troubleWords when loading a new session.
+Find the loadSession function (around line 61). Add this line at the very beginning of the function, right after the opening brace:
+javascriptasync function loadSession() {
+  setTroubleWords([])  // Reset trouble words for new session
+  setLoading(true)
+  // ... rest of existing code
+2d. Capture trouble words in handleDifficulty.
+Find the handleDifficulty function. Locate this line near the end of the function (around line 143):
+javascripthandleDifficultySession(difficulty)
+Add this block BEFORE that line:
+javascript// Track trouble words for session summary
+if (difficulty === 'again' || difficulty === 'hard') {
+  setTroubleWords(prev => {
+    // Avoid duplicates
+    if (prev.some(w => w.lemma === currentCard.lemma)) return prev
+    // Limit to 5 words max
+    if (prev.length >= 5) return prev
+    return [...prev, {
+      lemma: currentCard.lemma,
+      context: currentCard.example_sentence 
+        ? (currentCard.example_sentence.length > 60 
+            ? currentCard.example_sentence.slice(0, 60) + '...' 
+            : currentCard.example_sentence)
+        : null,
+      partOfSpeech: currentCard.part_of_speech || null
+    }]
+  })
+}
+
+// Update local session (existing line)
+handleDifficultySession(difficulty)
+2e. Replace the session complete render block.
+Find this block (around lines 219-267):
+jsx// Session complete
+if (isComplete) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+      ...
+    </div>
+  )
+}
+Replace the ENTIRE if (isComplete) { ... } block with:
+jsx// Session complete - show summary
+if (isComplete) {
+  return (
+    <SessionSummary
+      totalCards={totalCards}
+      ratings={{
+        again: sessionRatings['dont-know'] || 0,
+        hard: sessionRatings['hard'] || 0,
+        gotIt: sessionRatings['easy'] || 0
+      }}
+      troubleWords={troubleWords}
+      dueCount={sessionStats?.dueRemaining || 0}
+      newAvailable={sessionStats?.newRemaining || 0}
+      onNewSession={() => window.location.reload()}
+      onDashboard={() => navigate('/')}
+    />
+  )
+}
+
+Part 3: Update src/services/sessionBuilder.js
+Add dueRemaining and newRemaining to stats objects so the summary knows if more cards are available.
+3a. In buildReviewSession function:
+Find the stats object (around line 180-188):
+javascriptconst stats = {
+  totalDue: dueCards.length,
+  selectedDue: selectedDue.length,
+  exposureAvailable: exposureCandidates.length,
+  selectedExposure: selectedExposure.length,
+  activityLevel: activityLevel.level,
+  lemmaCount: lemmaCardsWithSentences.length,
+  phraseCount: phraseCardsWithSentences.length
+}
+Add these two new properties at the end (before the closing brace):
+javascriptconst stats = {
+  totalDue: dueCards.length,
+  selectedDue: selectedDue.length,
+  exposureAvailable: exposureCandidates.length,
+  selectedExposure: selectedExposure.length,
+  activityLevel: activityLevel.level,
+  lemmaCount: lemmaCardsWithSentences.length,
+  phraseCount: phraseCardsWithSentences.length,
+  dueRemaining: Math.max(0, dueCards.length - selectedDue.length),
+  newRemaining: 0
+}
+3b. In buildLearnSession function:
+Find the stats object in buildLearnSession (search for console.log('📗 Learn session built:' to locate it, around line 350-380). The stats object should look something like:
+javascriptconst stats = {
+  newAvailable: ...,
+  selectedNew: ...,
+  ...
+}
+Add these two properties:
+javascriptdueRemaining: 0,
+newRemaining: Math.max(0, (newLemmaPool?.length || 0) + (newPhrasePool?.length || 0) - selectedCards.length)
+Note: The exact variable names may differ - use whatever variables represent the total new cards available minus what was selected.
+3c. In buildChapterFocusSession function:
+Find the stats object (around line 933-941):
+javascriptconst stats = {
+  chapter: chapterNumber,
+  chapterTitle: chapter.title,
+  chapterDueAvailable: chapterDue.length,
+  chapterDueSelected: selectedChapterDue.length,
+  chapterExposureAvailable: chapterExposure.length,
+  chapterExposureSelected: selectedChapterExposure.length,
+  otherDueAvailable: otherDue.length,
+  otherDueSelected: selectedOtherDue.length
+}
+Add these two properties:
+javascriptconst stats = {
+  chapter: chapterNumber,
+  chapterTitle: chapter.title,
+  chapterDueAvailable: chapterDue.length,
+  chapterDueSelected: selectedChapterDue.length,
+  chapterExposureAvailable: chapterExposure.length,
+  chapterExposureSelected: selectedChapterExposure.length,
+  otherDueAvailable: otherDue.length,
+  otherDueSelected: selectedOtherDue.length,
+  dueRemaining: Math.max(0, chapterDue.length + otherDue.length - selectedChapterDue.length - selectedOtherDue.length),
+  newRemaining: 0
+}
+
+Summary of Changes
+FileChangesrc/components/flashcard/SessionSummary.jsxNew file - Notion-inspired summary componentsrc/pages/Flashcards.jsxImport SessionSummary, add troubleWords state, capture trouble words in handleDifficulty, replace isComplete render blocksrc/services/sessionBuilder.jsAdd dueRemaining and newRemaining to stats in all three build functions
+Expected Behavior
+
+User completes a flashcard session
+Summary screen appears with:
+
+"Session Complete" header with today's date
+Success rate, card count, and Got It count in a 3-column grid
+Responses section showing Again/Hard/Got It breakdown
+Either "Needs Focus" with 1-3 trouble words OR "Perfect session!" celebration
+Smart buttons: "Review More (X due)" or "Learn New Words (X)" if available, plus "Back to Dashboard"

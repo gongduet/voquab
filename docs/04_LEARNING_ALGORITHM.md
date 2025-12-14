@@ -326,47 +326,57 @@ Same FSRS columns as `user_lemma_progress`:
 
 ### Unlock Criteria
 
-**Requirement:** 95% of previous chapter words introduced
+A chapter unlocks when the previous chapter reaches **95% completion**.
 
-**SQL Function:**
-```sql
-CREATE OR REPLACE FUNCTION get_chapter_progress(p_user_id uuid)
-RETURNS TABLE (
-  chapter_number integer,
-  total_words bigint,
-  introduced_words bigint,
-  introduced_pct numeric
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    l.chapter_number,
-    COUNT(*) as total_words,
-    COUNT(ulp.lemma_id) as introduced_words,
-    ROUND((COUNT(ulp.lemma_id)::numeric / NULLIF(COUNT(*), 0)) * 100, 1) as introduced_pct
-  FROM lemmas l
-  LEFT JOIN user_lemma_progress ulp
-    ON l.lemma_id = ulp.lemma_id AND ulp.user_id = p_user_id
-  WHERE l.is_stop_word = false
-  GROUP BY l.chapter_number
-  ORDER BY l.chapter_number;
-END;
-$$ LANGUAGE plpgsql;
+**Completion Formula:**
 ```
+Completion = (introduced lemmas + introduced phrases) / (total non-stop lemmas + total phrases)
+```
+
+**Key Points:**
+- Stop words are **excluded** from the calculation (they're not learnable)
+- "Introduced" means `reps >= 1` in the progress table
+- Phrases count equally with lemmas toward completion
+
+### Example: Chapter 1 Unlock Calculation
+
+**Before Fix (incorrect):**
+- Total lemmas with stop words: 175
+- Learnable lemmas (non-stop): 141
+- Max possible rate: 141/175 = 80.5% < 95% threshold
+- Result: Chapter 2 never unlocks!
+
+**After Fix (correct):**
+- Total: 141 lemmas + 20 phrases = 161
+- Introduced: 161
+- Rate: 161/161 = 100% ≥ 95%
+- Result: Chapter 2 unlocks correctly
 
 ### Example Progression
 
-| Chapter | Total Words | Introduced | Percentage | Status |
-|---------|-------------|------------|------------|--------|
-| 1 | 52 | 52 | 100% | Complete |
-| 2 | 40 | 38 | 95% | Chapter 3 Unlocked |
-| 3 | 35 | 30 | 86% | Chapter 4 Locked |
+| Chapter | Lemmas | Phrases | Total | Introduced | Percentage | Status |
+|---------|--------|---------|-------|------------|------------|--------|
+| 1 | 141 | 20 | 161 | 161 | 100% | Complete |
+| 2 | 206 | 40 | 246 | 234 | 95% | Chapter 3 Unlocked |
+| 3 | 123 | 33 | 156 | 110 | 71% | Chapter 4 Locked |
+
+### Implementation
+
+The unlock calculation is done in `sessionBuilder.js`:
+- `getUnlockedChapterIds()` - Returns array of unlocked chapter IDs
+- `getUnlockedChapters()` - Returns chapter objects with progress data
+
+Both functions:
+1. Query lemmas with `.eq('lemmas.is_stop_word', false)` to exclude stop words
+2. Query phrases via `phrase_occurrences` table
+3. Check user progress with `reps >= 1` (no `introduced` column exists)
+4. Calculate combined completion rate
 
 ### UI Indicator
 
 - Locked chapters show lock icon
-- Progress bar shows introduction percentage
-- "X more words to unlock" message
+- Progress bar shows combined lemma + phrase percentage
+- "View all" button expands to show all 27 chapters
 
 ---
 

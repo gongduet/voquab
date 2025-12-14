@@ -7,6 +7,7 @@ import FlashcardDisplay from '../components/flashcard/FlashcardDisplay'
 import DifficultyButtons from '../components/flashcard/DifficultyButtons'
 import ChapterCompleteScreen from '../components/flashcard/ChapterCompleteScreen'
 import FloatingFeedback from '../components/flashcard/FloatingFeedback'
+import SessionSummary from '../components/flashcard/SessionSummary'
 
 // Hooks
 import useFlashcardSession from '../hooks/flashcard/useFlashcardSession'
@@ -37,6 +38,10 @@ export default function Flashcards() {
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackPosition, setFeedbackPosition] = useState({ x: 0, y: 0 })
 
+  // Track all reviewed cards with their ratings and due dates
+  // Key: lemmaId or phraseId, Value: card review data
+  const [reviewedCards, setReviewedCards] = useState(new Map())
+
   // Session management - pass cards to hook
   const {
     currentCard,
@@ -62,6 +67,7 @@ export default function Flashcards() {
   }, [user?.id, mode, urlChapter])
 
   async function loadSession() {
+    setReviewedCards(new Map())  // Reset reviewed cards for new session
     setLoading(true)
     setError(null)
 
@@ -145,6 +151,32 @@ export default function Flashcards() {
     const result = await updateProgress(currentCard, fsrsDifficulty, currentCard.isExposure)
 
     console.log('📥 FSRS result:', result)
+
+    // Track all reviewed cards for session summary
+    if (result?.success) {
+      const cardId = currentCard.phrase_id || currentCard.lemma_id
+      const isAgain = difficulty === 'again' || difficulty === 'dont-know'
+
+      setReviewedCards(prev => {
+        const updated = new Map(prev)
+        const existing = updated.get(cardId)
+
+        updated.set(cardId, {
+          lemma: currentCard.lemma,
+          cardId: cardId,
+          cardType: currentCard.card_type || 'lemma',
+          partOfSpeech: currentCard.part_of_speech || null,
+          // Sticky flag: once marked "again", stays true even if later got it right
+          wasMarkedAgain: existing?.wasMarkedAgain || isAgain,
+          // Always update to latest rating
+          finalRating: isAgain ? 'again' : difficulty === 'hard' ? 'hard' : 'gotIt',
+          dueFormatted: result.dueFormatted || 'Now',
+          dueTimestamp: result.dueDate ? new Date(result.dueDate).getTime() : Date.now()
+        })
+
+        return updated
+      })
+    }
 
     // Show floating feedback animation (replaces old yellow notification)
     if (result?.dueFormatted && !result.isExposure) {
@@ -247,66 +279,22 @@ export default function Flashcards() {
     return <ChapterCompleteScreen focusChapter={urlChapter} chapterInfo={chapterInfo} />
   }
 
-  // Session complete
+  // Session complete - show summary
   if (isComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
-        <div className="max-w-md p-8 bg-white rounded-xl shadow-lg text-center">
-          <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Session Complete!</h2>
-          <p className="text-gray-600 mb-6">
-            Great work! You reviewed {totalCards} cards.
-          </p>
-
-          {/* Performance summary */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <div className="text-gray-600">Again</div>
-                <div className="text-xl font-bold" style={{ color: '#6d6875' }}>
-                  {sessionRatings['dont-know'] || 0}
-                </div>
-              </div>
-              <div>
-                <div className="text-gray-600">Hard</div>
-                <div className="text-xl font-bold" style={{ color: '#e5989b' }}>
-                  {sessionRatings.hard || 0}
-                </div>
-              </div>
-              <div>
-                <div className="text-gray-600">Got It</div>
-                <div className="text-xl font-bold" style={{ color: '#98c1a3' }}>
-                  {sessionRatings.easy || 0}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Session stats if available */}
-          {sessionStats && (
-            <div className="text-sm text-gray-500 mb-4">
-              {sessionStats.selectedExposure > 0 && (
-                <span>Included {sessionStats.selectedExposure} exposure checks</span>
-              )}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <button
-              onClick={() => window.location.reload()}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-            >
-              Start New Session
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              Return Home
-            </button>
-          </div>
-        </div>
-      </div>
+      <SessionSummary
+        totalCards={totalCards}
+        ratings={{
+          again: sessionRatings['dont-know'] || 0,
+          hard: sessionRatings['hard'] || 0,
+          gotIt: sessionRatings['easy'] || 0
+        }}
+        reviewedCards={Array.from(reviewedCards.values())}
+        dueCount={sessionStats?.dueRemaining || 0}
+        newAvailable={sessionStats?.newRemaining || 0}
+        onNewSession={() => window.location.reload()}
+        onDashboard={() => navigate('/')}
+      />
     )
   }
 

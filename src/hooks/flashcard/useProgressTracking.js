@@ -32,8 +32,6 @@ export default function useProgressTracking(userId) {
       phrase_id: isPhrase ? card.phrase_id : null
     }
 
-    console.log('📝 Logging review event:', reviewData)
-
     const { error } = await supabase
       .from('user_review_history')
       .insert(reviewData)
@@ -63,21 +61,6 @@ export default function useProgressTracking(userId) {
       const idField = isPhrase ? 'phrase_id' : 'lemma_id'
       const cardId = isPhrase ? card.phrase_id : (card.lemma_id || card.vocab_id)
 
-      // Debug logging for phrase progress tracking
-      console.log('🔍 updateProgress called:', {
-        card_type: card.card_type,
-        isPhrase,
-        tableName,
-        idField,
-        cardId,
-        phrase_id: card.phrase_id,
-        lemma_id: card.lemma_id,
-        vocab_id: card.vocab_id,
-        lemma: card.lemma,
-        difficulty,
-        allCardKeys: Object.keys(card)
-      })
-
       // Validate we have a valid cardId
       if (!cardId) {
         console.error('❌ No valid card ID found:', { card_type: card.card_type, phrase_id: card.phrase_id, lemma_id: card.lemma_id })
@@ -87,12 +70,6 @@ export default function useProgressTracking(userId) {
       // Handle exposure cards differently - only update last_seen_at
       if (isExposure || card.isExposure) {
         const exposureUpdate = markCardAsSeen(card)
-
-        console.log('👁️ Exposure upsert to', tableName, ':', {
-          user_id: userId,
-          [idField]: cardId,
-          last_seen_at: exposureUpdate.last_seen_at
-        })
 
         const { data: expResult, error } = await supabase
           .from(tableName)
@@ -110,13 +87,6 @@ export default function useProgressTracking(userId) {
           throw error
         }
 
-        console.log('✅ Exposure upsert success:', expResult)
-        console.log('👁️ Exposure card seen:', {
-          lemma: card.lemma,
-          card_type: isPhrase ? 'phrase' : 'lemma',
-          last_seen_at: exposureUpdate.last_seen_at
-        })
-
         // Still update daily stats for exposure reviews
         await updateDailyStats(userId)
 
@@ -129,20 +99,6 @@ export default function useProgressTracking(userId) {
 
       // Regular review - use FSRS scheduling
       const scheduledCard = scheduleCard(card, difficulty)
-
-      console.log('📊 FSRS scheduling:', {
-        lemma: card.lemma,
-        card_type: isPhrase ? 'phrase' : 'lemma',
-        difficulty,
-        oldStability: card.stability,
-        newStability: scheduledCard.stability,
-        oldDifficulty: card.difficulty,
-        newDifficulty: scheduledCard.difficulty,
-        dueDate: scheduledCard.due_date,
-        state: getStateName(scheduledCard.fsrs_state),
-        reps: scheduledCard.reps,
-        lapses: scheduledCard.lapses
-      })
 
       // Build progress update with FSRS fields
       // Note: user_phrase_progress has fewer columns than user_lemma_progress
@@ -181,13 +137,6 @@ export default function useProgressTracking(userId) {
         ...progressUpdate
       }
 
-      console.log('💾 Upserting to', tableName, ':', {
-        user_id: userId,
-        [idField]: cardId,
-        stability: progressUpdate.stability,
-        due_date: progressUpdate.due_date
-      })
-
       const { data: upsertResult, error: progressError } = await supabase
         .from(tableName)
         .upsert(upsertData, {
@@ -199,8 +148,6 @@ export default function useProgressTracking(userId) {
         console.error('❌ Upsert error for', tableName, ':', progressError)
         throw progressError
       }
-
-      console.log('✅ Upsert success for', tableName, ':', upsertResult)
 
       // Update daily stats
       await updateDailyStats(userId)

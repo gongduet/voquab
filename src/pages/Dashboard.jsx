@@ -403,11 +403,6 @@ async function fetchChaptersProgress(userId) {
   const introducedLemmaIds = new Set((lemmaProgressResult.data || []).map(p => p.lemma_id))
   const introducedPhraseIds = new Set((phraseProgressResult.data || []).map(p => p.phrase_id))
 
-  console.log('👤 User progress:', {
-    lemmas: introducedLemmaIds.size,
-    phrases: introducedPhraseIds.size
-  })
-
   // Fetch chapter stats in parallel (all 27 chapters at once)
   const chapterStatsPromises = chapters.map(async (chapter) => {
     // Get sentences for this chapter
@@ -462,15 +457,6 @@ async function fetchChaptersProgress(userId) {
 
   // Wait for all chapter stats
   const chapterStats = await Promise.all(chapterStatsPromises)
-
-  // Debug: Log first 3 chapters
-  console.log('📊 Chapter stats sample:', chapterStats.slice(0, 3).map(c => ({
-    ch: c.chapter_number,
-    total: c.total_lemmas,
-    lemmas: c.lemmaCount,
-    phrases: c.phraseCount,
-    introduced: c.introduced
-  })))
 
   // Build final chapters array with unlock logic
   const chaptersWithProgress = []

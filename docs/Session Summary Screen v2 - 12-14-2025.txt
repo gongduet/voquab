@@ -1,0 +1,110 @@
+Claude Code Prompt: Session Summary Refinements (v22)
+Task: Refine the SessionSummary component to match the dashboard design patterns.
+
+Changes to src/components/flashcard/SessionSummary.jsx
+1. Wrap content in a white card container
+Change the outer container from:
+jsx<div 
+  className="min-h-screen px-6 py-12 max-w-lg mx-auto"
+  style={{ 
+    fontFamily: "'Inter', system-ui, sans-serif",
+    backgroundColor: '#fafaf9',
+    color: '#171717'
+  }}
+>
+To:
+jsx<div 
+  className="min-h-screen px-4 py-8"
+  style={{ 
+    fontFamily: "'Inter', system-ui, sans-serif",
+    backgroundColor: '#fafaf9',
+    color: '#171717'
+  }}
+>
+  <div 
+    className="max-w-lg mx-auto bg-white rounded-xl shadow-sm p-6"
+    style={{ border: '1px solid #e7e5e4' }}
+  >
+And add a closing </div> before the final closing </div> of the component.
+2. Fix the metrics grid to use thin divider lines
+Replace the metrics grid section:
+jsx<section 
+  className="grid grid-cols-3 gap-px border rounded-xl overflow-hidden mb-8 shadow-sm"
+  style={{ backgroundColor: '#e7e5e4', borderColor: '#e7e5e4' }}
+>
+  <div className="bg-white p-4 flex flex-col items-center justify-center">
+    ...
+  </div>
+  ...
+</section>
+With:
+jsx<section className="flex justify-around items-center mb-8 py-4">
+  <div className="flex flex-col items-center px-4">
+    <span className="text-2xl font-semibold" style={{ color: '#171717' }}>
+      {successRate}%
+    </span>
+    <span className="text-xs font-medium mt-1 uppercase tracking-wide" style={{ color: '#a3a3a3' }}>
+      Success
+    </span>
+  </div>
+  <div style={{ width: '1px', height: '40px', backgroundColor: '#e7e5e4' }} />
+  <div className="flex flex-col items-center px-4">
+    <span className="text-2xl font-semibold" style={{ color: '#171717' }}>
+      {totalCards}
+    </span>
+    <span className="text-xs font-medium mt-1 uppercase tracking-wide" style={{ color: '#a3a3a3' }}>
+      Cards
+    </span>
+  </div>
+  <div style={{ width: '1px', height: '40px', backgroundColor: '#e7e5e4' }} />
+  <div className="flex flex-col items-center px-4">
+    <span className="text-2xl font-semibold" style={{ color: '#98c1a3' }}>
+      {ratings.gotIt}
+    </span>
+    <span className="text-xs font-medium mt-1 uppercase tracking-wide" style={{ color: '#a3a3a3' }}>
+      Got It
+    </span>
+  </div>
+</section>
+3. Redesign the "Perfect session!" block
+Replace the entire "Perfect session" else block:
+jsx) : (
+  <section className="mb-8">
+    <div 
+      className="rounded-xl p-6 text-center border"
+      style={{ backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' }}
+    >
+      <CheckCircle 
+        className="w-8 h-8 mx-auto mb-2" 
+        style={{ color: '#10b981' }}
+      />
+      ...
+    </div>
+  </section>
+)}
+With:
+jsx) : (
+  <section className="mb-8 text-center py-6">
+    <CheckCircle 
+      className="w-10 h-10 mx-auto mb-3" 
+      style={{ color: '#f59e0b' }}
+    />
+    <p 
+      className="font-semibold text-lg"
+      style={{ color: '#171717' }}
+    >
+      Perfect session!
+    </p>
+    <p 
+      className="mt-1"
+      style={{ color: '#a3a3a3', fontSize: '14px' }}
+    >
+      Every card answered correctly
+    </p>
+  </section>
+)}
+
+Summary of Changes
+ElementBeforeAfterContainerFull-width stone backgroundWhite card on stone backgroundMetrics gridGray bands between columnsThin elegant vertical dividersPerfect sessionGreen box with green iconNo box, amber checkmark, clean textLabelsMixed caseUppercase with tracking (matches dashboard)
+
+Expected result: The session summary will feel cohesive with the dashboard - white card, thin dividers matching "MASTERED | LEARNING | TOTAL" style, and an understated amber checkmark for perfect sessions.

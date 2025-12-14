@@ -668,6 +668,73 @@ CREATE TABLE user_settings (
 
 ---
 
+### user_review_history
+
+Append-only log of every review event for accurate activity tracking.
+
+```sql
+CREATE TABLE user_review_history (
+  review_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  vocab_id UUID,                                        -- Legacy - nullable for new records
+  lemma_id UUID REFERENCES lemmas(lemma_id),           -- FK to lemmas (NULL if phrase review)
+  phrase_id UUID REFERENCES phrases(phrase_id),        -- FK to phrases (NULL if lemma review)
+  reviewed_at TIMESTAMPTZ DEFAULT NOW(),               -- When the review occurred
+  difficulty VARCHAR(20),                              -- User's response (again/hard/got-it)
+  review_context TEXT,                                 -- Optional context
+  response_time_ms INTEGER,                            -- Optional response time
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Exactly one of lemma_id or phrase_id must be set (for new records)
+  CONSTRAINT chk_review_item CHECK (
+    (lemma_id IS NOT NULL AND phrase_id IS NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NOT NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NULL AND vocab_id IS NOT NULL)
+  )
+);
+
+-- Indexes for efficient activity queries
+CREATE INDEX idx_review_history_user_lemma_date
+  ON user_review_history(user_id, reviewed_at DESC, lemma_id)
+  WHERE lemma_id IS NOT NULL;
+
+CREATE INDEX idx_review_history_user_phrase_date
+  ON user_review_history(user_id, reviewed_at DESC, phrase_id)
+  WHERE phrase_id IS NOT NULL;
+
+-- RLS Policies
+ALTER TABLE user_review_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can insert own review history" ON user_review_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can view own review history" ON user_review_history
+  FOR SELECT USING (auth.uid() = user_id);
+
+COMMENT ON TABLE user_review_history IS 'Append-only log for activity tracking - do not update, only insert';
+```
+
+**Purpose:** Provides accurate activity tracking by logging every review event. Unlike `last_seen_at` which overwrites, this preserves full history.
+
+**Key Constraints:**
+- Exactly one of `lemma_id` or `phrase_id` must be set (for new records)
+- Legacy records may have only `vocab_id` set
+
+**Query Pattern:**
+```sql
+-- Get unique cards reviewed per day
+SELECT
+  DATE(reviewed_at) as review_date,
+  COUNT(DISTINCT lemma_id) + COUNT(DISTINCT phrase_id) as unique_cards
+FROM user_review_history
+WHERE user_id = ?
+  AND (lemma_id IS NOT NULL OR phrase_id IS NOT NULL)
+  AND reviewed_at >= NOW() - INTERVAL '35 days'
+GROUP BY DATE(reviewed_at);
+```
+
+---
+
 ### user_daily_stats
 
 Daily activity tracking.

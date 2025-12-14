@@ -184,7 +184,9 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
     selectedExposure: selectedExposure.length,
     activityLevel: activityLevel.level,
     lemmaCount: lemmaCardsWithSentences.length,
-    phraseCount: phraseCardsWithSentences.length
+    phraseCount: phraseCardsWithSentences.length,
+    dueRemaining: Math.max(0, dueCards.length - selectedDue.length),
+    newRemaining: 0
   }
 
   console.log('📚 Review session built:', stats)
@@ -335,7 +337,9 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
     lemmaCount: lemmaCardsWithSentences.length,
     phraseCount: selectedPhrases.length,
     lemmaRatio: (lemmaRatio * 100).toFixed(1) + '%',
-    phraseRatio: (phraseRatio * 100).toFixed(1) + '%'
+    phraseRatio: (phraseRatio * 100).toFixed(1) + '%',
+    dueRemaining: 0,
+    newRemaining: Math.max(0, totalPool - session.length)
   }
 
   return {
@@ -938,7 +942,9 @@ export async function buildChapterFocusSession(userId, chapterNumber, sessionSiz
     chapterExposureAvailable: chapterExposure.length,
     chapterExposureSelected: selectedChapterExposure.length,
     otherDueAvailable: otherDue.length,
-    otherDueSelected: selectedOtherDue.length
+    otherDueSelected: selectedOtherDue.length,
+    dueRemaining: Math.max(0, chapterDue.length + otherDue.length - selectedChapterDue.length - selectedOtherDue.length),
+    newRemaining: 0
   }
 
   console.log('📕 Chapter focus session built:', stats)

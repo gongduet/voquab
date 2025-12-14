@@ -31,6 +31,199 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2025-12-13: Dashboard Overhaul, Activity Tracking System, & Performance Optimization
+
+### Summary
+Major dashboard rebuild with accurate activity tracking, optimized chapter loading (15s → 1.5s), and complete phrase integration throughout the learning system.
+
+---
+
+### 1. Activity Tracking System (New)
+
+**Problem:** Activity heatmap was showing inaccurate counts. The system used `last_seen_at` timestamp which only stores the most recent review, causing historical data to be overwritten.
+
+**Solution:** Implemented proper review history logging using the `user_review_history` table.
+
+**Schema Changes:**
+```sql
+-- Added new columns for lemma/phrase tracking
+ALTER TABLE user_review_history
+  ADD COLUMN lemma_id UUID REFERENCES lemmas(lemma_id),
+  ADD COLUMN phrase_id UUID REFERENCES phrases(phrase_id);
+
+-- Made vocab_id nullable (was NOT NULL, blocking inserts)
+ALTER TABLE user_review_history ALTER COLUMN vocab_id DROP NOT NULL;
+
+-- Added check constraint for data integrity
+ALTER TABLE user_review_history
+  ADD CONSTRAINT chk_review_item CHECK (
+    (lemma_id IS NOT NULL AND phrase_id IS NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NOT NULL) OR
+    (lemma_id IS NULL AND phrase_id IS NULL AND vocab_id IS NOT NULL)
+  );
+
+-- Added indexes for efficient activity queries
+CREATE INDEX idx_review_history_user_lemma_date
+  ON user_review_history(user_id, reviewed_at DESC, lemma_id)
+  WHERE lemma_id IS NOT NULL;
+
+CREATE INDEX idx_review_history_user_phrase_date
+  ON user_review_history(user_id, reviewed_at DESC, phrase_id)
+  WHERE phrase_id IS NOT NULL;
+```
+
+**Code Changes:**
+- `useProgressTracking.js`: Added `logReviewEvent()` function that inserts a row on every review
+- `Dashboard.jsx`: `fetchActivityData()` now queries `user_review_history` for accurate unique card counts per day
+- `ActivityHeatmap.jsx`: Fixed property name mismatch (`count` → `reviews`)
+
+**Result:** Activity heatmap now shows accurate count of UNIQUE cards reviewed each day, with no double-counting and preserved historical data.
+
+---
+
+### 2. Dashboard Performance Optimization
+
+**Problem:** Dashboard took ~15 seconds to load due to 81+ sequential database queries (27 chapters × 3 queries each).
+
+**Solution:** Replaced sequential queries with parallel execution using `Promise.all`.
+
+**Before:**
+```javascript
+// Sequential: 27 chapters × 3 queries = 81 queries, ~15 seconds
+for (const chapter of chapters) {
+  const sentences = await fetchSentences(chapter.id)
+  const words = await fetchWords(sentences)
+  const phrases = await fetchPhrases(sentences)
+  // ...
+}
+```
+
+**After:**
+```javascript
+// Parallel: All 27 chapters fetched simultaneously, ~1.5 seconds
+const chapterStatsPromises = chapters.map(async (chapter) => {
+  const [sentences, words, phrases] = await Promise.all([
+    fetchSentences(chapter.id),
+    fetchWords(sentences),
+    fetchPhrases(sentences)
+  ])
+  // ...
+})
+const chapterStats = await Promise.all(chapterStatsPromises)
+```
+
+**Performance:**
+| Approach | Queries | Load Time |
+|----------|---------|-----------|
+| Before (sequential) | 81 | ~15 sec |
+| After (parallel) | ~55 | ~1.5 sec |
+
+---
+
+### 3. Chapter Display Logic
+
+**New Logic:** "1 back, current, 2 forward"
+
+Shows 4 chapters based on user's current progress:
+- 1 chapter before current (for review)
+- Current chapter (actively working on)
+- 2 chapters ahead (upcoming)
+
+**Examples:**
+| Current Chapter | Visible Chapters |
+|-----------------|------------------|
+| 1 | 1, 2, 3, 4 |
+| 2 | 1, 2, 3, 4 |
+| 10 | 9, 10, 11, 12 |
+| 26 | 24, 25, 26, 27 |
+
+**"View all" expands instantly** using cached data from initial load.
+
+---
+
+### 4. Session Builder Unlock Fix
+
+**Problem:** Chapter 2 would never unlock because the unlock calculation included stop words in the denominator.
+
+**Math (Before):**
+- Total lemmas with stop words: 175
+- Learnable lemmas (non-stop): 141
+- Max possible rate: 141/175 = 80.5% < 95% threshold
+- Result: Chapter 2 never unlocks
+
+**Fix:** Updated `getUnlockedChapterIds()` and `getUnlockedChapters()` to:
+1. Exclude stop words from total count
+2. Include phrases in both total and introduced counts
+
+**Math (After):**
+- Total: 141 lemmas + 20 phrases = 161
+- Introduced: 161
+- Rate: 161/161 = 100% ≥ 95%
+- Result: Chapter 2 unlocks correctly
+
+---
+
+### 5. Dashboard Component Fixes
+
+**ActivityHeatmap:**
+- Fixed timezone handling (uses local time consistently)
+- Colors scale based on user's `daily_goal_words` setting
+- Future dates shown with muted styling and dashed borders
+- Added "X / 28 days" practiced stat
+- Today cell has prominent ring + shadow highlight
+
+**ReviewForecast:**
+- Fixed bar rendering (was showing only numbers, no bars)
+- Bars use pixel-based heights for reliable rendering
+- Removed duplicate "Review X cards" button
+- Compact layout with calendar icon
+
+**ChapterCarousel:**
+- Shows combined lemma + phrase counts
+- Proper unlock state visualization
+- "View all" lazy loads remaining chapters
+
+---
+
+### 6. Database Schema Notes
+
+**Critical:** There is NO `introduced` column in `user_lemma_progress` or `user_phrase_progress`.
+
+Use `reps >= 1` as proxy for "card has been introduced/reviewed at least once".
+
+**Progress table columns:**
+- `reps` - Number of reviews (≥1 means introduced)
+- `stability` - FSRS stability value
+- `due_date` - Next scheduled review
+- `last_seen_at` - Timestamp of last review
+
+---
+
+### Files Modified
+
+**Core Logic:**
+- `src/services/sessionBuilder.js` - Unlock calculation, proportional mixing
+- `src/hooks/flashcard/useProgressTracking.js` - Added `logReviewEvent()`
+
+**Dashboard:**
+- `src/pages/Dashboard.jsx` - Parallel queries, activity data from review history
+- `src/components/dashboard/ActivityHeatmap.jsx` - Fixed property name, timezone
+- `src/components/dashboard/ReviewForecast.jsx` - Bar rendering fix
+- `src/components/dashboard/ChapterCarousel.jsx` - New props for lazy loading
+
+---
+
+### Lessons Learned
+
+1. **Verify database schema before writing queries** - The `introduced` column bug caused cascading failures
+2. **Use local time for user-facing dates, UTC for storage**
+3. **Pixel-based heights are more reliable than percentages in flex containers**
+4. **Supabase has a default 1000-row limit** - Use `.range(0, 50000)` for bulk queries
+5. **Append-only tables (like review history) are better for activity tracking** than overwriting timestamps
+6. **Parallel queries with Promise.all** dramatically improve load times
+
+---
+
 ## [2025-12-13] - Dashboard Overhaul & Phrase Integration
 
 ### Summary
