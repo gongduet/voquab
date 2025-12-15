@@ -1,0 +1,391 @@
+Claude Code Prompt: Streak Calculation Fix (v28)
+Task: Fix the streak calculation logic that always shows 1, and enhance the header streak display with an animated expandable pill.
+
+Overview
+Current bug: updateStreak() only handles the "new streak" case (no yesterday). It never increments the streak when yesterday HAS activity, so every day gets current_streak: 1.
+Expected behavior:
+
+If user reviewed yesterday AND today → increment streak
+If user reviewed today but NOT yesterday → streak = 1
+Track longest_streak when current exceeds it
+
+
+Part 1: Fix src/hooks/flashcard/useProgressTracking.js
+1a. Replace the entire updateStreak function
+Find the updateStreak function (around line 185-205) and replace it with:
+javascript/**
+ * Update streak calculation
+ * Calculates consecutive days of activity ending with today
+ */
+async function updateStreak(userId, today) {
+  try {
+    // Get all recent daily stats ordered by date descending
+    const { data: recentStats, error } = await supabase
+      .from('user_daily_stats')
+      .select('review_date, words_reviewed')
+      .eq('user_id', userId)
+      .order('review_date', { ascending: false })
+      .limit(60) // Check up to 60 days back
+
+    if (error || !recentStats || recentStats.length === 0) {
+      console.error('Error fetching streak data:', error)
+      return
+    }
+
+    // Calculate consecutive days streak
+    let streak = 0
+    const todayDate = new Date(today)
+    
+    for (let i = 0; i < recentStats.length; i++) {
+      const stat = recentStats[i]
+      const statDate = new Date(stat.review_date)
+      
+      // Calculate expected date (today - i days)
+      const expectedDate = new Date(todayDate)
+      expectedDate.setDate(todayDate.getDate() - i)
+      const expectedDateStr = expectedDate.toISOString().split('T')[0]
+      
+      // Check if this stat matches the expected consecutive day
+      if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
+        streak++
+      } else {
+        // Gap found, stop counting
+        break
+      }
+    }
+
+    // Update today's record with calculated streak
+    const { error: updateError } = await supabase
+      .from('user_daily_stats')
+      .update({ current_streak: streak })
+      .eq('user_id', userId)
+      .eq('review_date', today)
+
+    if (updateError) {
+      console.error('Error updating current streak:', updateError)
+      return
+    }
+
+    // Check if this is a new longest streak
+    const { data: todayStats } = await supabase
+      .from('user_daily_stats')
+      .select('longest_streak')
+      .eq('user_id', userId)
+      .eq('review_date', today)
+      .single()
+
+    const currentLongest = todayStats?.longest_streak || 0
+
+    if (streak > currentLongest) {
+      // Calculate streak start date
+      const streakStartDate = new Date(todayDate)
+      streakStartDate.setDate(todayDate.getDate() - streak + 1)
+      const streakStartStr = streakStartDate.toISOString().split('T')[0]
+
+      await supabase
+        .from('user_daily_stats')
+        .update({
+          longest_streak: streak,
+          longest_streak_start: streakStartStr,
+          longest_streak_end: today
+        })
+        .eq('user_id', userId)
+        .eq('review_date', today)
+    }
+
+    console.log(`🔥 Streak updated: ${streak} days`)
+
+  } catch (error) {
+    console.error('Streak calculation error:', error)
+  }
+}
+1b. Update updateDailyStats to not hardcode streak
+Find the insert block in updateDailyStats (around line 170-180):
+javascript// Insert new
+const { error: insertError } = await supabase
+  .from('user_daily_stats')
+  .insert({
+    user_id: userId,
+    review_date: today,
+    words_reviewed: 1,
+    current_streak: 1  // ← Remove this line
+  })
+Change to:
+javascript// Insert new - streak will be calculated by updateStreak()
+const { error: insertError } = await supabase
+  .from('user_daily_stats')
+  .insert({
+    user_id: userId,
+    review_date: today,
+    words_reviewed: 1
+  })
+
+Part 2: Fix src/pages/Dashboard.jsx - Streak Data Fetching
+The dashboard currently fetches streak from the most recent record. Update fetchStreakData to calculate streak properly (in case old data has wrong values).
+Find fetchStreakData function (around line 786-796) and replace with:
+javascript/**
+ * Fetch current streak by calculating consecutive days
+ * This ensures accuracy even if stored values are stale
+ */
+async function fetchStreakData(userId) {
+  const { data: recentStats, error } = await supabase
+    .from('user_daily_stats')
+    .select('review_date, words_reviewed')
+    .eq('user_id', userId)
+    .order('review_date', { ascending: false })
+    .limit(60)
+
+  if (error || !recentStats || recentStats.length === 0) {
+    return 0
+  }
+
+  // Calculate consecutive days streak from today
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  
+  let streak = 0
+  
+  for (let i = 0; i < recentStats.length; i++) {
+    const stat = recentStats[i]
+    
+    // Calculate expected date (today - i days)
+    const expectedDate = new Date(today)
+    expectedDate.setDate(today.getDate() - i)
+    const expectedDateStr = expectedDate.toISOString().split('T')[0]
+    
+    // Check if this stat matches the expected consecutive day
+    if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+Also update fetchActivityData to return the calculated streak. Find where currentStreak and bestStreak are returned (around line 570-580) and ensure they use the calculated values:
+javascript// Near the end of fetchActivityData, update the return to calculate streak properly:
+// Calculate streak from activity data
+let calculatedStreak = 0
+const today = new Date()
+const sortedDates = [...activityMap.keys()].sort().reverse()
+
+for (let i = 0; i < 60; i++) {
+  const checkDate = new Date(today)
+  checkDate.setDate(today.getDate() - i)
+  const checkDateStr = formatLocalDate(checkDate)
+  
+  if (activityMap.has(checkDateStr) && activityMap.get(checkDateStr) > 0) {
+    calculatedStreak++
+  } else {
+    break
+  }
+}
+
+// Get best streak from database
+const { data: bestData } = await supabase
+  .from('user_daily_stats')
+  .select('longest_streak')
+  .eq('user_id', userId)
+  .order('longest_streak', { ascending: false })
+  .limit(1)
+  .single()
+
+return {
+  data: activityArray,
+  currentStreak: calculatedStreak,
+  bestStreak: bestData?.longest_streak || calculatedStreak
+}
+
+Part 3: Enhanced Header Streak Pill
+File: src/components/dashboard/DashboardHeader.jsx
+Replace the entire file with:
+jsximport { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Settings, Flame, User } from 'lucide-react'
+
+/**
+ * DashboardHeader - Logo, animated streak pill, settings, avatar
+ */
+export default function DashboardHeader({
+  streak = 0,
+  username = '',
+  loading = false
+}) {
+  const navigate = useNavigate()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  // Auto-expand on first load if streak > 0, then collapse after delay
+  useEffect(() => {
+    if (streak > 0 && !loading && !hasAnimated) {
+      // Small delay before expanding
+      const expandTimer = setTimeout(() => {
+        setIsExpanded(true)
+      }, 500)
+
+      // Collapse after showing
+      const collapseTimer = setTimeout(() => {
+        setIsExpanded(false)
+        setHasAnimated(true)
+      }, 3000)
+
+      return () => {
+        clearTimeout(expandTimer)
+        clearTimeout(collapseTimer)
+      }
+    }
+  }, [streak, loading, hasAnimated])
+
+  // Toggle on click
+  const handleStreakClick = () => {
+    if (streak > 0) {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
+  return (
+    <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-neutral-100">
+      {/* Logo / Title */}
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-bold text-primary-600">Voquab</span>
+      </div>
+
+      {/* Right side: streak, settings, avatar */}
+      <div className="flex items-center gap-3">
+        {/* Animated Streak Pill */}
+        {loading ? (
+          <div className="w-12 h-7 bg-neutral-200 rounded-full animate-pulse" />
+        ) : (
+          <button
+            onClick={handleStreakClick}
+            className={`
+              flex items-center gap-1.5 py-1.5 rounded-full text-sm font-semibold
+              transition-all duration-300 ease-out overflow-hidden
+              ${streak > 0 
+                ? 'bg-gradient-to-r from-orange-100 to-amber-100 text-amber-700 hover:from-orange-200 hover:to-amber-200' 
+                : 'bg-neutral-100 text-neutral-500'
+              }
+              ${isExpanded ? 'px-3' : 'px-2'}
+            `}
+            style={{
+              minWidth: isExpanded ? '120px' : '44px',
+              maxWidth: isExpanded ? '140px' : '44px',
+            }}
+          >
+            <Flame 
+              className={`
+                w-4 h-4 flex-shrink-0 transition-all duration-300
+                ${streak > 0 ? 'text-orange-500' : 'text-neutral-400'}
+                ${isExpanded && streak > 0 ? 'animate-pulse' : ''}
+              `}
+              fill={streak > 0 ? 'currentColor' : 'none'}
+            />
+            
+            <span className={`
+              transition-all duration-300 ease-out whitespace-nowrap
+              ${isExpanded ? 'opacity-100 w-auto' : 'opacity-100 w-auto'}
+            `}>
+              {isExpanded ? (
+                <span className="flex items-center gap-1">
+                  <span>{streak}</span>
+                  <span className="text-amber-600 font-medium">
+                    {streak === 1 ? 'day' : 'days'}
+                  </span>
+                </span>
+              ) : (
+                streak
+              )}
+            </span>
+          </button>
+        )}
+
+        {/* Settings button */}
+        <button
+          onClick={() => navigate('/settings')}
+          className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+          aria-label="Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+
+        {/* Avatar / Profile */}
+        <button
+          onClick={() => navigate('/progress')}
+          className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center hover:bg-primary-200 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+          aria-label="Profile"
+        >
+          {username ? (
+            <span className="text-sm font-semibold uppercase">{username.charAt(0)}</span>
+          ) : (
+            <User className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+    </header>
+  )
+}
+
+Part 4: One-Time SQL Fix for Existing Data
+Run this SQL to recalculate all streaks in your existing data:
+sql-- Recalculate current_streak for all records
+-- This creates a temporary calculation and updates the records
+
+WITH consecutive_days AS (
+  SELECT 
+    user_id,
+    review_date,
+    words_reviewed,
+    -- Calculate days since previous activity
+    review_date - LAG(review_date) OVER (
+      PARTITION BY user_id 
+      ORDER BY review_date
+    ) as days_gap
+  FROM user_daily_stats
+  WHERE words_reviewed > 0
+),
+streak_groups AS (
+  SELECT
+    user_id,
+    review_date,
+    words_reviewed,
+    days_gap,
+    -- Start new group when gap > 1 day
+    SUM(CASE WHEN days_gap IS NULL OR days_gap > 1 THEN 1 ELSE 0 END) OVER (
+      PARTITION BY user_id 
+      ORDER BY review_date
+    ) as streak_group
+  FROM consecutive_days
+),
+streak_counts AS (
+  SELECT
+    user_id,
+    review_date,
+    ROW_NUMBER() OVER (
+      PARTITION BY user_id, streak_group 
+      ORDER BY review_date
+    ) as streak_day
+  FROM streak_groups
+)
+UPDATE user_daily_stats uds
+SET current_streak = sc.streak_day
+FROM streak_counts sc
+WHERE uds.user_id = sc.user_id 
+  AND uds.review_date = sc.review_date;
+
+-- Verify the fix
+SELECT review_date, words_reviewed, current_streak
+FROM user_daily_stats
+WHERE user_id = 'YOUR_USER_ID'
+ORDER BY review_date DESC
+LIMIT 10;
+
+Summary of Changes
+FileChangesuseProgressTracking.jsReplace updateStreak() to properly calculate consecutive days; remove hardcoded current_streak: 1 from insertDashboard.jsxUpdate fetchStreakData() and fetchActivityData() to calculate streak from actual consecutive daysDashboardHeader.jsxAdd animated expandable streak pill that auto-expands on load, shows "X days" when expandedSQL (one-time)Recalculate all existing streak values
+Expected Behavior
+
+Streak calculation: Counts consecutive days with words_reviewed > 0 ending with today
+Header pill: Shows flame icon + number, auto-expands to "3 days" on page load, collapses after 3 seconds
+Click interaction: User can click to toggle expanded/collapsed state
+Activity heatmap: Shows correct streak matching header
+Best streak: Tracked when current streak exceeds previous best

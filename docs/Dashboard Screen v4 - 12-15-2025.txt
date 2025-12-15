@@ -1,0 +1,13 @@
+Claude Code Prompt: Remove Redundant "TODAY" Label (v30)
+Task: Remove the "TODAY" label that appears above the first bar in the Upcoming Reviews chart, since "Today" already appears below as the day label.
+
+Update src/components/dashboard/ReviewForecast.jsx
+Find and delete this block (around lines 60-65):
+jsx{/* Today label - positioned at top */}
+{isToday && (
+  <span className="text-[9px] font-bold text-primary-500 mb-auto">
+    TODAY
+  </span>
+)}
+
+That's it - just remove those 5 lines. The "Today" label below the bar is sufficient.

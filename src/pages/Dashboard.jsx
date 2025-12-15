@@ -15,10 +15,12 @@ export default function Dashboard() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState({
-    // HeroStats
+    // HeroStats - 4 levels
     masteredCount: 0,
+    familiarCount: 0,
+    learningCount: 0,
     introducedCount: 0,
-    totalLemmas: 0,
+    totalCount: 0,
     // QuickActions
     dueCount: 0,
     newAvailable: 0,
@@ -129,8 +131,10 @@ export default function Dashboard() {
         <div className="mb-6">
           <HeroStats
             masteredCount={dashboardData.masteredCount}
+            familiarCount={dashboardData.familiarCount}
+            learningCount={dashboardData.learningCount}
             introducedCount={dashboardData.introducedCount}
-            totalCount={dashboardData.totalLemmas}
+            totalCount={dashboardData.totalCount}
             loading={loading}
           />
         </div>
@@ -184,65 +188,80 @@ export default function Dashboard() {
 }
 
 /**
- * Fetch hero stats: mastered, introduced, total (includes lemmas + phrases)
- * "Introduced" = reps >= 1 (reviewed at least once)
+ * Fetch hero stats: 4-level breakdown (mastered, familiar, learning, not seen)
+ * Includes both lemmas and phrases
  */
 async function fetchHeroStats(userId) {
   // Total lemmas (excluding stop words)
-  const { count: totalLemmas, error: lemmasError } = await supabase
+  const { count: totalLemmas } = await supabase
     .from('lemmas')
     .select('*', { count: 'exact', head: true })
     .eq('is_stop_word', false)
 
-  if (lemmasError) {
-    console.error('❌ [fetchHeroStats] lemmas count failed:', lemmasError)
-  }
-
   // Total phrases
-  const { count: totalPhrases, error: phrasesError } = await supabase
+  const { count: totalPhrases } = await supabase
     .from('phrases')
     .select('*', { count: 'exact', head: true })
 
-  if (phrasesError) {
-    console.error('❌ [fetchHeroStats] phrases count failed:', phrasesError)
-  }
+  const totalCount = (totalLemmas || 0) + (totalPhrases || 0)
 
-  // User's introduced lemmas (reps >= 1 means reviewed at least once)
-  const { data: lemmaProgress, error: lemmaProgressError } = await supabase
+  // Get all user lemma progress with FSRS fields
+  const { data: lemmaProgress } = await supabase
     .from('user_lemma_progress')
-    .select('stability, reps')
+    .select('stability, fsrs_state, reps')
     .eq('user_id', userId)
-    .gte('reps', 1)
 
-  if (lemmaProgressError) {
-    console.error('❌ [fetchHeroStats] user_lemma_progress failed:', lemmaProgressError)
-  }
-
-  // User's introduced phrases (reps >= 1 means reviewed at least once)
-  const { data: phraseProgress, error: phraseProgressError } = await supabase
+  // Get all user phrase progress with FSRS fields
+  const { data: phraseProgress } = await supabase
     .from('user_phrase_progress')
-    .select('stability, reps')
+    .select('stability, fsrs_state, reps')
     .eq('user_id', userId)
-    .gte('reps', 1)
 
-  if (phraseProgressError) {
-    console.error('❌ [fetchHeroStats] user_phrase_progress failed:', phraseProgressError)
-  }
+  // Combine and categorize
+  const allProgress = [...(lemmaProgress || []), ...(phraseProgress || [])]
 
-  const lemmaIntroduced = lemmaProgress?.length || 0
-  const phraseIntroduced = phraseProgress?.length || 0
-  const introducedCount = lemmaIntroduced + phraseIntroduced
+  const levels = categorizeByLevel(allProgress)
 
-  // Mastered = stability >= 21 days (3 weeks)
-  const lemmaMastered = lemmaProgress?.filter(p => (p.stability || 0) >= 21).length || 0
-  const phraseMastered = phraseProgress?.filter(p => (p.stability || 0) >= 21).length || 0
-  const masteredCount = lemmaMastered + phraseMastered
+  // "Introduced" = anything with reps >= 1 (for backward compatibility)
+  const introducedCount = allProgress.filter(p => (p.reps || 0) >= 1).length
 
   return {
-    masteredCount,
+    masteredCount: levels.mastered,
+    familiarCount: levels.familiar,
+    learningCount: levels.learning,
     introducedCount,
-    totalLemmas: (totalLemmas || 0) + (totalPhrases || 0)
+    totalCount,
+    notSeenCount: totalCount - introducedCount
   }
+}
+
+/**
+ * Categorize progress records into 4 levels based on FSRS state and stability
+ */
+function categorizeByLevel(progressRecords) {
+  let mastered = 0
+  let familiar = 0
+  let learning = 0
+
+  for (const record of progressRecords) {
+    const stability = record.stability || 0
+    const fsrsState = record.fsrs_state ?? 0
+    const reps = record.reps || 0
+
+    // Must have at least 1 rep to be in any category
+    if (reps < 1) continue
+
+    if (stability >= 21 && fsrsState === 2) {
+      mastered++
+    } else if (stability >= 7 && stability < 21 && fsrsState === 2) {
+      familiar++
+    } else {
+      // stability < 7 OR fsrs_state IN (1, 3) OR fsrs_state = 0
+      learning++
+    }
+  }
+
+  return { mastered, familiar, learning }
 }
 
 /**
@@ -344,8 +363,12 @@ async function fetchQuickActionStats(userId) {
 }
 
 /**
- * Get all chapters from 1 through current chapter (inclusive)
- * Current chapter = first chapter that isn't 100% complete
+ * Get all unlocked chapters for counting "Learn New" available words
+ * Uses same 95% threshold as session builder for consistency
+ *
+ * A chapter is unlocked when:
+ * - It's Chapter 1 (always unlocked), OR
+ * - The previous chapter is >= 95% complete
  */
 async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds) {
   // Get all chapters
@@ -356,22 +379,34 @@ async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedP
 
   if (!chapters || chapters.length === 0) return []
 
-  const chaptersToInclude = []
+  const unlockedChapters = []
 
-  for (const chapter of chapters) {
-    // Always include this chapter in the count
-    chaptersToInclude.push(chapter)
+  for (let i = 0; i < chapters.length; i++) {
+    const chapter = chapters[i]
 
-    // Check if this chapter is complete
+    if (i === 0) {
+      // Chapter 1 is always unlocked
+      unlockedChapters.push(chapter)
+      continue
+    }
+
+    // Check if PREVIOUS chapter is >= 95% complete
+    const prevChapter = chapters[i - 1]
+
     const { data: sentences } = await supabase
       .from('sentences')
       .select('sentence_id')
-      .eq('chapter_id', chapter.chapter_id)
+      .eq('chapter_id', prevChapter.chapter_id)
 
     const sentenceIds = (sentences || []).map(s => s.sentence_id)
-    if (sentenceIds.length === 0) continue
 
-    // Get non-stop lemmas for this chapter
+    if (sentenceIds.length === 0) {
+      // No sentences in previous chapter, consider it complete
+      unlockedChapters.push(chapter)
+      continue
+    }
+
+    // Get non-stop lemmas for previous chapter
     const { data: words } = await supabase
       .from('words')
       .select('lemma_id, lemmas!inner(is_stop_word)')
@@ -380,7 +415,7 @@ async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedP
 
     const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
 
-    // Get phrases for this chapter
+    // Get phrases for previous chapter
     const { data: phraseOccs } = await supabase
       .from('phrase_occurrences')
       .select('phrase_id')
@@ -388,19 +423,25 @@ async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedP
 
     const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
 
-    // Calculate progress
+    // Calculate previous chapter's progress
     const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
     const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
     const totalItems = chapterLemmaIds.length + chapterPhraseIds.length
     const introducedItems = introducedLemmaCount + introducedPhraseCount
+    const completionRate = totalItems > 0 ? introducedItems / totalItems : 1
 
-    // If this chapter isn't 100% complete, stop here (it's the current chapter)
-    if (introducedItems < totalItems) {
+    // 95% threshold to unlock this chapter (same as session builder)
+    if (completionRate >= 0.95) {
+      unlockedChapters.push(chapter)
+    } else {
+      // Previous chapter not at 95%, stop here
       break
     }
   }
 
-  return chaptersToInclude
+  console.log('[Dashboard] Unlocked chapters for Learn New:', unlockedChapters.map(c => c.chapter_number))
+
+  return unlockedChapters
 }
 
 /**
@@ -427,6 +468,10 @@ async function fetchChaptersProgress(userId) {
         title: 'Chapter 1',
         introduced: 0,
         total_lemmas: 0,
+        mastered: 0,
+        familiar: 0,
+        learning: 0,
+        notSeen: 0,
         isUnlocked: true,
         isNextToUnlock: false
       }],
@@ -435,22 +480,29 @@ async function fetchChaptersProgress(userId) {
     }
   }
 
-  // Get user's introduced lemmas and phrases ONCE (these are small queries)
+  // Get user's progress with FSRS fields for level calculation
   const [lemmaProgressResult, phraseProgressResult] = await Promise.all([
     supabase
       .from('user_lemma_progress')
-      .select('lemma_id')
-      .eq('user_id', userId)
-      .gte('reps', 1),
+      .select('lemma_id, stability, fsrs_state, reps')
+      .eq('user_id', userId),
     supabase
       .from('user_phrase_progress')
-      .select('phrase_id')
+      .select('phrase_id, stability, fsrs_state, reps')
       .eq('user_id', userId)
-      .gte('reps', 1)
   ])
 
-  const introducedLemmaIds = new Set((lemmaProgressResult.data || []).map(p => p.lemma_id))
-  const introducedPhraseIds = new Set((phraseProgressResult.data || []).map(p => p.phrase_id))
+  // Build maps for quick lookup
+  const lemmaProgressMap = new Map((lemmaProgressResult.data || []).map(p => [p.lemma_id, p]))
+  const phraseProgressMap = new Map((phraseProgressResult.data || []).map(p => [p.phrase_id, p]))
+
+  // Also keep sets for introduced check (reps >= 1)
+  const introducedLemmaIds = new Set(
+    (lemmaProgressResult.data || []).filter(p => (p.reps || 0) >= 1).map(p => p.lemma_id)
+  )
+  const introducedPhraseIds = new Set(
+    (phraseProgressResult.data || []).filter(p => (p.reps || 0) >= 1).map(p => p.phrase_id)
+  )
 
   // Fetch chapter stats in parallel (all 27 chapters at once)
   const chapterStatsPromises = chapters.map(async (chapter) => {
@@ -464,12 +516,15 @@ async function fetchChaptersProgress(userId) {
 
     if (sentenceIds.length === 0) {
       return {
+        chapter_id: chapter.chapter_id,
         chapter_number: chapter.chapter_number,
         title: chapter.title,
         introduced: 0,
         total_lemmas: 0,
-        lemmaCount: 0,
-        phraseCount: 0
+        mastered: 0,
+        familiar: 0,
+        learning: 0,
+        notSeen: 0
       }
     }
 
@@ -493,14 +548,27 @@ async function fetchChaptersProgress(userId) {
     // Count introduced
     const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
     const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+    const introducedCount = introducedLemmaCount + introducedPhraseCount
+    const totalItems = chapterLemmaIds.length + chapterPhraseIds.length
+
+    // Get progress records for this chapter's items and categorize by level
+    const chapterProgressRecords = [
+      ...chapterLemmaIds.map(id => lemmaProgressMap.get(id)).filter(Boolean),
+      ...chapterPhraseIds.map(id => phraseProgressMap.get(id)).filter(Boolean)
+    ]
+    const levels = categorizeByLevel(chapterProgressRecords)
 
     return {
+      chapter_id: chapter.chapter_id,
       chapter_number: chapter.chapter_number,
       title: chapter.title,
-      introduced: introducedLemmaCount + introducedPhraseCount,
-      total_lemmas: chapterLemmaIds.length + chapterPhraseIds.length,
-      lemmaCount: chapterLemmaIds.length,
-      phraseCount: chapterPhraseIds.length
+      introduced: introducedCount,
+      total_lemmas: totalItems, // Keep name for backward compatibility
+      // New 4-level breakdown
+      mastered: levels.mastered,
+      familiar: levels.familiar,
+      learning: levels.learning,
+      notSeen: totalItems - introducedCount
     }
   })
 
@@ -522,6 +590,11 @@ async function fetchChaptersProgress(userId) {
       title: stats.title,
       introduced: stats.introduced,
       total_lemmas: stats.total_lemmas,
+      // 4-level breakdown
+      mastered: stats.mastered,
+      familiar: stats.familiar,
+      learning: stats.learning,
+      notSeen: stats.notSeen,
       isUnlocked,
       isNextToUnlock,
       completionRate
@@ -611,15 +684,43 @@ async function fetchActivityData(userId) {
     reviews: sets.lemmas.size + sets.phrases.size
   }))
 
+  // Build activity map for streak calculation
+  const activityMap = new Map()
+  for (const [date, sets] of Object.entries(activityByDate)) {
+    activityMap.set(date, sets.lemmas.size + sets.phrases.size)
+  }
+
   console.log('[fetchActivityData] Unique cards per day:', activityData.slice(0, 5))
 
-  // Calculate streaks
-  const { currentStreak, bestStreak } = calculateStreaks(activityByDate)
+  // Calculate streak from activity data
+  let calculatedStreak = 0
+  const today = new Date()
+
+  for (let i = 0; i < 60; i++) {
+    const checkDate = new Date(today)
+    checkDate.setDate(today.getDate() - i)
+    const checkDateStr = formatLocalDate(checkDate)
+
+    if (activityMap.has(checkDateStr) && activityMap.get(checkDateStr) > 0) {
+      calculatedStreak++
+    } else {
+      break
+    }
+  }
+
+  // Get best streak from database
+  const { data: bestData } = await supabase
+    .from('user_daily_stats')
+    .select('longest_streak')
+    .eq('user_id', userId)
+    .order('longest_streak', { ascending: false })
+    .limit(1)
+    .single()
 
   return {
     data: activityData,
-    currentStreak,
-    bestStreak
+    currentStreak: calculatedStreak,
+    bestStreak: bestData?.longest_streak || calculatedStreak
   }
 }
 
@@ -712,38 +813,67 @@ async function fetchForecastData(userId) {
     // Format for display
     const dateStr = formatLocalDate(dayStart)
 
-    // Query uses ISO strings (UTC) but we're querying for local day boundaries
+    // Query uses ISO strings
     const startISO = dayStart.toISOString()
     const endISO = dayEnd.toISOString()
 
-    // Lemmas due in this time window
-    const { count: lemmaCount, error: lemmaError } = await supabase
-      .from('user_lemma_progress')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('due_date', startISO)
-      .lt('due_date', endISO)
+    let lemmaCount, phraseCount
 
-    if (lemmaError && i === 0) {
-      console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
-    }
+    if (i === 0) {
+      // TODAY: Include all overdue cards (no lower bound)
+      const { count: lc, error: lemmaError } = await supabase
+        .from('user_lemma_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .lte('due_date', endISO)  // Everything due up to end of today
 
-    // Phrases due in this time window
-    const { count: phraseCount, error: phraseError } = await supabase
-      .from('user_phrase_progress')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('due_date', startISO)
-      .lt('due_date', endISO)
+      if (lemmaError) {
+        console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
+      }
+      lemmaCount = lc || 0
 
-    if (phraseError && i === 0) {
-      console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+      const { count: pc, error: phraseError } = await supabase
+        .from('user_phrase_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .lte('due_date', endISO)  // Everything due up to end of today
+
+      if (phraseError) {
+        console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+      }
+      phraseCount = pc || 0
+
+    } else {
+      // FUTURE DAYS: Only cards due within that specific day
+      const { count: lc, error: lemmaError } = await supabase
+        .from('user_lemma_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('due_date', startISO)
+        .lt('due_date', endISO)
+
+      if (lemmaError && i === 1) {
+        console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
+      }
+      lemmaCount = lc || 0
+
+      const { count: pc, error: phraseError } = await supabase
+        .from('user_phrase_progress')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gte('due_date', startISO)
+        .lt('due_date', endISO)
+
+      if (phraseError && i === 1) {
+        console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+      }
+      phraseCount = pc || 0
     }
 
     days.push({
       date: dateStr,
       label: i === 0 ? 'Today' : dayLabels[dayStart.getDay()],
-      count: (lemmaCount || 0) + (phraseCount || 0)
+      count: lemmaCount + phraseCount
     })
   }
 
@@ -830,18 +960,44 @@ async function fetchCategoryData(userId) {
 }
 
 /**
- * Fetch current streak from user_daily_stats
+ * Fetch current streak by calculating consecutive days
+ * This ensures accuracy even if stored values are stale
  */
 async function fetchStreakData(userId) {
-  const { data } = await supabase
+  const { data: recentStats, error } = await supabase
     .from('user_daily_stats')
-    .select('current_streak')
+    .select('review_date, words_reviewed')
     .eq('user_id', userId)
     .order('review_date', { ascending: false })
-    .limit(1)
-    .single()
+    .limit(60)
 
-  return data?.current_streak || 0
+  if (error || !recentStats || recentStats.length === 0) {
+    return 0
+  }
+
+  // Calculate consecutive days streak from today
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+
+  let streak = 0
+
+  for (let i = 0; i < recentStats.length; i++) {
+    const stat = recentStats[i]
+
+    // Calculate expected date (today - i days)
+    const expectedDate = new Date(today)
+    expectedDate.setDate(today.getDate() - i)
+    const expectedDateStr = expectedDate.toISOString().split('T')[0]
+
+    // Check if this stat matches the expected consecutive day
+    if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return streak
 }
 
 /**

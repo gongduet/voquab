@@ -214,14 +214,13 @@ export default function useProgressTracking(userId) {
           console.error('Daily stats update error:', updateError)
         }
       } else {
-        // Insert new
+        // Insert new - streak will be calculated by updateStreak()
         const { error: insertError } = await supabase
           .from('user_daily_stats')
           .insert({
             user_id: userId,
             review_date: today,
-            words_reviewed: 1,
-            current_streak: 1
+            words_reviewed: 1
           })
 
         if (insertError) {
@@ -239,30 +238,87 @@ export default function useProgressTracking(userId) {
 
   /**
    * Update streak calculation
+   * Calculates consecutive days of activity ending with today
    */
   async function updateStreak(userId, today) {
-    const { data: recentStats } = await supabase
-      .from('user_daily_stats')
-      .select('review_date')
-      .eq('user_id', userId)
-      .order('review_date', { ascending: false })
-      .limit(2)
-
-    if (!recentStats || recentStats.length === 0) return
-
-    const dates = recentStats.map(s => s.review_date)
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
-
-    const hasYesterday = dates.includes(yesterday)
-    const hasToday = dates.includes(today)
-
-    if (hasToday && !hasYesterday) {
-      // New streak started
-      await supabase
+    try {
+      // Get all recent daily stats ordered by date descending
+      const { data: recentStats, error } = await supabase
         .from('user_daily_stats')
-        .update({ current_streak: 1 })
+        .select('review_date, words_reviewed')
+        .eq('user_id', userId)
+        .order('review_date', { ascending: false })
+        .limit(60) // Check up to 60 days back
+
+      if (error || !recentStats || recentStats.length === 0) {
+        console.error('Error fetching streak data:', error)
+        return
+      }
+
+      // Calculate consecutive days streak
+      let streak = 0
+      const todayDate = new Date(today)
+
+      for (let i = 0; i < recentStats.length; i++) {
+        const stat = recentStats[i]
+
+        // Calculate expected date (today - i days)
+        const expectedDate = new Date(todayDate)
+        expectedDate.setDate(todayDate.getDate() - i)
+        const expectedDateStr = expectedDate.toISOString().split('T')[0]
+
+        // Check if this stat matches the expected consecutive day
+        if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
+          streak++
+        } else {
+          // Gap found, stop counting
+          break
+        }
+      }
+
+      // Update today's record with calculated streak
+      const { error: updateError } = await supabase
+        .from('user_daily_stats')
+        .update({ current_streak: streak })
         .eq('user_id', userId)
         .eq('review_date', today)
+
+      if (updateError) {
+        console.error('Error updating current streak:', updateError)
+        return
+      }
+
+      // Check if this is a new longest streak
+      const { data: todayStats } = await supabase
+        .from('user_daily_stats')
+        .select('longest_streak')
+        .eq('user_id', userId)
+        .eq('review_date', today)
+        .single()
+
+      const currentLongest = todayStats?.longest_streak || 0
+
+      if (streak > currentLongest) {
+        // Calculate streak start date
+        const streakStartDate = new Date(todayDate)
+        streakStartDate.setDate(todayDate.getDate() - streak + 1)
+        const streakStartStr = streakStartDate.toISOString().split('T')[0]
+
+        await supabase
+          .from('user_daily_stats')
+          .update({
+            longest_streak: streak,
+            longest_streak_start: streakStartStr,
+            longest_streak_end: today
+          })
+          .eq('user_id', userId)
+          .eq('review_date', today)
+      }
+
+      console.log(`🔥 Streak updated: ${streak} days`)
+
+    } catch (error) {
+      console.error('Streak calculation error:', error)
     }
   }
 

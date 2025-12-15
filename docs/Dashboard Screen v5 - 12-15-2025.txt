@@ -1,0 +1,108 @@
+Claude Code Prompt: Align Learn New Count with Session Builder (v31)
+Task: Fix the "Learn New" button count to match what the session builder actually pulls from. Both should use the same 95% unlock threshold.
+
+Overview
+Current discrepancy:
+
+Dashboard (getChaptersThroughCurrent): Counts unseen words until first chapter < 100% complete
+Session Builder (getUnlockedChapterIds): Unlocks next chapter when current is >= 95%
+
+Result: When Chapter 4 is 96% complete:
+
+Dashboard shows: 5 available (only Chapter 4's remaining words)
+Session pulls from: Chapters 1-5 (because 96% >= 95% unlocks Chapter 5)
+
+Fix: Replace Dashboard's getChaptersThroughCurrent with logic matching the session builder's 95% unlock threshold.
+
+Update src/pages/Dashboard.jsx
+Replace the entire getChaptersThroughCurrent function (around lines 365-420) with:
+javascript/**
+ * Get all unlocked chapters for counting "Learn New" available words
+ * Uses same 95% threshold as session builder for consistency
+ * 
+ * A chapter is unlocked when:
+ * - It's Chapter 1 (always unlocked), OR
+ * - The previous chapter is >= 95% complete
+ */
+async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds) {
+  // Get all chapters
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number, title')
+    .order('chapter_number', { ascending: true })
+
+  if (!chapters || chapters.length === 0) return []
+
+  const unlockedChapters = []
+
+  for (let i = 0; i < chapters.length; i++) {
+    const chapter = chapters[i]
+
+    if (i === 0) {
+      // Chapter 1 is always unlocked
+      unlockedChapters.push(chapter)
+      continue
+    }
+
+    // Check if PREVIOUS chapter is >= 95% complete
+    const prevChapter = chapters[i - 1]
+    
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', prevChapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    
+    if (sentenceIds.length === 0) {
+      // No sentences in previous chapter, consider it complete
+      unlockedChapters.push(chapter)
+      continue
+    }
+
+    // Get non-stop lemmas for previous chapter
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+
+    // Get phrases for previous chapter
+    const { data: phraseOccs } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
+
+    // Calculate previous chapter's progress
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+    const totalItems = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedItems = introducedLemmaCount + introducedPhraseCount
+    const completionRate = totalItems > 0 ? introducedItems / totalItems : 1
+
+    // 95% threshold to unlock this chapter (same as session builder)
+    if (completionRate >= 0.95) {
+      unlockedChapters.push(chapter)
+    } else {
+      // Previous chapter not at 95%, stop here
+      break
+    }
+  }
+
+  console.log('[Dashboard] Unlocked chapters for Learn New:', unlockedChapters.map(c => c.chapter_number))
+
+  return unlockedChapters
+}
+
+Summary
+BeforeAfterStops at first chapter < 100%Continues while previous chapter >= 95%Chapter 4 at 96% → only Chapter 4 countedChapter 4 at 96% → Chapters 1-5 countedMismatched with session builderMatches session builder exactly
+Expected Result
+Scenario: Chapter 4 is 96% complete (5 words left), Chapter 5 has 176 unseen words
+
+"Learn New" button shows: 181 available (5 + 176)
+Session pulls from: Chapters 1-5
+They now match!

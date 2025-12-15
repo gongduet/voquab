@@ -58,13 +58,6 @@ export default function ReviewForecast({ forecastData = [], loading = false }) {
                 key={i}
                 className="flex-1 flex flex-col items-center justify-end h-full"
               >
-                {/* Today label - positioned at top */}
-                {isToday && (
-                  <span className="text-[9px] font-bold text-primary-500 mb-auto">
-                    TODAY
-                  </span>
-                )}
-
                 {/* Count above bar */}
                 <span
                   className={`text-xs font-semibold mb-1 ${

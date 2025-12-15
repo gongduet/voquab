@@ -1,0 +1,91 @@
+Claude Code Prompt: Forecast Today Includes Overdue (v29)
+Task: Fix the "Upcoming Reviews" forecast so that "Today" includes all overdue cards from previous days, not just cards due within today.
+
+Update src/pages/Dashboard.jsx
+Find the fetchForecastData function (around line 648-702). Inside the for loop, there are queries for lemmas and phrases due in each day's time window:
+javascript// Current code for each day:
+const { count: lemmaCount } = await supabase
+  .from('user_lemma_progress')
+  .select('*', { count: 'exact', head: true })
+  .eq('user_id', userId)
+  .gte('due_date', startISO)    // ← Problem: excludes overdue
+  .lt('due_date', endISO)
+Replace the queries inside the for loop to handle "Today" (i === 0) differently:
+javascriptfor (let i = 0; i < 7; i++) {
+  const dayStart = new Date(todayLocal)
+  dayStart.setDate(todayLocal.getDate() + i)
+
+  const dayEnd = new Date(dayStart)
+  dayEnd.setDate(dayStart.getDate() + 1)
+
+  // Format for display
+  const dateStr = formatLocalDate(dayStart)
+
+  // Query uses ISO strings
+  const startISO = dayStart.toISOString()
+  const endISO = dayEnd.toISOString()
+
+  let lemmaCount, phraseCount
+
+  if (i === 0) {
+    // TODAY: Include all overdue cards (no lower bound)
+    const { count: lc, error: lemmaError } = await supabase
+      .from('user_lemma_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .lte('due_date', endISO)  // Everything due up to end of today
+
+    if (lemmaError) {
+      console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
+    }
+    lemmaCount = lc || 0
+
+    const { count: pc, error: phraseError } = await supabase
+      .from('user_phrase_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .lte('due_date', endISO)  // Everything due up to end of today
+
+    if (phraseError) {
+      console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+    }
+    phraseCount = pc || 0
+
+  } else {
+    // FUTURE DAYS: Only cards due within that specific day
+    const { count: lc, error: lemmaError } = await supabase
+      .from('user_lemma_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('due_date', startISO)
+      .lt('due_date', endISO)
+
+    if (lemmaError && i === 1) {
+      console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
+    }
+    lemmaCount = lc || 0
+
+    const { count: pc, error: phraseError } = await supabase
+      .from('user_phrase_progress')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('due_date', startISO)
+      .lt('due_date', endISO)
+
+    if (phraseError && i === 1) {
+      console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
+    }
+    phraseCount = pc || 0
+  }
+
+  days.push({
+    date: dateStr,
+    label: i === 0 ? 'Today' : dayLabels[dayStart.getDay()],
+    count: lemmaCount + phraseCount
+  })
+}
+
+Summary
+ChangeDescriptionToday (i === 0)Query with .lte('due_date', endISO) - no lower bound, catches all overdueFuture days (i > 0)Keep existing .gte(startISO).lt(endISO) - only that day's window
+Expected Result
+If you have 50 cards overdue from yesterday and 76 due today, "Today" will show 126 instead of just 76.

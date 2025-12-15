@@ -120,6 +120,10 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
     title,
     introduced = 0,
     total_lemmas = 1,
+    mastered = 0,
+    familiar = 0,
+    learning = 0,
+    notSeen = 0,
     isUnlocked = false,
     isNextToUnlock = false
   } = chapter
@@ -187,7 +191,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
         </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar - 4-level stacked */}
       <div className="mt-2">
         <div className="flex justify-between text-[10px] mb-1">
           <span className={isUnlocked || isNextToUnlock ? 'text-neutral-500' : 'text-neutral-300'}>
@@ -199,15 +203,14 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
             {progress}%
           </span>
         </div>
-        <div className="w-full bg-neutral-200 rounded-full h-1.5">
-          <div
-            className="h-1.5 rounded-full transition-all duration-300"
-            style={{
-              width: `${progress}%`,
-              backgroundColor: isCurrent ? '#0ea5e9' : isCompleted ? '#f59e0b' : isNextToUnlock ? '#fbbf24' : '#a8a29e'
-            }}
-          />
-        </div>
+        <StackedProgressBar
+          mastered={mastered}
+          familiar={familiar}
+          learning={learning}
+          notSeen={notSeen}
+          total={total_lemmas}
+          isLocked={!isUnlocked && !isNextToUnlock}
+        />
       </div>
 
       {/* Single compact action button */}
@@ -230,6 +233,57 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
           {isNextToUnlock ? 'Study' : isCompleted ? 'Review' : 'Continue'}
         </button>
       )}
+    </div>
+  )
+}
+
+/**
+ * Stacked progress bar showing 4 levels of mastery
+ */
+function StackedProgressBar({ mastered, familiar, learning, notSeen, total, isLocked }) {
+  if (total === 0) return null
+
+  const masteredPct = (mastered / total) * 100
+  const familiarPct = (familiar / total) * 100
+  const learningPct = (learning / total) * 100
+  // notSeen fills the rest
+
+  // Colors
+  const colors = {
+    mastered: '#1e3a5f',
+    familiar: '#0369a1',
+    learning: '#38bdf8',
+    notSeen: '#d6d3d1'
+  }
+
+  // If locked, show all gray
+  if (isLocked) {
+    return (
+      <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: colors.notSeen }} />
+    )
+  }
+
+  return (
+    <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ backgroundColor: colors.notSeen }}>
+      {masteredPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${masteredPct}%`, backgroundColor: colors.mastered }}
+        />
+      )}
+      {familiarPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${familiarPct}%`, backgroundColor: colors.familiar }}
+        />
+      )}
+      {learningPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${learningPct}%`, backgroundColor: colors.learning }}
+        />
+      )}
+      {/* notSeen is the background, no need to render */}
     </div>
   )
 }

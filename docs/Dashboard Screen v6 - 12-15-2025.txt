@@ -1,0 +1,23 @@
+Claude Code Prompt: Netlify SPA Routing Fix (v32)
+Task: Add Netlify redirect configuration so all routes serve index.html, allowing React Router to handle client-side routing.
+
+Create public/_redirects
+Create a new file at public/_redirects with this single line:
+/*    /index.html   200
+That's it! This tells Netlify: "For any URL path, serve index.html with a 200 status code."
+
+Alternative: If netlify.toml exists in project root
+If there's already a netlify.toml file, add this section instead:
+toml[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+Why This Works
+BeforeAfterNetlify looks for /flashcards file → 404Netlify serves index.html → React Router handles /flashcardsDirect URL access brokenDirect URL access worksRefresh on any page → 404Refresh on any page → works
+Expected Result
+After deploying, users can:
+
+Refresh any page without getting 404
+Share direct links to any route
+Return to the app after phone idle without errors

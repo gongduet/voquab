@@ -1,0 +1,89 @@
+
+Claude Code Prompt: HeroStats Ring Multi-Level (v27)
+Task: Update the HeroStats circular progress ring to show all 4 levels as stacked segments, matching the chapter progress bars.
+
+Update src/components/dashboard/HeroStats.jsx
+Replace the SVG section (the <div className="relative w-52 h-52"> block) with this multi-segment ring:
+jsx{/* Circular Progress Ring - 4 levels */}
+<div className="relative w-52 h-52">
+  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+    {/* Background circle - Not Seen (gray) */}
+    <circle
+      cx="100"
+      cy="100"
+      r={radius}
+      fill="none"
+      stroke="#d6d3d1"
+      strokeWidth="14"
+    />
+    
+    {/* Learning segment (light blue) - starts at 0 */}
+    {learningPct + familiarPct + masteredPct > 0 && (
+      <circle
+        cx="100"
+        cy="100"
+        r={radius}
+        fill="none"
+        stroke="#38bdf8"
+        strokeWidth="14"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - ((learningPct + familiarPct + masteredPct) / 100) * circumference}
+        className="transition-all duration-700 ease-out"
+      />
+    )}
+    
+    {/* Familiar segment (dark blue) - overlays learning */}
+    {familiarPct + masteredPct > 0 && (
+      <circle
+        cx="100"
+        cy="100"
+        r={radius}
+        fill="none"
+        stroke="#0369a1"
+        strokeWidth="14"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - ((familiarPct + masteredPct) / 100) * circumference}
+        className="transition-all duration-700 ease-out"
+      />
+    )}
+    
+    {/* Mastered segment (near-black) - overlays familiar */}
+    {masteredPct > 0 && (
+      <circle
+        cx="100"
+        cy="100"
+        r={radius}
+        fill="none"
+        stroke="#1e3a5f"
+        strokeWidth="14"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference - (masteredPct / 100) * circumference}
+        className="transition-all duration-700 ease-out"
+      />
+    )}
+  </svg>
+
+  {/* Center content */}
+  <div className="absolute inset-0 flex flex-col items-center justify-center">
+    <Star className="w-7 h-7 mb-1" style={{ color: '#f59e0b' }} fill="currentColor" />
+    <span className="text-5xl font-bold text-neutral-900">{masteredPct}%</span>
+    <span className="text-sm font-medium text-neutral-600 mt-1">Mastered</span>
+  </div>
+</div>
+Also add these percentage calculations near the top of the component (after the existing calculations):
+javascript// Calculate percentages for each level
+const masteredPct = totalCount > 0 ? Math.round((masteredCount / totalCount) * 100) : 0
+const familiarPct = totalCount > 0 ? Math.round((familiarCount / totalCount) * 100) : 0
+const learningPct = totalCount > 0 ? Math.round((learningCount / totalCount) * 100) : 0
+// notSeenPct is implicit (the gray background)
+And remove the old percentage and offset calculations since we're replacing them with the level-based ones.
+
+Expected Result
+The ring will fill clockwise showing:
+
+Gray background (not seen)
+Light blue fills first (learning)
+Dark blue overlays (familiar)
+Near-black overlays (mastered)
+
+So if you have 20% learning, 10% familiar, 5% mastered, the ring shows 35% filled with the three colors stacked.

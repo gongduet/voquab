@@ -1,13 +1,9 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Flame, User } from 'lucide-react'
 
 /**
- * DashboardHeader - Logo, streak, settings, avatar
- *
- * @param {Object} props
- * @param {number} props.streak - Current streak in days
- * @param {string} props.username - User display name
- * @param {boolean} props.loading - Loading state
+ * DashboardHeader - Logo, animated streak pill, settings, avatar
  */
 export default function DashboardHeader({
   streak = 0,
@@ -15,6 +11,36 @@ export default function DashboardHeader({
   loading = false
 }) {
   const navigate = useNavigate()
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  // Auto-expand on first load if streak > 0, then collapse after delay
+  useEffect(() => {
+    if (streak > 0 && !loading && !hasAnimated) {
+      // Small delay before expanding
+      const expandTimer = setTimeout(() => {
+        setIsExpanded(true)
+      }, 500)
+
+      // Collapse after showing
+      const collapseTimer = setTimeout(() => {
+        setIsExpanded(false)
+        setHasAnimated(true)
+      }, 3000)
+
+      return () => {
+        clearTimeout(expandTimer)
+        clearTimeout(collapseTimer)
+      }
+    }
+  }, [streak, loading, hasAnimated])
+
+  // Toggle on click
+  const handleStreakClick = () => {
+    if (streak > 0) {
+      setIsExpanded(!isExpanded)
+    }
+  }
 
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-neutral-100">
@@ -25,19 +51,51 @@ export default function DashboardHeader({
 
       {/* Right side: streak, settings, avatar */}
       <div className="flex items-center gap-3">
-        {/* Streak indicator */}
+        {/* Animated Streak Pill */}
         {loading ? (
-          <div className="w-12 h-6 bg-neutral-200 rounded animate-pulse" />
+          <div className="w-12 h-7 bg-neutral-200 rounded-full animate-pulse" />
         ) : (
-          <div
+          <button
+            onClick={handleStreakClick}
             className={`
-              flex items-center gap-1 px-2 py-1 rounded-full text-sm font-medium
-              ${streak > 0 ? 'bg-secondary-100 text-secondary-700' : 'bg-neutral-100 text-neutral-500'}
+              flex items-center gap-1.5 py-1.5 rounded-full text-sm font-semibold
+              transition-all duration-300 ease-out overflow-hidden
+              ${streak > 0
+                ? 'bg-gradient-to-r from-orange-100 to-amber-100 text-amber-700 hover:from-orange-200 hover:to-amber-200'
+                : 'bg-neutral-100 text-neutral-500'
+              }
+              ${isExpanded ? 'px-3' : 'px-2'}
             `}
+            style={{
+              minWidth: isExpanded ? '120px' : '44px',
+              maxWidth: isExpanded ? '140px' : '44px',
+            }}
           >
-            <Flame className={`w-4 h-4 ${streak > 0 ? 'text-secondary-500' : 'text-neutral-400'}`} />
-            <span>{streak}</span>
-          </div>
+            <Flame
+              className={`
+                w-4 h-4 flex-shrink-0 transition-all duration-300
+                ${streak > 0 ? 'text-orange-500' : 'text-neutral-400'}
+                ${isExpanded && streak > 0 ? 'animate-pulse' : ''}
+              `}
+              fill={streak > 0 ? 'currentColor' : 'none'}
+            />
+
+            <span className={`
+              transition-all duration-300 ease-out whitespace-nowrap
+              ${isExpanded ? 'opacity-100 w-auto' : 'opacity-100 w-auto'}
+            `}>
+              {isExpanded ? (
+                <span className="flex items-center gap-1">
+                  <span>{streak}</span>
+                  <span className="text-amber-600 font-medium">
+                    {streak === 1 ? 'day' : 'days'}
+                  </span>
+                </span>
+              ) : (
+                streak
+              )}
+            </span>
+          </button>
         )}
 
         {/* Settings button */}

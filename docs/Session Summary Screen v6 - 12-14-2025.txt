@@ -1,0 +1,386 @@
+Claude Code Prompt: 4-Level Progress Bars (v26)
+Task: Implement 4-level progress visualization across Dashboard, showing depth of knowledge (Mastered/Familiar/Learning/Not Seen) instead of just "introduced" percentage.
+
+Overview
+Current state: Progress bars show single color representing "introduced" (seen at least once).
+Target state: Stacked progress bars showing 4 levels of mastery depth, consistent across HeroStats and ChapterCarousel.
+Levels:
+LevelNameColorCriteria4Mastered#1e3a5fstability >= 21 AND fsrs_state = 23Familiar#0369a1stability >= 7 AND < 21 AND fsrs_state = 22Learning#38bdf8stability < 7 OR fsrs_state IN (1, 3)1Not Seen#d6d3d1No progress record
+
+Part 1: Update src/pages/Dashboard.jsx
+1a. Update fetchHeroStats to return 4-level breakdown
+Replace the existing fetchHeroStats function (around lines 190-246) with:
+javascript/**
+ * Fetch hero stats: 4-level breakdown (mastered, familiar, learning, not seen)
+ * Includes both lemmas and phrases
+ */
+async function fetchHeroStats(userId) {
+  // Total lemmas (excluding stop words)
+  const { count: totalLemmas } = await supabase
+    .from('lemmas')
+    .select('*', { count: 'exact', head: true })
+    .eq('is_stop_word', false)
+
+  // Total phrases
+  const { count: totalPhrases } = await supabase
+    .from('phrases')
+    .select('*', { count: 'exact', head: true })
+
+  const totalCount = (totalLemmas || 0) + (totalPhrases || 0)
+
+  // Get all user lemma progress with FSRS fields
+  const { data: lemmaProgress } = await supabase
+    .from('user_lemma_progress')
+    .select('stability, fsrs_state, reps')
+    .eq('user_id', userId)
+
+  // Get all user phrase progress with FSRS fields
+  const { data: phraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('stability, fsrs_state, reps')
+    .eq('user_id', userId)
+
+  // Combine and categorize
+  const allProgress = [...(lemmaProgress || []), ...(phraseProgress || [])]
+  
+  const levels = categorizeByLevel(allProgress)
+  
+  // "Introduced" = anything with reps >= 1 (for backward compatibility)
+  const introducedCount = allProgress.filter(p => (p.reps || 0) >= 1).length
+
+  return {
+    masteredCount: levels.mastered,
+    familiarCount: levels.familiar,
+    learningCount: levels.learning,
+    introducedCount,
+    totalCount,
+    notSeenCount: totalCount - introducedCount
+  }
+}
+
+/**
+ * Categorize progress records into 4 levels based on FSRS state and stability
+ */
+function categorizeByLevel(progressRecords) {
+  let mastered = 0
+  let familiar = 0
+  let learning = 0
+
+  for (const record of progressRecords) {
+    const stability = record.stability || 0
+    const fsrsState = record.fsrs_state ?? 0
+    const reps = record.reps || 0
+
+    // Must have at least 1 rep to be in any category
+    if (reps < 1) continue
+
+    if (stability >= 21 && fsrsState === 2) {
+      mastered++
+    } else if (stability >= 7 && stability < 21 && fsrsState === 2) {
+      familiar++
+    } else {
+      // stability < 7 OR fsrs_state IN (1, 3) OR fsrs_state = 0
+      learning++
+    }
+  }
+
+  return { mastered, familiar, learning }
+}
+1b. Update fetchChaptersProgress to return 4-level breakdown per chapter
+Find the section where chapter progress is calculated (inside the Promise.all loop around line 420-470). Update the chapter object to include level breakdowns.
+Find where chapterProgress object is built for each chapter. It currently has introduced and total_lemmas. Update to include the 4 levels:
+javascript// Inside the chapter progress calculation loop, after getting words and phrases for the chapter:
+
+// Get detailed progress for this chapter's lemmas
+const { data: chapterLemmaProgress } = await supabase
+  .from('user_lemma_progress')
+  .select('lemma_id, stability, fsrs_state, reps')
+  .eq('user_id', userId)
+  .in('lemma_id', chapterLemmaIds)
+
+// Get detailed progress for this chapter's phrases  
+const { data: chapterPhraseProgress } = await supabase
+  .from('user_phrase_progress')
+  .select('phrase_id, stability, fsrs_state, reps')
+  .eq('user_id', userId)
+  .in('phrase_id', chapterPhraseIds)
+
+// Categorize into levels
+const chapterProgress = [...(chapterLemmaProgress || []), ...(chapterPhraseProgress || [])]
+const levels = categorizeByLevel(chapterProgress)
+
+// Build chapter object with level breakdown
+return {
+  chapter_id: chapter.chapter_id,
+  chapter_number: chapter.chapter_number,
+  title: chapter.title,
+  total_lemmas: totalItems, // Keep name for backward compatibility
+  introduced: introducedCount,
+  // New 4-level breakdown
+  mastered: levels.mastered,
+  familiar: levels.familiar,
+  learning: levels.learning,
+  notSeen: totalItems - introducedCount,
+  isUnlocked,
+  isNextToUnlock
+}
+Note: The exact location and structure may vary. The key is that each chapter object returned should include mastered, familiar, learning, and notSeen counts.
+
+Part 2: Update src/components/dashboard/HeroStats.jsx
+Replace the entire file with:
+jsximport { Star } from 'lucide-react'
+
+/**
+ * HeroStats - Circular progress ring showing mastery percentage
+ * Now displays 4-level breakdown below the ring
+ */
+export default function HeroStats({
+  masteredCount = 0,
+  familiarCount = 0,
+  learningCount = 0,
+  introducedCount = 0,
+  totalCount = 1,
+  loading = false
+}) {
+  // Calculate percentage (mastered / total)
+  const percentage = totalCount > 0 ? Math.round((masteredCount / totalCount) * 100) : 0
+
+  // SVG circle calculations
+  const radius = 88
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (percentage / 100) * circumference
+
+  // Calculate not seen
+  const notSeenCount = totalCount - introducedCount
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center py-8 mx-4">
+        <div className="w-52 h-52 rounded-full bg-neutral-200 animate-pulse" />
+        <div className="mt-4 h-6 w-32 bg-neutral-200 rounded animate-pulse" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center py-6 mx-4">
+      {/* Circular Progress Ring */}
+      <div className="relative w-52 h-52">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+          {/* Background circle */}
+          <circle
+            cx="100"
+            cy="100"
+            r={radius}
+            fill="none"
+            stroke="#d6d3d1"
+            strokeWidth="14"
+          />
+          {/* Progress circle - shows mastered percentage */}
+          <circle
+            cx="100"
+            cy="100"
+            r={radius}
+            fill="none"
+            stroke="#1e3a5f"
+            strokeWidth="14"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            className="transition-all duration-700 ease-out drop-shadow-sm"
+          />
+        </svg>
+
+        {/* Center content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <Star className="w-7 h-7 mb-1" style={{ color: '#f59e0b' }} fill="currentColor" />
+          <span className="text-5xl font-bold text-neutral-900">{percentage}%</span>
+          <span className="text-sm font-medium text-neutral-600 mt-1">Mastered</span>
+        </div>
+      </div>
+
+      {/* 4-level stats below ring */}
+      <div className="mt-6 flex gap-4 text-center">
+        <div className="px-3">
+          <div className="text-2xl font-bold" style={{ color: '#1e3a5f' }}>{masteredCount}</div>
+          <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Mastered</div>
+        </div>
+        <div className="w-px bg-neutral-300" />
+        <div className="px-3">
+          <div className="text-2xl font-bold" style={{ color: '#0369a1' }}>{familiarCount}</div>
+          <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Familiar</div>
+        </div>
+        <div className="w-px bg-neutral-300" />
+        <div className="px-3">
+          <div className="text-2xl font-bold" style={{ color: '#38bdf8' }}>{learningCount}</div>
+          <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Learning</div>
+        </div>
+        <div className="w-px bg-neutral-300" />
+        <div className="px-3">
+          <div className="text-2xl font-bold" style={{ color: '#a3a3a3' }}>{notSeenCount}</div>
+          <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Not Seen</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+Part 3: Update src/components/dashboard/ChapterCarousel.jsx
+3a. Update the progress bar in ChapterCard
+Find the progress bar section in ChapterCard (around lines 175-190):
+jsx{/* Progress bar */}
+<div className="mt-2">
+  <div className="flex justify-between text-[10px] mb-1">
+    <span className={isUnlocked || isNextToUnlock ? 'text-neutral-500' : 'text-neutral-300'}>
+      {introduced}/{total_lemmas}
+    </span>
+    <span className={`font-bold ${...}`}>
+      {progress}%
+    </span>
+  </div>
+  <div className="w-full bg-neutral-200 rounded-full h-1.5">
+    <div
+      className="h-1.5 rounded-full transition-all duration-300"
+      style={{
+        width: `${progress}%`,
+        backgroundColor: isCurrent ? '#0ea5e9' : ...
+      }}
+    />
+  </div>
+</div>
+Replace the entire progress bar section with:
+jsx{/* Progress bar - 4-level stacked */}
+<div className="mt-2">
+  <div className="flex justify-between text-[10px] mb-1">
+    <span className={isUnlocked || isNextToUnlock ? 'text-neutral-500' : 'text-neutral-300'}>
+      {introduced}/{total_lemmas}
+    </span>
+    <span className={`font-bold ${
+      isCurrent ? 'text-primary-600' : isCompleted ? 'text-secondary-600' : isNextToUnlock ? 'text-secondary-500' : 'text-neutral-400'
+    }`}>
+      {progress}%
+    </span>
+  </div>
+  <StackedProgressBar
+    mastered={mastered || 0}
+    familiar={familiar || 0}
+    learning={learning || 0}
+    notSeen={notSeen || 0}
+    total={total_lemmas}
+    isLocked={!isUnlocked && !isNextToUnlock}
+  />
+</div>
+3b. Add the StackedProgressBar component
+Add this new component at the bottom of the file (before the final export or after ChapterCard):
+jsx/**
+ * Stacked progress bar showing 4 levels of mastery
+ */
+function StackedProgressBar({ mastered, familiar, learning, notSeen, total, isLocked }) {
+  if (total === 0) return null
+
+  const masteredPct = (mastered / total) * 100
+  const familiarPct = (familiar / total) * 100
+  const learningPct = (learning / total) * 100
+  // notSeen fills the rest
+
+  // Colors
+  const colors = {
+    mastered: '#1e3a5f',
+    familiar: '#0369a1',
+    learning: '#38bdf8',
+    notSeen: '#d6d3d1'
+  }
+
+  // If locked, show all gray
+  if (isLocked) {
+    return (
+      <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: colors.notSeen }} />
+    )
+  }
+
+  return (
+    <div className="w-full h-1.5 rounded-full overflow-hidden flex" style={{ backgroundColor: colors.notSeen }}>
+      {masteredPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${masteredPct}%`, backgroundColor: colors.mastered }}
+        />
+      )}
+      {familiarPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${familiarPct}%`, backgroundColor: colors.familiar }}
+        />
+      )}
+      {learningPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${learningPct}%`, backgroundColor: colors.learning }}
+        />
+      )}
+      {/* notSeen is the background, no need to render */}
+    </div>
+  )
+}
+3c. Update ChapterCard destructuring
+Update the destructuring in ChapterCard to include the new level props (around line 115):
+javascriptconst {
+  chapter_number,
+  title,
+  introduced = 0,
+  total_lemmas = 1,
+  mastered = 0,
+  familiar = 0,
+  learning = 0,
+  notSeen = 0,
+  isUnlocked = false,
+  isNextToUnlock = false
+} = chapter
+
+Part 4: Update Dashboard.jsx to pass new props to HeroStats
+Find where HeroStats is rendered (around line 130):
+jsx<HeroStats
+  masteredCount={dashboardData.masteredCount}
+  introducedCount={dashboardData.introducedCount}
+  totalCount={dashboardData.totalLemmas}
+  loading={loading}
+/>
+Update to:
+jsx<HeroStats
+  masteredCount={dashboardData.masteredCount}
+  familiarCount={dashboardData.familiarCount}
+  learningCount={dashboardData.learningCount}
+  introducedCount={dashboardData.introducedCount}
+  totalCount={dashboardData.totalCount}
+  loading={loading}
+/>
+Also update the dashboardData initial state (around line 17) to include the new fields:
+javascriptconst [dashboardData, setDashboardData] = useState({
+  // HeroStats - 4 levels
+  masteredCount: 0,
+  familiarCount: 0,
+  learningCount: 0,
+  introducedCount: 0,
+  totalCount: 0,
+  // ... rest unchanged
+})
+And update setDashboardData call (around line 80) to include:
+javascriptsetDashboardData({
+  ...heroStats,  // Now includes masteredCount, familiarCount, learningCount, introducedCount, totalCount
+  // ... rest unchanged
+})
+
+Summary of Changes
+FileChangesDashboard.jsxAdd categorizeByLevel() helper, update fetchHeroStats to return 4 levels, update fetchChaptersProgress to return 4 levels per chapter, update state and propsHeroStats.jsxDisplay 4-level breakdown below ring (Mastered/Familiar/Learning/Not Seen) with new colorsChapterCarousel.jsxAdd StackedProgressBar component, update ChapterCard to use stacked bar with 4 colors
+Colors Reference
+javascriptconst LEVEL_COLORS = {
+  mastered: '#1e3a5f',  // Near-black blue
+  familiar: '#0369a1',  // Dark blue
+  learning: '#38bdf8',  // Medium blue
+  notSeen: '#d6d3d1'    // Gray
+}
+Expected Result
+
+HeroStats ring: Shows mastered percentage, with 4-column stats below (Mastered | Familiar | Learning | Not Seen)
+Chapter cards: Progress bars show stacked colors filling left-to-right: Mastered (dark) → Familiar → Learning → Not Seen (gray background)
+Consistent visual language: Same colors and thresholds across both components
