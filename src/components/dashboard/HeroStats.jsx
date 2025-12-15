@@ -25,7 +25,7 @@ export default function HeroStats({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center py-8 bg-white mx-4 rounded-2xl shadow-sm border border-neutral-100">
+      <div className="flex flex-col items-center py-8 mx-4">
         <div className="w-52 h-52 rounded-full bg-neutral-200 animate-pulse" />
         <div className="mt-4 h-6 w-32 bg-neutral-200 rounded animate-pulse" />
       </div>
@@ -33,7 +33,7 @@ export default function HeroStats({
   }
 
   return (
-    <div className="flex flex-col items-center py-6 mx-4 bg-white rounded-2xl shadow-sm border border-neutral-100">
+    <div className="flex flex-col items-center py-6 mx-4">
       {/* Circular Progress Ring */}
       <div className="relative w-52 h-52">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">

@@ -1,6 +1,6 @@
 # 04_LEARNING_ALGORITHM.md
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 14, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -503,6 +503,31 @@ SET
 WHERE user_id = :user_id AND lemma_id = :lemma_id;
 ```
 
+### Activity Tracking
+
+Every review is logged to `user_review_history` for activity tracking and analytics:
+
+```javascript
+// In useProgressTracking.js
+async function logReviewEvent(card, difficulty) {
+  const isPhrase = card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id)
+
+  await supabase.from('user_review_history').insert({
+    user_id: userId,
+    reviewed_at: new Date().toISOString(),
+    difficulty: difficulty,
+    lemma_id: isPhrase ? null : (card.lemma_id || null),
+    phrase_id: isPhrase ? card.phrase_id : null
+  })
+}
+```
+
+**Key Points:**
+- Append-only table (never updated/deleted)
+- Either `lemma_id` or `phrase_id` is set, never both
+- Used by Dashboard's ActivityHeatmap to show unique cards reviewed per day
+- `vocab_id` column is nullable (legacy, not used for new records)
+
 ---
 
 ## RELATED DOCUMENTS
@@ -518,6 +543,7 @@ WHERE user_id = :user_id AND lemma_id = :lemma_id;
 
 - 2025-11-30: Initial draft with mastery/health system (Claude)
 - 2025-12-13: **Major rewrite** - Replaced with FSRS algorithm, added phrases integration (Claude)
+- 2025-12-14: Added Activity Tracking section documenting `user_review_history` logging (Claude)
 - Status: Active
 
 ---

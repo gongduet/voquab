@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 12, 2025
+**Last Updated:** December 14, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,199 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2025-12-14: Session Summary Screen & Documentation Update
+
+### Summary
+New Notion-inspired session summary screen that replaces the basic completion view, with comprehensive card tracking, "Needs Focus" section for trouble words, and expandable all-cards list.
+
+---
+
+### 1. Session Summary Screen (New Feature)
+
+**Location:** `src/components/flashcard/SessionSummary.jsx` (new file)
+
+**Design Philosophy:** Clean, sophisticated, adult-oriented (not gamified). Matches dashboard styling with white card on stone background, thin dividers, and amber accent color.
+
+#### Component Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `totalCards` | number | Total cards reviewed in session |
+| `ratings` | object | `{ again: number, hard: number, gotIt: number }` |
+| `reviewedCards` | array | Array of card review data objects |
+| `dueCount` | number | Remaining due cards (from sessionStats) |
+| `newAvailable` | number | Available new cards to learn |
+| `onNewSession` | function | Callback for "Review More" button |
+| `onDashboard` | function | Callback for "Back to Dashboard" button |
+
+#### Card Data Structure (reviewedCards array)
+
+Each card object in the array contains:
+
+```javascript
+{
+  lemma: string,           // The word/phrase text
+  cardId: string,          // UUID (phrase_id or lemma_id)
+  cardType: string,        // 'lemma' or 'phrase'
+  partOfSpeech: string,    // e.g., 'noun', 'verb', 'PHRASE'
+  wasMarkedAgain: boolean, // STICKY flag - true if ever marked "again"
+  finalRating: string,     // 'again', 'hard', or 'gotIt'
+  dueFormatted: string,    // Human-readable due time (e.g., "10 min", "2 days")
+  dueTimestamp: number     // Unix timestamp for sorting
+}
+```
+
+#### The "wasMarkedAgain" Sticky Flag
+
+**Key Behavior:** Once a card is marked "again" (or "dont-know") during a session, it appears in "Needs Focus" even if the user later answers it correctly.
+
+**Rationale:** If a user struggled with a word at any point during the session, it's worth highlighting for future study, regardless of whether they eventually got it right.
+
+**Implementation:**
+```javascript
+wasMarkedAgain: existing?.wasMarkedAgain || isAgain
+```
+
+#### Sorting Logic
+
+Cards are sorted by:
+1. Rating priority: again → hard → gotIt
+2. Then by due date (soonest first)
+
+```javascript
+function sortCards(a, b) {
+  const ratingOrder = { again: 0, hard: 1, gotIt: 2 }
+  // ... sort by rating, then timestamp
+}
+```
+
+#### UI Sections
+
+1. **Header** - "Session Complete" label with blue dot, "Summary" title, today's date
+2. **Metrics Grid** - Success rate | Total Cards | Got It count (with thin dividers)
+3. **Responses** - Again/Hard/Got It breakdown with color-coded numbers
+4. **Needs Focus** OR **Perfect Session** - Conditional rendering
+5. **All X Cards** - Expandable section with chevron toggle
+6. **Action Buttons** - Smart labels based on remaining cards
+
+#### Color Palette
+
+| Element | Color | Hex |
+|---------|-------|-----|
+| Again dot | Mauve | `#6d6875` |
+| Hard dot | Dusty rose | `#e5989b` |
+| Got It dot | Sage green | `#98c1a3` |
+| Perfect checkmark | Amber | `#f59e0b` |
+| Primary button | Sky blue | `#0ea5e9` |
+| Background | Stone | `#fafaf9` |
+| Card background | White | `#ffffff` |
+| Dividers | Light stone | `#e7e5e4` |
+
+---
+
+### 2. Flashcards.jsx State Management Changes
+
+**Before:** `troubleWords` array with limited 5-word capture
+**After:** `reviewedCards` Map tracking ALL cards with full metadata
+
+#### State Declaration
+
+```javascript
+// Track all reviewed cards with their ratings and due dates
+// Key: lemmaId or phraseId, Value: card review data
+const [reviewedCards, setReviewedCards] = useState(new Map())
+```
+
+#### Card Tracking in handleDifficulty
+
+```javascript
+if (result?.success) {
+  const cardId = currentCard.phrase_id || currentCard.lemma_id
+  const isAgain = difficulty === 'again' || difficulty === 'dont-know'
+
+  setReviewedCards(prev => {
+    const updated = new Map(prev)
+    const existing = updated.get(cardId)
+
+    updated.set(cardId, {
+      lemma: currentCard.lemma,
+      cardId: cardId,
+      cardType: currentCard.card_type || 'lemma',
+      partOfSpeech: currentCard.part_of_speech || null,
+      wasMarkedAgain: existing?.wasMarkedAgain || isAgain,
+      finalRating: isAgain ? 'again' : difficulty === 'hard' ? 'hard' : 'gotIt',
+      dueFormatted: result.dueFormatted || 'Now',
+      dueTimestamp: result.dueDate ? new Date(result.dueDate).getTime() : Date.now()
+    })
+
+    return updated
+  })
+}
+```
+
+**Important:** Using a Map ensures cards are deduplicated by ID. If a card is reviewed multiple times (e.g., marked "again" and shown again), only one entry exists with updated values.
+
+---
+
+### 3. Session Builder Stats Additions
+
+Added `dueRemaining` and `newRemaining` to all session builder stats objects:
+
+**buildReviewSession:**
+```javascript
+dueRemaining: Math.max(0, dueCards.length - selectedDue.length),
+newRemaining: 0
+```
+
+**buildLearnSession:**
+```javascript
+dueRemaining: 0,
+newRemaining: Math.max(0, totalPool - session.length)
+```
+
+**buildChapterFocusSession:**
+```javascript
+dueRemaining: Math.max(0, chapterDue.length + otherDue.length - selectedChapterDue.length - selectedOtherDue.length),
+newRemaining: 0
+```
+
+These values enable smart button labels:
+- "Review More (X due)" when dueRemaining > 0
+- "Learn New Words (X)" when newRemaining > 0 and dueRemaining = 0
+- "Return to Dashboard" when both are 0
+
+---
+
+### 4. Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/components/flashcard/SessionSummary.jsx` | **New file** - Complete session summary component |
+| `src/pages/Flashcards.jsx` | Replaced `troubleWords` with `reviewedCards` Map, updated tracking logic, updated SessionSummary props |
+| `src/services/sessionBuilder.js` | Added `dueRemaining` and `newRemaining` to all three build functions |
+
+---
+
+### 5. Edge Cases Handled
+
+1. **Empty session** - Metrics show 0/0, "Perfect session" displays
+2. **Card reviewed multiple times** - Map deduplication ensures single entry with latest values
+3. **Exposure cards** - Only tracked if `result.success` is true
+4. **Missing dueFormatted** - Falls back to "Now"
+5. **Missing part of speech** - Gracefully hidden in CardRow
+6. **Long lemma text** - Truncated with `truncate` class
+
+---
+
+### 6. Future Considerations
+
+- Could add card tap-to-expand for full details
+- Could persist session history for cross-session analytics
+- "Needs Focus" could link to a dedicated review mode for trouble words
+- Success rate calculation treats "hard" as success (debatable)
 
 ---
 

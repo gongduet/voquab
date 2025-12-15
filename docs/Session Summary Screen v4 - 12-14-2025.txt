@@ -1,0 +1,112 @@
+Claude Code Prompt: Documentation Update (v24)
+Task: Thoroughly review all changes made today (December 14, 2025) and update relevant documentation files. Add your own observations and details based on the actual implementation, not just what was specified in the prompts.
+
+Step 1: Review What Was Changed Today
+Before writing documentation, use git diff or review the following files to understand exactly what was implemented:
+
+src/pages/Flashcards.jsx
+src/pages/Dashboard.jsx
+src/components/flashcard/SessionSummary.jsx (new file)
+src/components/dashboard/ActivityHeatmap.jsx
+src/services/sessionBuilder.js
+src/hooks/flashcard/useProgressTracking.js
+
+Also check the database changes that were made (documented in code comments or migration notes):
+
+user_review_history table: added lemma_id, phrase_id columns; made vocab_id nullable
+New indexes and RLS policies on user_review_history
+
+
+Step 2: Update docs/99_LIVING_CHANGELOG.md
+Add a comprehensive entry for December 14, 2025 at the top of the changelog. Include:
+Section 1: Session Summary Screen (New Feature)
+
+Describe the new SessionSummary component
+Document the data flow: how cards are tracked during a session
+Explain the reviewedCards Map structure and wasMarkedAgain sticky flag
+Document the sorting logic (rating priority, then due date)
+Note the UI elements: metrics grid, responses breakdown, Needs Focus section, expandable All Cards section
+Include any implementation details you notice in the actual code that weren't explicitly specified
+
+Section 2: Activity Tracking System Fix
+
+Document the schema changes to user_review_history
+Explain why vocab_id was made nullable
+Document the logReviewEvent() function in useProgressTracking.js
+Explain how activity is now calculated (unique cards per day from user_review_history)
+Note the property name fix (count → reviews)
+
+Section 3: Dashboard Performance Optimization
+
+Document the parallel query approach for chapter loading
+Include before/after performance metrics
+Note any other dashboard fixes or improvements
+
+Section 4: Files Modified
+
+List all files created or modified with brief descriptions
+
+Section 5: Database Changes
+
+Document all schema changes with SQL
+Note any new indexes, constraints, or RLS policies
+
+Section 6: Lessons Learned / Notes
+
+Add any observations about edge cases, gotchas, or important implementation details you discover while reviewing the code
+
+
+Step 3: Update docs/02_DATABASE_SCHEMA.md
+
+Update the user_review_history table documentation to reflect the new columns (lemma_id, phrase_id)
+Document the check constraint chk_review_item
+Document the new indexes
+Note that vocab_id is now nullable for new records
+
+
+Step 4: Update docs/04_LEARNING_ALGORITHM.md (if relevant sections exist)
+
+Update any sections about progress tracking to mention that reviews are now logged to user_review_history
+Document how "introduced" is determined (reps >= 1)
+
+
+Step 5: Update docs/05_READING_EXPERIENCE.md or docs/01_MVP_DEFINITION.md (if relevant)
+
+If there's documentation about the flashcard review flow, update it to mention the new session summary screen
+Document the new post-session experience
+
+
+Step 6: Update any other docs you find relevant
+Review the docs folder structure and update any other files that should reflect today's changes. Use your judgment based on what you see in the actual implementation.
+
+Step 7: Add Your Own Observations
+As you review the code, add documentation for:
+
+Edge cases you notice being handled
+Data flow patterns that aren't obvious
+Component props and their types/purposes
+State management patterns used
+Any TODOs or future improvements you see in comments
+Potential gotchas for future development
+
+
+Documentation Style Guidelines
+
+Use clear headings and subheadings
+Include code snippets where helpful
+Use tables for structured data (schema, props, etc.)
+Keep explanations concise but complete
+Date all changelog entries
+Note any breaking changes or migration requirements
+
+
+Final Check
+After updating documentation:
+
+Verify all file paths referenced are correct
+Ensure code snippets match the actual implementation
+Check that the changelog entry is at the top of the file
+Run npm run build to ensure no build errors were introduced
+
+
+Important: This is YOUR opportunity to document what was actually built, not just what was requested. If you notice the implementation differs from the prompts, or includes additional features/fixes, document the reality of what exists in the codebase.

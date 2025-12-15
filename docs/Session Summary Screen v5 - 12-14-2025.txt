@@ -1,0 +1,193 @@
+Claude Code Prompt: Dashboard Fixes (v25 - Revised)
+Task: Fix two issues on the Dashboard:
+
+Remove the white card frame from HeroStats
+Fix the "Learn New" count to include all unintroduced items through current chapter
+
+
+Part 1: Remove HeroStats Frame
+File: src/components/dashboard/HeroStats.jsx
+Find the outer container div (around line 35):
+jsx<div className="flex flex-col items-center py-6 mx-4 bg-white rounded-2xl shadow-sm border border-neutral-100">
+Replace with:
+jsx<div className="flex flex-col items-center py-6 mx-4">
+Also update the loading state container (around line 27):
+jsx<div className="flex flex-col items-center py-8 bg-white mx-4 rounded-2xl shadow-sm border border-neutral-100">
+Replace with:
+jsx<div className="flex flex-col items-center py-8 mx-4">
+
+Part 2: Fix "Learn New" Count
+File: src/pages/Dashboard.jsx
+The current fetchQuickActionStats function has a bug where large .in() queries may fail silently due to URL length limits. The fix is to:
+
+Find the current chapter (first incomplete chapter)
+Get all chapters up to and including current chapter
+Query unintroduced items per chapter (smaller, reliable queries)
+Sum them up
+
+Replace the entire fetchQuickActionStats function (around lines 248-354) with:
+javascript/**
+ * Fetch quick action stats: due count, new available
+ * 
+ * "New available" = all unintroduced items from Chapter 1 through current chapter (inclusive)
+ * This ensures no items from earlier chapters are missed
+ */
+async function fetchQuickActionStats(userId) {
+  const now = new Date().toISOString()
+
+  // Lemmas due now
+  const { count: lemmasDue } = await supabase
+    .from('user_lemma_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .lte('due_date', now)
+
+  // Phrases due now
+  const { count: phrasesDue } = await supabase
+    .from('user_phrase_progress')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .lte('due_date', now)
+
+  const dueCount = (lemmasDue || 0) + (phrasesDue || 0)
+
+  // Get user's introduced lemma and phrase IDs (fetch once, reuse)
+  const [introducedLemmasResult, introducedPhrasesResult] = await Promise.all([
+    supabase
+      .from('user_lemma_progress')
+      .select('lemma_id')
+      .eq('user_id', userId)
+      .gte('reps', 1),
+    supabase
+      .from('user_phrase_progress')
+      .select('phrase_id')
+      .eq('user_id', userId)
+      .gte('reps', 1)
+  ])
+
+  const introducedLemmaIds = new Set((introducedLemmasResult.data || []).map(p => p.lemma_id))
+  const introducedPhraseIds = new Set((introducedPhrasesResult.data || []).map(p => p.phrase_id))
+
+  // Find current chapter and get all chapters up to it
+  const chaptersToCount = await getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds)
+
+  if (chaptersToCount.length === 0) {
+    return { dueCount, newAvailable: 0 }
+  }
+
+  // Count unintroduced items per chapter (smaller queries, more reliable)
+  let totalNewLemmas = 0
+  let totalNewPhrases = 0
+
+  for (const chapter of chaptersToCount) {
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', chapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    if (sentenceIds.length === 0) continue
+
+    // Get non-stop lemmas for this chapter
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+    const newLemmasInChapter = chapterLemmaIds.filter(id => !introducedLemmaIds.has(id)).length
+    totalNewLemmas += newLemmasInChapter
+
+    // Get phrases for this chapter
+    const { data: phraseOccs } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
+    const newPhrasesInChapter = chapterPhraseIds.filter(id => !introducedPhraseIds.has(id)).length
+    totalNewPhrases += newPhrasesInChapter
+  }
+
+  const newAvailable = totalNewLemmas + totalNewPhrases
+
+  console.log('[Dashboard] New available debug:', {
+    chaptersIncluded: chaptersToCount.map(c => c.chapter_number),
+    introducedLemmas: introducedLemmaIds.size,
+    introducedPhrases: introducedPhraseIds.size,
+    newLemmasAvailable: totalNewLemmas,
+    newPhrasesAvailable: totalNewPhrases,
+    total: newAvailable
+  })
+
+  return { dueCount, newAvailable }
+}
+
+/**
+ * Get all chapters from 1 through current chapter (inclusive)
+ * Current chapter = first chapter that isn't 100% complete
+ */
+async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds) {
+  // Get all chapters
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number, title')
+    .order('chapter_number', { ascending: true })
+
+  if (!chapters || chapters.length === 0) return []
+
+  const chaptersToInclude = []
+
+  for (const chapter of chapters) {
+    // Always include this chapter in the count
+    chaptersToInclude.push(chapter)
+
+    // Check if this chapter is complete
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', chapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    if (sentenceIds.length === 0) continue
+
+    // Get non-stop lemmas for this chapter
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+
+    // Get phrases for this chapter
+    const { data: phraseOccs } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
+
+    // Calculate progress
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+    const totalItems = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedItems = introducedLemmaCount + introducedPhraseCount
+
+    // If this chapter isn't 100% complete, stop here (it's the current chapter)
+    if (introducedItems < totalItems) {
+      break
+    }
+  }
+
+  return chaptersToInclude
+}
+
+Summary of Changes
+IssueFixHeroStats white card frameRemove bg-white rounded-2xl shadow-sm border from container"Learn New" shows 9 instead of 31Calculate from ALL chapters through current (1, 2, 3), query per-chapter to avoid URL limits
+Expected Result
+
+HeroStats floats without a card frame
+"Learn New" shows 31 (or more if chapters 1-2 have any stragglers)
+Console log shows chaptersIncluded: [1, 2, 3] confirming all chapters counted

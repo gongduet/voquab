@@ -246,20 +246,23 @@ async function fetchHeroStats(userId) {
 }
 
 /**
- * Fetch quick action stats: due count, new available (includes lemmas + phrases)
+ * Fetch quick action stats: due count, new available
+ *
+ * "New available" = all unintroduced items from Chapter 1 through current chapter (inclusive)
+ * This ensures no items from earlier chapters are missed
  */
 async function fetchQuickActionStats(userId) {
   const now = new Date().toISOString()
 
-  // Lemmas due today
-  const { count: lemmasDue, error: lemmasDueError } = await supabase
+  // Lemmas due now
+  const { count: lemmasDue } = await supabase
     .from('user_lemma_progress')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
     .lte('due_date', now)
 
-  // Phrases due today
-  const { count: phrasesDue, error: phrasesDueError } = await supabase
+  // Phrases due now
+  const { count: phrasesDue } = await supabase
     .from('user_phrase_progress')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -267,91 +270,137 @@ async function fetchQuickActionStats(userId) {
 
   const dueCount = (lemmasDue || 0) + (phrasesDue || 0)
 
-  // Get user's introduced lemma IDs (reps >= 1 means reviewed at least once)
-  const { data: existingProgress } = await supabase
-    .from('user_lemma_progress')
-    .select('lemma_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
+  // Get user's introduced lemma and phrase IDs (fetch once, reuse)
+  const [introducedLemmasResult, introducedPhrasesResult] = await Promise.all([
+    supabase
+      .from('user_lemma_progress')
+      .select('lemma_id')
+      .eq('user_id', userId)
+      .gte('reps', 1),
+    supabase
+      .from('user_phrase_progress')
+      .select('phrase_id')
+      .eq('user_id', userId)
+      .gte('reps', 1)
+  ])
 
-  const existingIds = new Set((existingProgress || []).map(p => p.lemma_id))
+  const introducedLemmaIds = new Set((introducedLemmasResult.data || []).map(p => p.lemma_id))
+  const introducedPhraseIds = new Set((introducedPhrasesResult.data || []).map(p => p.phrase_id))
 
-  // Get unlocked chapters
-  const unlockedChapterNumbers = await getUnlockedChapterNumbers(userId)
+  // Find current chapter and get all chapters up to it
+  const chaptersToCount = await getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds)
 
-  // Get chapter IDs for unlocked chapters
-  const { data: chaptersData } = await supabase
-    .from('chapters')
-    .select('chapter_id')
-    .in('chapter_number', unlockedChapterNumbers)
+  if (chaptersToCount.length === 0) {
+    return { dueCount, newAvailable: 0 }
+  }
 
-  const chapterIds = (chaptersData || []).map(c => c.chapter_id)
+  // Count unintroduced items per chapter (smaller queries, more reliable)
+  let totalNewLemmas = 0
+  let totalNewPhrases = 0
 
-  // Get sentences from unlocked chapters
-  const { data: sentences } = await supabase
-    .from('sentences')
-    .select('sentence_id')
-    .in('chapter_id', chapterIds)
+  for (const chapter of chaptersToCount) {
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', chapter.chapter_id)
 
-  const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    if (sentenceIds.length === 0) continue
 
-  // Get lemmas from those sentences
-  const { data: wordsData } = await supabase
-    .from('words')
-    .select('lemma_id')
-    .in('sentence_id', sentenceIds)
+    // Get non-stop lemmas for this chapter
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
 
-  const chapterLemmaIds = [...new Set((wordsData || []).map(w => w.lemma_id))]
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+    const newLemmasInChapter = chapterLemmaIds.filter(id => !introducedLemmaIds.has(id)).length
+    totalNewLemmas += newLemmasInChapter
 
-  // Get non-stop-word lemmas
-  const { data: nonStopLemmas } = await supabase
-    .from('lemmas')
-    .select('lemma_id')
-    .in('lemma_id', chapterLemmaIds)
-    .eq('is_stop_word', false)
+    // Get phrases for this chapter
+    const { data: phraseOccs } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
 
-  const nonStopIds = new Set((nonStopLemmas || []).map(l => l.lemma_id))
+    const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
+    const newPhrasesInChapter = chapterPhraseIds.filter(id => !introducedPhraseIds.has(id)).length
+    totalNewPhrases += newPhrasesInChapter
+  }
 
-  // New available = lemmas in unlocked chapters that aren't introduced yet
-  const newLemmasAvailable = chapterLemmaIds.filter(id => !existingIds.has(id) && nonStopIds.has(id)).length
+  const newAvailable = totalNewLemmas + totalNewPhrases
 
-  // Count new phrases available via phrase_occurrences -> sentences -> chapters path
-  // Get introduced phrases (reps >= 1 means reviewed at least once)
-  const { data: existingPhrases } = await supabase
-    .from('user_phrase_progress')
-    .select('phrase_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
-
-  const existingPhraseIds = new Set((existingPhrases || []).map(p => p.phrase_id))
-
-  // Get phrase occurrences from sentences in unlocked chapters
-  const { data: phraseOccurrences } = await supabase
-    .from('phrase_occurrences')
-    .select('phrase_id')
-    .in('sentence_id', sentenceIds)
-
-  // Get unique phrase IDs that haven't been introduced
-  const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(o => o.phrase_id))]
-  const newPhrasesAvailable = chapterPhraseIds.filter(id => !existingPhraseIds.has(id)).length
-
-  // Debug logging
   console.log('[Dashboard] New available debug:', {
-    unlockedChapters: unlockedChapterNumbers,
-    totalChapterLemmas: chapterLemmaIds.length,
-    existingLemmas: existingIds.size,
-    nonStopLemmas: nonStopIds.size,
-    newLemmasAvailable,
-    totalChapterPhrases: chapterPhraseIds.length,
-    existingPhrases: existingPhraseIds.size,
-    newPhrasesAvailable,
-    total: newLemmasAvailable + newPhrasesAvailable
+    chaptersIncluded: chaptersToCount.map(c => c.chapter_number),
+    introducedLemmas: introducedLemmaIds.size,
+    introducedPhrases: introducedPhraseIds.size,
+    newLemmasAvailable: totalNewLemmas,
+    newPhrasesAvailable: totalNewPhrases,
+    total: newAvailable
   })
 
-  return {
-    dueCount,
-    newAvailable: newLemmasAvailable + newPhrasesAvailable
+  return { dueCount, newAvailable }
+}
+
+/**
+ * Get all chapters from 1 through current chapter (inclusive)
+ * Current chapter = first chapter that isn't 100% complete
+ */
+async function getChaptersThroughCurrent(userId, introducedLemmaIds, introducedPhraseIds) {
+  // Get all chapters
+  const { data: chapters } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number, title')
+    .order('chapter_number', { ascending: true })
+
+  if (!chapters || chapters.length === 0) return []
+
+  const chaptersToInclude = []
+
+  for (const chapter of chapters) {
+    // Always include this chapter in the count
+    chaptersToInclude.push(chapter)
+
+    // Check if this chapter is complete
+    const { data: sentences } = await supabase
+      .from('sentences')
+      .select('sentence_id')
+      .eq('chapter_id', chapter.chapter_id)
+
+    const sentenceIds = (sentences || []).map(s => s.sentence_id)
+    if (sentenceIds.length === 0) continue
+
+    // Get non-stop lemmas for this chapter
+    const { data: words } = await supabase
+      .from('words')
+      .select('lemma_id, lemmas!inner(is_stop_word)')
+      .in('sentence_id', sentenceIds)
+      .eq('lemmas.is_stop_word', false)
+
+    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
+
+    // Get phrases for this chapter
+    const { data: phraseOccs } = await supabase
+      .from('phrase_occurrences')
+      .select('phrase_id')
+      .in('sentence_id', sentenceIds)
+
+    const chapterPhraseIds = [...new Set((phraseOccs || []).map(o => o.phrase_id))]
+
+    // Calculate progress
+    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
+    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
+    const totalItems = chapterLemmaIds.length + chapterPhraseIds.length
+    const introducedItems = introducedLemmaCount + introducedPhraseCount
+
+    // If this chapter isn't 100% complete, stop here (it's the current chapter)
+    if (introducedItems < totalItems) {
+      break
+    }
   }
+
+  return chaptersToInclude
 }
 
 /**
