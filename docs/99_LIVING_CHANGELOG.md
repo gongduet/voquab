@@ -48,6 +48,8 @@ Working on final polish and testing before MVP launch.
 ### Fixed
 - **Streak Calculation Bug:** `updateStreak()` was always setting streak to 1 - now properly counts consecutive days by checking each expected date has activity
 - **Streak Display:** Both header pill and Activity heatmap now show correct streak count
+- **Streak Date Timezone Bug:** `fetchStreakData()` now uses `formatLocalDate()` instead of `toISOString().split('T')[0]` to match Activity heatmap date handling - fixes off-by-one day issues near midnight UTC
+- **Daily Stats Date Storage Bug:** `updateDailyStats()` and `updateStreak()` in `useProgressTracking.js` now use local date format instead of UTC - ensures records are stored with correct local date matching streak calculations
 - **Longest Streak Tracking:** Now updates `longest_streak`, `longest_streak_start`, `longest_streak_end` when current exceeds previous best
 - **Forecast "Today" Count:** Now includes all overdue cards from previous days using `.lte('due_date', endISO)` instead of date range
 - **"Learn New" Count Mismatch:** Dashboard's `getChaptersThroughCurrent()` now uses same 95% unlock threshold as session builder's `getUnlockedChapterIds()` - button count matches actual session content

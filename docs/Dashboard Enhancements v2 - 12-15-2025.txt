@@ -1,0 +1,38 @@
+The mismatch: When records are created in updateDailyStats(), it uses new Date().toISOString().split('T')[0] (UTC), but we just changed fetchStreakData() to use formatLocalDate() (local time). They're now off by a day!
+
+Claude Code Prompt: Fix Daily Stats Date Storage (v36)
+Task: Update updateDailyStats() to use local time when storing review_date, matching how streaks are calculated.
+
+Update src/hooks/flashcard/useProgressTracking.js
+Find the updateDailyStats function (around line 153). Change how today is calculated:
+Find this line (around line 155):
+javascriptconst today = new Date().toISOString().split('T')[0]
+Replace with:
+javascript// Use local date to match streak calculation
+const now = new Date()
+const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+
+Also Update updateStreak() in the Same File
+Find the updateStreak function. It also uses new Date().toISOString().split('T')[0] for date calculations.
+Find this block (around line 217-220):
+javascriptconst todayDate = new Date(today)
+The today parameter comes from updateDailyStats, so once that's fixed, this should work. But also check if there are any other toISOString().split('T')[0] usages in this file and replace them with the local date format.
+
+One-Time SQL Fix
+Run this to fix existing records that have tomorrow's date:
+sql-- Check for any dates that are "tomorrow" in UTC but should be "today" locally
+-- This shifts dates that are 1 day ahead back by 1 day
+UPDATE user_daily_stats
+SET review_date = review_date - INTERVAL '1 day'
+WHERE review_date = CURRENT_DATE + INTERVAL '1 day'
+  AND user_id = 'YOUR_USER_ID';
+Or more simply, if Dec 16 should be Dec 15:
+sqlUPDATE user_daily_stats
+SET review_date = '2025-12-15'
+WHERE review_date = '2025-12-16'
+  AND user_id = 'YOUR_USER_ID';
+
+Summary
+LocationBeforeAfterupdateDailyStats()UTC date via toISOString()Local datefetchStreakData()Local date (fixed earlier)Local dateDatabase recordsMay be 1 day offCorrected via SQL
+Expected Result
+After fix + SQL correction, both header and Activity heatmap will show correct streak (3+ days).

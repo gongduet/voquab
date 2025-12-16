@@ -185,7 +185,9 @@ export default function useProgressTracking(userId) {
    * Update daily stats
    */
   async function updateDailyStats(userId) {
-    const today = new Date().toISOString().split('T')[0]
+    // Use local date to match streak calculation
+    const now = new Date()
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
     try {
       const { data: existingStats, error: fetchError } = await supabase
@@ -262,10 +264,10 @@ export default function useProgressTracking(userId) {
       for (let i = 0; i < recentStats.length; i++) {
         const stat = recentStats[i]
 
-        // Calculate expected date (today - i days)
+        // Calculate expected date (today - i days) using LOCAL time
         const expectedDate = new Date(todayDate)
         expectedDate.setDate(todayDate.getDate() - i)
-        const expectedDateStr = expectedDate.toISOString().split('T')[0]
+        const expectedDateStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')}`
 
         // Check if this stat matches the expected consecutive day
         if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
@@ -299,10 +301,10 @@ export default function useProgressTracking(userId) {
       const currentLongest = todayStats?.longest_streak || 0
 
       if (streak > currentLongest) {
-        // Calculate streak start date
+        // Calculate streak start date using LOCAL time
         const streakStartDate = new Date(todayDate)
         streakStartDate.setDate(todayDate.getDate() - streak + 1)
-        const streakStartStr = streakStartDate.toISOString().split('T')[0]
+        const streakStartStr = `${streakStartDate.getFullYear()}-${String(streakStartDate.getMonth() + 1).padStart(2, '0')}-${String(streakStartDate.getDate()).padStart(2, '0')}`
 
         await supabase
           .from('user_daily_stats')
