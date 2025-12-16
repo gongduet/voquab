@@ -1,6 +1,6 @@
 # 04_LEARNING_ALGORITHM.md
 
-**Last Updated:** December 14, 2025
+**Last Updated:** December 15, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -92,6 +92,74 @@ Cards progress through these states:
 New → Learning → Review ⟷ Relearning
            ↑_______________|
 ```
+
+---
+
+## PROGRESS VISUALIZATION LEVELS
+
+### 4-Tier Knowledge System
+
+Progress is visualized using a 4-level depth-of-knowledge system based on FSRS parameters:
+
+| Level | Name | Color | Criteria |
+|-------|------|-------|----------|
+| 1 | **Mastered** | `#1e3a5f` (near-black blue) | stability >= 21 days AND fsrs_state = 2 (Review) |
+| 2 | **Familiar** | `#0369a1` (dark blue) | stability 7-20 days AND fsrs_state = 2 (Review) |
+| 3 | **Learning** | `#38bdf8` (medium blue) | stability < 7 days OR fsrs_state IN (1, 3) |
+| 4 | **Not Seen** | `#d6d3d1` (gray) | No `user_lemma_progress` record exists |
+
+### Why These Thresholds?
+
+**21-day stability (Mastered):**
+- After ~3 weeks of stable recall, memory is well-consolidated
+- Corresponds roughly to FSRS's "mature" card concept
+- User can reliably recall without prompt
+
+**7-day stability (Familiar):**
+- Word is past the initial learning phase
+- In regular review cycle but not yet deeply ingrained
+- May still need occasional reinforcement
+
+**< 7 days / Learning state (Learning):**
+- Actively being learned or relearned
+- Includes both new cards and lapsed cards
+- fsrs_state = 1 (Learning) or 3 (Relearning)
+
+### Implementation
+
+```javascript
+function categorizeByLevel(progressRecords) {
+  let mastered = 0, familiar = 0, learning = 0
+
+  for (const record of progressRecords) {
+    const stability = record.stability || 0
+    const state = record.fsrs_state
+
+    if (state === 2 && stability >= 21) {
+      mastered++
+    } else if (state === 2 && stability >= 7) {
+      familiar++
+    } else {
+      learning++
+    }
+  }
+
+  return { mastered, familiar, learning }
+}
+```
+
+### Visual Components
+
+**HeroStats Ring:** Stacked SVG arcs showing cumulative progress:
+- Outer ring shows mastered (darkest)
+- Middle shows mastered + familiar
+- Inner shows all introduced (mastered + familiar + learning)
+- Gray background represents not seen
+
+**Chapter Progress Bars:** Stacked horizontal bars in ChapterCarousel:
+- Each segment proportional to count
+- Colors match the 4-tier system
+- Locked chapters show gray "Not Seen" only
 
 ---
 
@@ -544,6 +612,7 @@ async function logReviewEvent(card, difficulty) {
 - 2025-11-30: Initial draft with mastery/health system (Claude)
 - 2025-12-13: **Major rewrite** - Replaced with FSRS algorithm, added phrases integration (Claude)
 - 2025-12-14: Added Activity Tracking section documenting `user_review_history` logging (Claude)
+- 2025-12-15: Added Progress Visualization Levels section (4-tier Mastered/Familiar/Learning/Not Seen) (Claude)
 - Status: Active
 
 ---

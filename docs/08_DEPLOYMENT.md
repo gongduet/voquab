@@ -1,6 +1,6 @@
 # 13_DEPLOYMENT.md
 
-**Last Updated:** November 30, 2025  
+**Last Updated:** December 15, 2025  
 **Status:** Draft  
 **Owner:** Claude + Peter
 
@@ -189,6 +189,26 @@ VITE_SUPABASE_ANON_KEY=staging_anon_key
 - Branch: `main` (auto-deploy)
 - Build command: `npm run build`
 - Publish directory: `dist`
+
+---
+
+### SPA Routing Configuration
+
+For single-page application routing to work correctly on Netlify (preventing 404 errors on page refresh or direct URL access), a `_redirects` file is required:
+
+**File:** `public/_redirects`
+```
+/*    /index.html   200
+```
+
+This tells Netlify: "For any URL path, serve index.html with a 200 status code." React Router then handles client-side routing.
+
+**Why this is needed:**
+- Without it, refreshing `/flashcards` returns a 404 (Netlify looks for a file at that path)
+- Direct links shared to routes like `/dashboard` would fail
+- Mobile users returning after phone idle would see errors
+
+**Alternative:** The same can be configured in `netlify.toml` (shown below).
 
 ---
 
@@ -688,7 +708,8 @@ npm audit fix
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
+- 2025-12-15: Added SPA Routing Configuration section for public/_redirects (Claude)
+- Status: Active
 
 ---
 

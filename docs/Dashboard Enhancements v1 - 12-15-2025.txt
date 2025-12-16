@@ -1,0 +1,50 @@
+Claude Code Prompt: Streak Data Source Alignment (v35)
+Task: Fix header streak to use the same data and date formatting as the Activity heatmap.
+
+Update src/pages/Dashboard.jsx
+Replace the entire fetchStreakData function (around lines 962-1001) with:
+javascript/**
+ * Fetch current streak by calculating consecutive days
+ * Uses formatLocalDate for consistency with fetchActivityData
+ */
+async function fetchStreakData(userId) {
+  const { data: recentStats, error } = await supabase
+    .from('user_daily_stats')
+    .select('review_date, words_reviewed')
+    .eq('user_id', userId)
+    .order('review_date', { ascending: false })
+    .limit(60)
+
+  if (error || !recentStats || recentStats.length === 0) {
+    return 0
+  }
+
+  // Calculate consecutive days streak from today using LOCAL time
+  const today = new Date()
+  const todayStr = formatLocalDate(today)
+
+  let streak = 0
+
+  for (let i = 0; i < recentStats.length; i++) {
+    const stat = recentStats[i]
+
+    // Calculate expected date (today - i days) using LOCAL time
+    const expectedDate = new Date(today)
+    expectedDate.setDate(today.getDate() - i)
+    const expectedDateStr = formatLocalDate(expectedDate)
+
+    // Check if this stat matches the expected consecutive day
+    if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {
+      streak++
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+
+Summary
+BeforeAfterUses toISOString().split('T')[0] (UTC)Uses formatLocalDate() (local time)Dates could be off by 1 dayMatches Activity heatmap date handling
+Expected Result
+Header streak and Activity heatmap streak will now show the same value (3 days in your case), since both use local time for date comparisons.

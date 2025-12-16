@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 14, 2025
+**Last Updated:** December 15, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,45 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## [0.1.5] - Dashboard Polish & Bug Fixes (December 15, 2025)
+
+### Added
+- **4-Level Progress Visualization:** Chapter progress bars and HeroStats ring now show depth of knowledge
+  - Mastered (#1e3a5f): stability >= 21 days, fsrs_state = 2
+  - Familiar (#0369a1): stability 7-20 days, fsrs_state = 2
+  - Learning (#38bdf8): stability < 7 days OR fsrs_state IN (1, 3)
+  - Not Seen (#d6d3d1): no progress record
+  - New `StackedProgressBar` component in ChapterCarousel
+  - New `categorizeByLevel()` helper function in Dashboard
+- **Animated Streak Pill:** Header streak indicator auto-expands on page load showing "X days", collapses after 3 seconds, click to toggle
+- **Notion-Style Loading Screen:** New `LoadingScreen.jsx` component with animated opening book and floating Spanish words (luna, flor, rey, zorro), replacing basic emoji loading state
+- **Netlify SPA Routing:** Added `public/_redirects` file to fix 404 errors on page refresh or direct URL access on mobile
+
+### Fixed
+- **Streak Calculation Bug:** `updateStreak()` was always setting streak to 1 - now properly counts consecutive days by checking each expected date has activity
+- **Streak Display:** Both header pill and Activity heatmap now show correct streak count
+- **Longest Streak Tracking:** Now updates `longest_streak`, `longest_streak_start`, `longest_streak_end` when current exceeds previous best
+- **Forecast "Today" Count:** Now includes all overdue cards from previous days using `.lte('due_date', endISO)` instead of date range
+- **"Learn New" Count Mismatch:** Dashboard's `getChaptersThroughCurrent()` now uses same 95% unlock threshold as session builder's `getUnlockedChapterIds()` - button count matches actual session content
+- **HeroStats Frame:** Removed unnecessary white card frame around progress ring for cleaner look
+- **Redundant "TODAY" Label:** Removed duplicate "TODAY" text above forecast bar (label below is sufficient)
+
+### Changed
+- `fetchStreakData()` rewritten to calculate streak from consecutive days instead of trusting stored values
+- `fetchActivityData()` now calculates streak from activity map and queries `longest_streak` from database
+- `updateDailyStats()` no longer hardcodes `current_streak: 1` on insert
+- `fetchForecastData()` uses conditional logic: `.lte()` for today, `.gte().lt()` range for future days
+- `getChaptersThroughCurrent()` checks if PREVIOUS chapter >= 95% complete to include current chapter (aligned with session builder)
+- `DashboardHeader.jsx` completely rewritten with useState for expand/collapse animation
+- `HeroStats.jsx` now receives and displays `familiarCount` and `learningCount` props
+- `ChapterCarousel.jsx` chapter objects now include `mastered`, `familiar`, `learning`, `notSeen` counts
+
+### Technical Details
+- New files: `src/components/flashcard/LoadingScreen.jsx`, `public/_redirects`
+- Modified files: `Dashboard.jsx`, `HeroStats.jsx`, `ChapterCarousel.jsx`, `DashboardHeader.jsx`, `ReviewForecast.jsx`, `Flashcards.jsx`, `useProgressTracking.js`
 
 ---
 

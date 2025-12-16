@@ -961,7 +961,7 @@ async function fetchCategoryData(userId) {
 
 /**
  * Fetch current streak by calculating consecutive days
- * This ensures accuracy even if stored values are stale
+ * Uses formatLocalDate for consistency with fetchActivityData
  */
 async function fetchStreakData(userId) {
   const { data: recentStats, error } = await supabase
@@ -975,19 +975,19 @@ async function fetchStreakData(userId) {
     return 0
   }
 
-  // Calculate consecutive days streak from today
+  // Calculate consecutive days streak from today using LOCAL time
   const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
+  const todayStr = formatLocalDate(today)
 
   let streak = 0
 
   for (let i = 0; i < recentStats.length; i++) {
     const stat = recentStats[i]
 
-    // Calculate expected date (today - i days)
+    // Calculate expected date (today - i days) using LOCAL time
     const expectedDate = new Date(today)
     expectedDate.setDate(today.getDate() - i)
-    const expectedDateStr = expectedDate.toISOString().split('T')[0]
+    const expectedDateStr = formatLocalDate(expectedDate)
 
     // Check if this stat matches the expected consecutive day
     if (stat.review_date === expectedDateStr && (stat.words_reviewed || 0) > 0) {

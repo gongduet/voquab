@@ -1,0 +1,68 @@
+**TASK: Create Fragment Generation Script for Content Pipeline**
+
+Create a Python script that generates sentence fragments for the Voquab reading comprehension feature. This is part of the content pipeline.
+
+**Location:** `scripts/content_pipeline/generate_fragments.py`
+
+**What it does:**
+1. Fetches sentences from specified chapters (with Spanish text and English translation)
+2. Calls Claude API to intelligently segment each sentence into 2-4 meaningful fragments
+3. Stores fragments in the `sentence_fragments` table
+
+**Database context:**
+- Use MCP to inspect the `sentences` table schema and the `chapters` table
+- The `sentence_fragments` table already exists (just created)
+- Sentences have: `sentence_id`, `sentence_text` (Spanish), `sentence_translation` (English), `sentence_order`, `chapter_id`
+- Chapters have: `chapter_id`, `chapter_number`
+
+**API keys:**
+- Read from `.env` file in project root
+- Use `ANTHROPIC_API_KEY` for Claude API
+- Use `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for database (service role key bypasses RLS)
+
+**Fragment generation rules (for the Claude API prompt):**
+- Each fragment should be 4-10 words (prefer 5-8)
+- Each fragment MUST translate meaningfully on its own
+- Follow natural reading rhythm and clause boundaries
+- Never split verb phrases, noun phrases, or prepositional phrases
+- Target 2-4 fragments per sentence (fewer, longer fragments)
+- If sentence is < 5 words, return as single fragment
+- Keep quoted text intact within fragments
+
+**Handle missing translations:**
+- If a sentence has no English translation, use Claude API to generate the translation first
+- Log when this happens
+- Then proceed with fragment generation
+
+**Script features:**
+- Accept `--chapters` argument (e.g., `--chapters 1 2 3`)
+- Accept `--dry-run` flag that shows output without saving to database
+- Skip sentences that already have fragments in the database
+- Show clear progress output with fragment details
+- Calculate word positions for each fragment (start_word_position, end_word_position)
+- Return summary stats at the end
+
+**Execution plan:**
+1. First, do a dry run for Chapter 1 only: `python scripts/content_pipeline/generate_fragments.py --chapters 1 --dry-run`
+2. Show me the output for review
+3. Wait for my approval before running for real
+4. After approval, run for Chapters 1, 2, 3 without dry-run flag
+
+**Output format during dry run:**
+```
+Processing Chapter 1
+====================
+  [1] 4 fragments:
+       → "Cuando yo tenía seis años," = "When I was six years old," *
+       → "vi una magnífica lámina" = "I saw a magnificent illustration"
+       ...
+  [2] 3 fragments:
+       ...
+
+SUMMARY
+=======
+  Sentences: 26
+  Processed: 26
+  Fragments would be created: 94
+(The * indicates a fragment has a context_note)
+Do not run the real insert until I approve the dry run output.

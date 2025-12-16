@@ -1,6 +1,6 @@
 # 08_DESIGN_SYSTEM.md
 
-**Last Updated:** November 30, 2025  
+**Last Updated:** December 15, 2025  
 **Status:** Draft  
 **Owner:** Claude + Peter
 
@@ -208,7 +208,31 @@ All four required for MVP, but in this order of importance.
 
 ---
 
-### Health Status Colors
+### Progress Level Colors
+
+**4-tier depth-of-knowledge visualization:**
+
+```
+--progress-mastered:  #1e3a5f  /* Near-black blue - stability >= 21 days, fsrs_state = 2 */
+--progress-familiar:  #0369a1  /* Dark blue - stability 7-20 days, fsrs_state = 2 */
+--progress-learning:  #38bdf8  /* Medium blue - stability < 7 days OR fsrs_state IN (1, 3) */
+--progress-not-seen:  #d6d3d1  /* Gray - no progress record */
+```
+
+**Usage:**
+- HeroStats ring segments
+- Chapter progress bars (StackedProgressBar)
+- Session summary statistics
+
+**Design rationale:**
+- Monochromatic blue scale maintains brand consistency
+- Darker = more stable knowledge (intuitive)
+- Gray for unseen keeps focus on learned content
+- High contrast between adjacent levels for accessibility
+
+---
+
+### Health Status Colors (Legacy)
 
 **For word health visualization:**
 
@@ -639,6 +663,41 @@ import { Star, Book, Home, User } from 'lucide-react';
 </div>
 ```
 
+**Animated Streak Pill:**
+
+The header streak indicator auto-expands on page load to celebrate the user's streak.
+
+```jsx
+// DashboardHeader.jsx behavior
+const [isExpanded, setIsExpanded] = useState(false)
+const [hasAnimated, setHasAnimated] = useState(false)
+
+// Auto-expand on first load if streak > 0
+useEffect(() => {
+  if (streak > 0 && !loading && !hasAnimated) {
+    const expandTimer = setTimeout(() => setIsExpanded(true), 500)
+    const collapseTimer = setTimeout(() => {
+      setIsExpanded(false)
+      setHasAnimated(true)
+    }, 3000)
+    return () => {
+      clearTimeout(expandTimer)
+      clearTimeout(collapseTimer)
+    }
+  }
+}, [streak, loading, hasAnimated])
+```
+
+**Timing:**
+- 500ms delay before expanding (let page settle)
+- 2500ms display time while expanded
+- Click toggles expand/collapse after animation
+
+**Visual states:**
+- Collapsed: Fire icon only
+- Expanded: Fire icon + "X days" text
+- Transition: `transition-all duration-300`
+
 ---
 
 ### Reduced Motion
@@ -806,6 +865,7 @@ Horizontal scrolling carousel showing chapter progress.
 
 - 2025-11-30: Initial draft (Claude)
 - 2025-12-13: Added Dashboard Components section (ActivityHeatmap, ReviewForecast, ChapterCarousel) (Claude)
+- 2025-12-15: Added 4-level progress colors and animated streak pill documentation (Claude)
 - Status: Active
 
 ---

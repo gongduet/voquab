@@ -8,6 +8,7 @@ import DifficultyButtons from '../components/flashcard/DifficultyButtons'
 import ChapterCompleteScreen from '../components/flashcard/ChapterCompleteScreen'
 import FloatingFeedback from '../components/flashcard/FloatingFeedback'
 import SessionSummary from '../components/flashcard/SessionSummary'
+import LoadingScreen from '../components/flashcard/LoadingScreen'
 
 // Hooks
 import useFlashcardSession from '../hooks/flashcard/useFlashcardSession'
@@ -191,16 +192,7 @@ export default function Flashcards() {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">📚</div>
-          <div className="text-xl text-gray-700" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Loading {mode === SessionMode.LEARN ? 'new words' : 'flashcards'}...
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen mode={mode === SessionMode.LEARN ? 'learn' : 'review'} />
   }
 
   // Error state

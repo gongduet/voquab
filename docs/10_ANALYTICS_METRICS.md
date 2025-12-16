@@ -1,6 +1,6 @@
 # 24_ANALYTICS_STRATEGY.md
 
-**Last Updated:** November 30, 2025  
+**Last Updated:** December 15, 2025  
 **Status:** Draft  
 **Owner:** Claude + Peter
 
@@ -230,6 +230,42 @@ trackEvent('badge_earned', {
   badge_id: 'week_warrior'
 });
 ```
+
+### Streak Calculation
+
+Streaks are calculated from consecutive days of activity, not stored values.
+
+**How it works:**
+
+```javascript
+// In Dashboard.jsx fetchStreakData()
+async function calculateStreakFromActivity(activityMap) {
+  let streak = 0
+  const today = new Date()
+
+  // Check each day going backwards
+  for (let i = 0; i < 365; i++) {
+    const checkDate = new Date(today)
+    checkDate.setDate(today.getDate() - i)
+    const dateStr = checkDate.toISOString().split('T')[0]
+
+    // Day has activity if count > 0
+    if ((activityMap.get(dateStr) || 0) > 0) {
+      streak++
+    } else {
+      break // Streak broken
+    }
+  }
+
+  return streak
+}
+```
+
+**Key points:**
+- `user_daily_stats.current_streak` is now properly maintained during `updateDailyStats()`
+- Streak increments when today's activity is logged and previous day had activity
+- Longest streak tracking updates `longest_streak`, `longest_streak_start`, `longest_streak_end` columns
+- Both Dashboard header pill and ActivityHeatmap display the calculated streak
 
 ---
 
@@ -616,7 +652,8 @@ if (daysSinceLastSession > 3 && totalSessions < 5) {
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
+- 2025-12-15: Added Streak Calculation section documenting consecutive-days logic (Claude)
+- Status: Active
 
 ---
 

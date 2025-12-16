@@ -15,6 +15,7 @@
     "update-stop-words": "node scripts/update-stop-words.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.2",
     "@google-cloud/translate": "^9.2.1",
     "@supabase/supabase-js": "^2.78.0",
     "dotenv": "^17.2.3",
