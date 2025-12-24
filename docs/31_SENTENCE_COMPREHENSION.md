@@ -1,7 +1,7 @@
 # 31_SENTENCE_COMPREHENSION.md
 
-**Last Updated:** December 15, 2025  
-**Status:** Design Complete - Ready for Implementation  
+**Last Updated:** December 23, 2025
+**Status:** ✅ Implemented
 **Owner:** Claude + Peter
 
 ---
@@ -150,16 +150,29 @@ Fragments are meaningful chunks of a sentence - larger than phrases, smaller tha
 
 ## READING MODE SPECIFICATION
 
-### User Flow
+### ✅ Implementation Status
 
-1. User opens Chapter 1 Reading Mode
-2. First sentence appears with first fragment highlighted
-3. User clicks: Need Help / Hard / Got It
-4. If Need Help or Hard: translation shown, then "Continue →" button
-5. If Got It: next fragment highlights immediately
-6. After all fragments: sentence marked complete, next sentence appears below
-7. Continue until chapter complete
-8. Celebration screen with stats
+Reading Mode is fully implemented with the following differences from original spec:
+
+| Original Design | Actual Implementation |
+|-----------------|----------------------|
+| Three-button interaction (Need Help/Hard/Got It) | Single check button with tap-to-peek |
+| Translation reveal modal | Inline peek tooltip on fragment tap |
+| Sentence completion screen | Seamless transition to next sentence |
+| Full book loading | Chapter-only view for performance |
+
+### User Flow (As Implemented)
+
+1. User opens Reading Mode (via `/reading` route)
+2. Session loads current chapter's completed sentences + current position
+3. Completed sentences appear as flowing paragraphs (grouped by `is_paragraph_start`)
+4. Current sentence shows with fragments: completed (normal), active (bold), upcoming (blurred)
+5. User taps active fragment to peek translation (records as "peeked")
+6. User taps green check button to confirm understanding
+7. If peeked: score = 0.7, else score = 1.0
+8. Sentence completes → added to completed list → next sentence loads
+9. At chapter boundary: blurred "Capítulo II" preview appears
+10. Chapter complete: "Fin" screen with return to dashboard
 
 ### UI Layout: The Growing Document
 
@@ -194,32 +207,34 @@ Fragments are meaningful chunks of a sentence - larger than phrases, smaller tha
 - **Future sentences:** Hidden completely
 - **Scroll behavior:** Auto-scroll to keep current sentence in view
 
-### Three-Button Interaction
+### ✅ Single-Button Interaction (Implemented)
 
-| Button | Meaning | Action | Score |
-|--------|---------|--------|-------|
-| **Need Help** | "I don't understand" | Show translation + Continue button | 0.0 |
-| **Hard** | "I think I know but unsure" | Show translation + Continue button | 0.5 |
-| **Got It** | "I understand this" | Move to next fragment immediately | 1.0 |
+| Action | Meaning | Score |
+|--------|---------|-------|
+| **Tap fragment** | Peek translation (optional) | Records peeked state |
+| **Tap green check** | "I understand, continue" | 1.0 if not peeked, 0.7 if peeked |
 
-### Translation Reveal State
+### Peek Tooltip State (Implemented)
 
-After "Need Help" or "Hard":
+When user taps active fragment:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│  En el libro [decía:] "Las serpientes boas tragan          │
-│  enteras a sus presas, sin masticarlas..."                  │
+│  En el libro [decía:] "Las serpientes boas...              │
+│                  ↑                                          │
+│            ┌──────────────────┐                            │
+│            │  it said: / read: │  ← Peek tooltip           │
+│            └──────────────────┘                            │
 │                                                             │
-│  ─────────────────────────────────────────────────────────  │
-│                                                             │
-│  "decía:" → it said: / it read:                            │
-│                                                             │
-│                      [Continue →]                           │
-│                                                             │
+│                                          [✓]  ← Check btn   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Key behaviors:**
+- Tooltip appears on tap, dismisses on tap elsewhere
+- `wasCurrentFragmentPeeked()` exposed via ref to parent
+- Peeked fragments tracked in local `Set` for session
 
 ### Sentence Completion
 
@@ -296,6 +311,121 @@ After final sentence:
 │  [Review Chapter 1 Sentences]                               │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ✅ CHAPTER-ONLY VIEW ARCHITECTURE
+
+### Overview
+
+For performance, Reading Mode loads only the current chapter's sentences instead of the entire book history. This prevents performance degradation as the user progresses.
+
+### Data Flow
+
+```
+initializeSession()
+  → fetchBookProgress() → get current_sentence_id
+  → fetchChapterInfo(sentence.chapter_id) → set currentChapter
+  → fetchChapterSentences(chapter_id, current_sentence_id) → completed sentences BEFORE current
+  → fetchFurthestPosition() → for navigation permissions
+```
+
+### State Shape
+
+```javascript
+const [currentChapter, setCurrentChapter] = useState(null)
+// { chapter_id, chapter_number, title, book_id }
+
+const [completedSentences, setCompletedSentences] = useState([])
+// Only contains current chapter's sentences
+
+const [furthestPosition, setFurthestPosition] = useState(null)
+// { sentenceId, sentenceOrder, chapterId, chapterNumber }
+```
+
+### Chapter Transitions
+
+When crossing a chapter boundary:
+1. `handleSentenceComplete` detects `nextSentencePreview.chapter_id !== currentChapter.chapter_id`
+2. Sets `nextChapterPreview` to next chapter number
+3. Blurred "Capítulo N" preview shown instead of sentence preview
+4. On confirm, fetches first sentence of next chapter via `fetchChapterFirstSentence()`
+5. Resets `completedSentences` to `[]` (fresh start for new chapter)
+6. Updates `currentChapter` state
+
+---
+
+## ✅ NAVIGATION CONTROLS
+
+### Tape Deck Navigation (Implemented)
+
+Fixed-position controls on right side of content area:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                                                                [^^]    │
+│  Content area                                                  [^]     │
+│  (max-width: 768px)                                                    │
+│                                                                [v]     │
+│                                                                [vv]    │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### Navigation Actions
+
+| Button | Icon | Action | Enabled When |
+|--------|------|--------|--------------|
+| `^^` | ChevronsUp | Previous chapter | `currentChapterNumber > 1` |
+| `^` | ChevronUp | Previous sentence | `completedSentences.length > 0` |
+| `v` | ChevronDown | Next sentence | Within `furthestPosition` |
+| `vv` | ChevronsDown | Next chapter | `furthestPosition.chapterNumber > currentChapterNumber` |
+
+### Seamless Navigation
+
+Navigation is instant (no loading screens):
+
+```javascript
+// goToPreviousSentence - moves last completed to current
+setCompletedSentences(prev => prev.slice(0, -1))
+setCurrentSentence(prevSentence)
+
+// goToNextSentence - moves current to completed, fetches next
+setCompletedSentences(prev => [...prev, currentSentence])
+setCurrentSentence(nextSentence)
+
+// Position updates happen in background (no await)
+progress.updatePosition(bookId, sentence.sentence_id, 1)
+```
+
+---
+
+## ✅ HIGHLIGHT FEATURE
+
+### User Flow
+
+1. Tap any completed sentence to show tooltip
+2. Tooltip shows translation + highlight toggle
+3. Toggle on: sentence gets amber underline/background
+4. Persisted to `user_sentence_progress.is_highlighted`
+
+### Implementation
+
+```javascript
+// In ReadingPage.jsx
+const handleToggleHighlight = useCallback(async () => {
+  // Optimistic update
+  setActiveTooltipSentence(prev => ({ ...prev, is_highlighted: newValue }))
+
+  // Persist to database
+  await supabase
+    .from('user_sentence_progress')
+    .upsert({
+      user_id: user.id,
+      sentence_id: activeTooltipSentence.sentence_id,
+      is_highlighted: newValue
+    }, { onConflict: 'user_id,sentence_id' })
+}, [activeTooltipSentence, user?.id])
 ```
 
 ---
@@ -956,10 +1086,40 @@ async function completeSentence(userId, sentenceId, fragmentResults) {
 
 ---
 
+## FUTURE ENHANCEMENTS
+
+### Planned (Not Yet Implemented)
+
+1. **Sentence Review Mode**
+   - FSRS-scheduled review of weak sentences from completed chapters
+   - Separate from Reading Mode flow
+   - Prioritizes sentences with low scores
+
+2. **Virtualized Full-Book View**
+   - Seamless scrolling across all chapters
+   - Virtual scrolling for performance
+   - Chapter headers inline
+
+3. **Session Summary on Exit**
+   - Fragments answered
+   - Score breakdown
+   - Time spent
+
+4. **Chapter Unlock Trigger Refinement**
+   - Currently: unlock on completing previous chapter
+   - Consider: unlock on chapter entry, not first sentence completion
+
+5. **Re-Read Mode**
+   - Clean text without fragment highlighting
+   - Tap sentence for translation (not fragment)
+   - For reviewing completed chapters
+
+---
+
 ## REVISION HISTORY
 
-- 2025-12-15: Initial creation (Claude + Peter collaborative design)
-- Status: Design Complete - Ready for Implementation
+- 2025-12-23: Updated to reflect actual implementation (Reading Mode sprint complete)
+- 2025-12-15: Initial design document (Claude + Peter collaborative design)
 
 ---
 

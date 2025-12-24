@@ -1,0 +1,321 @@
+TASK: Implement Flowing Paragraphs in Reading Mode
+Redesign completed sentences to flow as natural paragraphs, like a real book. Sentences within a paragraph appear as continuous text. Tap any sentence to see its translation via tooltip.
+
+Concept
+Before (current):
+Sentence 1.                                    ∨ ○
+Sentence 2.                                    ∨ ○
+Sentence 3.                                    ∨ ○
+
+Sentence 4.                                    ∨ ○
+After (flowing):
+Sentence 1. Sentence 2. Sentence 3.
+
+Sentence 4. Sentence 5. Sentence 6.
+
+Data Structure
+Group sentences into paragraphs based on is_paragraph_start:
+javascriptfunction groupIntoParagraphs(sentences) {
+  const paragraphs = [];
+  let currentParagraph = [];
+  
+  sentences.forEach((sentence, index) => {
+    if (sentence.is_paragraph_start && currentParagraph.length > 0) {
+      paragraphs.push(currentParagraph);
+      currentParagraph = [];
+    }
+    currentParagraph.push(sentence);
+  });
+  
+  if (currentParagraph.length > 0) {
+    paragraphs.push(currentParagraph);
+  }
+  
+  return paragraphs;
+}
+
+New Component: FlowingParagraph.jsx
+jsx// src/components/reading/FlowingParagraph.jsx
+
+export default function FlowingParagraph({ 
+  sentences, 
+  onSentenceClick,
+  activeSentenceId,
+  userId 
+}) {
+  return (
+    <p className="text-lg leading-relaxed text-neutral-800 mb-0">
+      {sentences.map((sentence, index) => (
+        <FlowingSentence
+          key={sentence.sentence_id}
+          sentence={sentence}
+          isActive={activeSentenceId === sentence.sentence_id}
+          onClick={() => onSentenceClick(sentence)}
+          userId={userId}
+        />
+      ))}
+    </p>
+  );
+}
+
+New Component: FlowingSentence.jsx
+Each sentence is an inline span that's tappable:
+jsx// src/components/reading/FlowingSentence.jsx
+
+export default function FlowingSentence({ 
+  sentence, 
+  isActive, 
+  onClick,
+  userId 
+}) {
+  const isHighlighted = sentence.is_highlighted;
+  
+  return (
+    <>
+      <span
+        onClick={onClick}
+        className={`
+          cursor-pointer
+          transition-colors duration-150
+          hover:bg-neutral-100
+          rounded
+          px-0.5
+          -mx-0.5
+          ${isHighlighted ? 'bg-amber-50 border-b-2 border-amber-300' : ''}
+          ${isActive ? 'bg-blue-50' : ''}
+        `}
+      >
+        {sentence.sentence_text}
+      </span>
+      {/* Space between sentences */}
+      {' '}
+    </>
+  );
+}
+Highlighted sentences: Subtle amber underline + light background
+Active (tooltip open): Light blue background
+
+Sentence Tooltip Component
+When a sentence is tapped, show tooltip with translation and actions:
+jsx// src/components/reading/SentenceTooltip.jsx
+
+export default function SentenceTooltip({
+  sentence,
+  position,
+  onClose,
+  onToggleHighlight,
+  onShowFragments,
+  isHighlighted
+}) {
+  // Close on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.sentence-tooltip')) {
+        onClose();
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [onClose]);
+
+  return (
+    <div 
+      className="sentence-tooltip fixed z-50 bg-white rounded-lg shadow-xl 
+                 border border-neutral-200 p-4 max-w-md
+                 animate-fadeIn"
+      style={{ 
+        top: position.y, 
+        left: position.x,
+        transform: 'translate(-50%, -100%)',
+        marginTop: '-8px'
+      }}
+    >
+      {/* Spanish text */}
+      <p className="font-medium text-neutral-900 mb-2">
+        {sentence.sentence_text}
+      </p>
+      
+      {/* Divider */}
+      <div className="border-t border-neutral-100 my-2" />
+      
+      {/* English translation */}
+      <p className="text-neutral-600 italic mb-3">
+        {sentence.sentence_translation}
+      </p>
+      
+      {/* Actions */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={(e) => { e.stopPropagation(); onShowFragments(); }}
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+        >
+          Show Fragments
+        </button>
+        
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleHighlight(); }}
+          className={`flex items-center gap-1.5 text-sm font-medium px-2 py-1 rounded
+            ${isHighlighted 
+              ? 'bg-amber-100 text-amber-700' 
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+            }`}
+        >
+          <span className={`w-2.5 h-2.5 rounded-full border-2 
+            ${isHighlighted 
+              ? 'bg-amber-400 border-amber-400' 
+              : 'border-neutral-400'
+            }`} 
+          />
+          {isHighlighted ? 'Highlighted' : 'Highlight'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+Fragment Expansion
+When "Show Fragments" is clicked, expand the tooltip or show a modal with fragment breakdown:
+Option A: Expand tooltip
+jsx{showFragments && (
+  <div className="mt-3 pt-3 border-t border-neutral-100">
+    {sentence.fragments?.map((frag, i) => (
+      <div key={i} className="mb-2 last:mb-0">
+        <p className="text-sm font-medium text-neutral-800">
+          {frag.fragment_text}
+        </p>
+        <p className="text-sm text-neutral-500 italic">
+          {frag.fragment_translation}
+        </p>
+      </div>
+    ))}
+  </div>
+)}
+
+Update ReadingPage.jsx
+Replace the current completed sentences rendering:
+jsx// Group completed sentences into paragraphs
+const paragraphs = useMemo(() => 
+  groupIntoParagraphs(completedSentences), 
+  [completedSentences]
+);
+
+// State for active tooltip
+const [activeTooltipSentence, setActiveTooltipSentence] = useState(null);
+const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+// Handle sentence click
+const handleSentenceClick = (sentence, event) => {
+  const rect = event.target.getBoundingClientRect();
+  setTooltipPosition({
+    x: rect.left + rect.width / 2,
+    y: rect.top
+  });
+  setActiveTooltipSentence(sentence);
+};
+
+// Render
+return (
+  <div onClick={() => setActiveTooltipSentence(null)}>
+    {/* Chapter title */}
+    <ChapterTitle ... />
+    
+    {/* Flowing paragraphs */}
+    {paragraphs.map((paragraphSentences, pIndex) => (
+      <div key={pIndex} className="mb-6">
+        <FlowingParagraph
+          sentences={paragraphSentences}
+          onSentenceClick={handleSentenceClick}
+          activeSentenceId={activeTooltipSentence?.sentence_id}
+          userId={userId}
+        />
+      </div>
+    ))}
+    
+    {/* Active sentence (current one being worked on) */}
+    <ActiveSentence ... />
+    
+    {/* Tooltip */}
+    {activeTooltipSentence && (
+      <SentenceTooltip
+        sentence={activeTooltipSentence}
+        position={tooltipPosition}
+        onClose={() => setActiveTooltipSentence(null)}
+        onToggleHighlight={handleToggleHighlight}
+        onShowFragments={() => setShowFragments(true)}
+        isHighlighted={activeTooltipSentence.is_highlighted}
+      />
+    )}
+  </div>
+);
+
+Remove Old Components
+The following are no longer needed for completed sentences (but keep for reference):
+
+Chevron expand/collapse
+Highlight dot in margin
+Per-sentence row styling
+
+These are replaced by:
+
+Inline flowing text
+Tap-to-show tooltip
+Highlight toggle in tooltip
+
+
+Highlight Persistence
+When highlight is toggled in tooltip, update the database:
+javascriptconst handleToggleHighlight = async () => {
+  const newValue = !activeTooltipSentence.is_highlighted;
+  
+  // Update local state
+  setCompletedSentences(prev => 
+    prev.map(s => 
+      s.sentence_id === activeTooltipSentence.sentence_id 
+        ? { ...s, is_highlighted: newValue }
+        : s
+    )
+  );
+  
+  // Update tooltip sentence
+  setActiveTooltipSentence(prev => ({ ...prev, is_highlighted: newValue }));
+  
+  // Persist to database
+  await supabase
+    .from('user_sentence_progress')
+    .upsert({
+      user_id: userId,
+      sentence_id: activeTooltipSentence.sentence_id,
+      is_highlighted: newValue
+    }, { onConflict: 'user_id,sentence_id' });
+};
+
+Mobile Considerations
+
+Tooltip should not overflow screen edges
+On small screens, consider bottom sheet instead of floating tooltip
+Ensure tap targets are large enough (sentence spans)
+
+
+Testing Checklist
+
+ Sentences within paragraph flow as continuous text
+ Paragraph breaks appear between paragraph groups
+ Tapping sentence opens tooltip
+ Tooltip shows Spanish + English translation
+ "Show Fragments" expands to show fragment breakdown
+ Highlight toggle works and persists
+ Highlighted sentences have visible indicator (underline/background)
+ Tapping outside tooltip dismisses it
+ Works on mobile (tooltip positioned correctly)
+ Active sentence (being worked on) still shows separately below
+
+
+This is a significant change. Build incrementally:
+
+First get flowing paragraphs rendering (no tooltip)
+Add tap-to-select state
+Add tooltip component
+Add highlight toggle
+Add fragment expansion
+
+Checkpoint after each step if needed.

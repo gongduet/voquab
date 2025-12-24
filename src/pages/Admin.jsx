@@ -107,87 +107,105 @@ export default function Admin() {
 
   // Admin dashboard
   const isCommonWordsActive = location.pathname === '/admin/common-words'
+  const isSentencesActive = location.pathname === '/admin/sentences'
+
+  // Get current page name for breadcrumb
+  const currentPage = isCommonWordsActive ? 'Common Words'
+    : isSentencesActive ? 'Sentences'
+    : 'Dashboard'
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-serif font-bold text-gray-800">
-                ⚙️ Admin Dashboard
-              </h1>
-              <p className="text-sm text-gray-600 font-serif">
-                Manage vocabulary and system settings
-              </p>
+    <div className="min-h-screen bg-neutral-50">
+      {/* Header - Notion style */}
+      <header className="border-b border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          {/* Top row: Breadcrumb + Logout */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2 text-sm text-neutral-500">
+              <Link to="/admin" className="hover:text-neutral-700">Admin</Link>
+              {currentPage !== 'Dashboard' && (
+                <>
+                  <span>/</span>
+                  <span className="text-neutral-900">{currentPage}</span>
+                </>
+              )}
             </div>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-serif"
+              className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded transition-colors"
             >
               Logout
             </button>
           </div>
+
+          {/* Title */}
+          <h1 className="text-2xl font-semibold text-neutral-900">
+            {currentPage === 'Dashboard' ? 'Admin Dashboard' : currentPage}
+          </h1>
+          <p className="text-sm text-neutral-500 mt-1">
+            {currentPage === 'Dashboard' && 'Manage vocabulary and system settings'}
+            {currentPage === 'Common Words' && 'Mark common/stop words that shouldn\'t appear in learning sessions'}
+            {currentPage === 'Sentences' && 'Edit sentences, fragments, and translations'}
+          </p>
         </div>
       </header>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <nav className="flex gap-6">
+      {/* Navigation Tabs - Notion style */}
+      <nav className="border-b border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex gap-6">
             <Link
               to="/admin/common-words"
-              className={`px-4 py-3 font-serif font-medium border-b-2 transition-colors ${
+              className={`py-3 text-sm border-b-2 transition-colors ${
                 isCommonWordsActive
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
-              📚 Common Words
+              Common Words
             </Link>
-            {/* Future tabs can be added here */}
-            {/* <Link to="/admin/users">👥 Users</Link> */}
-            {/* <Link to="/admin/content">📖 Content</Link> */}
-          </nav>
+            <Link
+              to="/admin/sentences"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isSentencesActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Sentences
+            </Link>
+          </div>
         </div>
-      </div>
+      </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {location.pathname === '/admin' ? (
           // Default admin home
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-xl font-serif font-bold text-gray-800 mb-4">
-              Welcome to Admin Dashboard
-            </h2>
-            <p className="text-gray-600 font-serif mb-6">
-              Select a tab above to manage different aspects of Voquab.
-            </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Link
+              to="/admin/common-words"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Common Words
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Mark common/stop words that shouldn't appear in learning sessions
+              </p>
+            </Link>
 
-            <div className="grid gap-4">
-              <Link
-                to="/admin/common-words"
-                className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all"
-              >
-                <h3 className="text-lg font-serif font-semibold text-gray-800 mb-2">
-                  📚 Common Words Management
-                </h3>
-                <p className="text-sm text-gray-600 font-serif">
-                  Mark common/stop words that shouldn't appear in learning sessions
-                </p>
-              </Link>
-
-              {/* Future admin sections */}
-              <div className="p-6 border-2 border-gray-200 rounded-lg opacity-50">
-                <h3 className="text-lg font-serif font-semibold text-gray-800 mb-2">
-                  👥 User Management (Coming Soon)
-                </h3>
-                <p className="text-sm text-gray-600 font-serif">
-                  View and manage user accounts
-                </p>
-              </div>
-            </div>
+            <Link
+              to="/admin/sentences"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Sentences
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Edit sentences, fragments, translations, and paragraph breaks
+              </p>
+            </Link>
           </div>
         ) : (
           <Outlet />

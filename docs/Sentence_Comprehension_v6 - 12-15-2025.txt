@@ -1,0 +1,306 @@
+This is exactly what I needed. I now have complete clarity on the architecture.
+
+What I've Confirmed
+Patterns to follow:
+
+Tailwind + inline <style> for animations
+Direct Supabase calls, no global state
+useFlashcardSession pattern for stateful interactions
+Presentational components receive props, pages manage state
+Existing fadeIn keyframes pattern
+Color palette: primary (blue), secondary (gold), neutral (grays)
+
+Route situation:
+
+/read/:chapterNumber already exists with ReadingMode.jsx
+We're replacing its contents entirely
+
+Key insight:
+
+FloatingFeedback component shows the animation pattern
+DifficultyButtons has the button structure we need
+ChapterCarousel already navigates to /read/:chapterNumber
+
+
+Final Concept Refinement
+Route behavior:
+
+/read - Shows book from user's current position (main entry)
+/read/:chapterNumber - Jumps to start of that chapter (if unlocked), for navigation from dashboard
+
+The experience:
+
+One continuous scrolling page
+Shows all completed sentences + current sentence
+Below current sentence: blank
+Chapter titles appear inline (styled like the book)
+Sticky header updates with current chapter as you scroll
+Buttons inline below current sentence
+Auto-scroll to position on load
+
+
+I'm Ready
+I have no more questions. Let me write the Claude Code implementation prompt.
+This will be comprehensive - covering database, hooks, components, and the core flow. I'll structure it in phases so Claude Code can checkpoint with you.
+
+Claude Code Implementation Prompt
+Give this to Claude Code:
+
+TASK: Build Reading Mode - The Book Builds Itself
+Build a new Reading Mode where users read El Principito by working through sentences fragment-by-fragment. The book materializes on the page as they progress - completed sentences stay visible, and new sentences fade in ethereally as they're unlocked.
+Reference the spec document: docs/31_SENTENCE_COMPREHENSION.md in the project for full context.
+
+PHASE 1: Database Tables
+Create these tables in Supabase (provide SQL for Peter to run):
+user_sentence_progress
+Tracks FSRS scheduling per sentence (follows same pattern as user_lemma_progress):
+sqlCREATE TABLE user_sentence_progress (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  sentence_id UUID NOT NULL REFERENCES sentences(sentence_id) ON DELETE CASCADE,
+  
+  -- FSRS scheduling (same pattern as user_lemma_progress)
+  stability REAL,
+  difficulty REAL,
+  due_date TIMESTAMPTZ,
+  fsrs_state SMALLINT DEFAULT 0,
+  reps INTEGER DEFAULT 0,
+  lapses INTEGER DEFAULT 0,
+  last_seen_at TIMESTAMPTZ,
+  
+  -- Comprehension-specific
+  last_score REAL,
+  best_score REAL,
+  last_fragment_results JSONB,
+  times_completed INTEGER DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  PRIMARY KEY (user_id, sentence_id)
+);
+
+CREATE INDEX idx_sentence_progress_due ON user_sentence_progress(user_id, due_date);
+user_book_reading_progress
+Tracks position in the book (one row per user per book):
+sqlCREATE TABLE user_book_reading_progress (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  book_id UUID NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
+  
+  -- Position tracking
+  current_sentence_id UUID REFERENCES sentences(sentence_id),
+  current_fragment_order INTEGER DEFAULT 1,
+  furthest_sentence_id UUID REFERENCES sentences(sentence_id),
+  
+  -- Stats
+  total_sentences_completed INTEGER DEFAULT 0,
+  total_fragments_seen INTEGER DEFAULT 0,
+  fragments_got_it INTEGER DEFAULT 0,
+  fragments_hard INTEGER DEFAULT 0,
+  fragments_need_help INTEGER DEFAULT 0,
+  
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  last_activity_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  PRIMARY KEY (user_id, book_id)
+);
+Checkpoint: Show me the SQL before I run it.
+
+PHASE 2: Core Hooks
+Create hooks following the useFlashcardSession pattern:
+src/hooks/reading/useReadingSession.js
+Manages the reading session state:
+javascript// State to track:
+// - currentSentence (the sentence object with fragments)
+// - currentFragmentIndex (which fragment is active)
+// - completedSentences (array of sentences above current)
+// - fragmentResults (array of 'got-it' | 'hard' | 'need-help' for current sentence)
+// - isShowingTranslation (after Need Help or Hard)
+// - isLoading
+
+// Actions:
+// - handleFragmentResponse(response) - 'got-it' | 'hard' | 'need-help'
+// - handleContinue() - after viewing translation, move to next fragment
+// - handleSentenceComplete() - calculate score, save progress, load next sentence
+// - jumpToSentence(sentenceId) - for re-review
+src/hooks/reading/useReadingProgress.js
+Handles database operations:
+javascript// Functions:
+// - fetchBookProgress(userId, bookId) - get current position
+// - fetchCompletedSentences(userId, bookId) - get all sentences up to current
+// - saveFragmentProgress(userId, sentenceId, fragmentOrder, result)
+// - saveSentenceComplete(userId, sentenceId, score, fragmentResults)
+// - updatePosition(userId, bookId, sentenceId, fragmentOrder)
+src/hooks/reading/useScrollToPosition.js
+Handles auto-scroll on load and smooth scrolling:
+javascript// - scrollToCurrentSentence() - on initial load
+// - scrollToSentence(sentenceId) - when jumping
+```
+
+---
+
+## PHASE 3: Components
+
+Create in `src/components/reading/`:
+
+### ReadingPage.jsx (container)
+- Fetches book data, sentences, fragments
+- Manages overall state via hooks
+- Renders StickyHeader + SentenceList + CurrentSentence
+
+### StickyHeader.jsx
+- Shows current chapter name/number
+- Updates as user scrolls past chapter boundaries
+- Minimal, elegant design
+
+### CompletedSentence.jsx
+- Renders a completed sentence (all black text)
+- On tap/click: expands to show fragments with translations
+- On long-press (mobile) / hover (desktop): show translation tooltip for fragment
+- Subtle visual indicator that it's interactive
+
+### ActiveSentence.jsx
+- The current sentence being worked on
+- Fragment highlighting: active = bold black, upcoming = light gray
+- Smooth transitions as fragments complete
+
+### FragmentButtons.jsx
+- Three buttons: Need Help / Hard / Got It
+- Inline below the active sentence
+- Follow existing DifficultyButtons styling pattern
+- Mobile-friendly sizing
+
+### TranslationReveal.jsx
+- Shows fragment translation after Need Help or Hard
+- "Continue →" button
+- Subtle fade-in animation
+
+### ChapterTitle.jsx
+- Renders chapter title inline (styled like the book)
+- "Capítulo I", "Capítulo II", etc.
+- Elegant typography matching Little Prince aesthetic
+
+---
+
+## PHASE 4: Core UI Implementation
+
+### The Visual Flow
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Chapter 1                                    [sticky header]│
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│                      Capítulo I                             │
+│                                                             │
+│  Cuando yo tenía seis años, vi una magnífica lámina        │ ← completed
+│  en un libro sobre la selva virgen que se titulaba         │
+│  Historias Vividas.                                         │
+│                                                             │
+│  Representaba una serpiente boa tragándose a una fiera.    │ ← completed
+│                                                             │
+│  En el libro [decía:] "Las serpientes boas tragan          │ ← current
+│  enteras a sus presas, sin masticarlas..."                  │
+│                                                             │
+│        [Need Help]      [Hard]      [Got It]               │
+│                                                             │
+│                                                             │
+│                     (blank below)                           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+Animation Requirements
+Sentence fade-in (when new sentence appears):
+css@keyframes sentenceFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+.sentence-enter {
+  animation: sentenceFadeIn 0.6s ease-out;
+}
+Fragment transition (when fragment completes):
+css.fragment-active {
+  font-weight: 600;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+.fragment-upcoming {
+  color: #9ca3af;
+  transition: all 0.2s ease;
+}
+.fragment-completed {
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+Translation fade-in (on hover/long-press):
+css@keyframes translationFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+Mobile Considerations
+
+Buttons sized for thumbs (min 44px touch targets)
+Long-press handler for translation peek (use onTouchStart/onTouchEnd with 500ms timer)
+Full-width layout with comfortable padding
+Smooth scroll behavior
+
+
+PHASE 5: Route Integration
+Update src/App.jsx:
+
+/read - Main reading mode (starts at user's current position)
+/read/:chapterNumber - Jump to start of specific chapter
+
+Update ReadingMode.jsx (or replace entirely):
+
+Import and render the new ReadingPage component
+Handle chapterNumber param for jumping
+
+Update navigation:
+
+ChapterCarousel "Read" button should navigate to /read/:chapterNumber
+Dashboard can have a "Continue Reading" button that goes to /read
+
+
+IMPLEMENTATION ORDER
+
+First: Create database tables (show me SQL to run)
+Second: Create hooks (useReadingProgress first, then useReadingSession)
+Third: Create components (start with ActiveSentence + FragmentButtons)
+Fourth: Wire up the page (ReadingPage.jsx)
+Fifth: Add animations and polish
+
+Checkpoint after each phase - show me what you've built and I'll approve before continuing.
+
+REFERENCE FILES
+Study these for patterns:
+
+src/hooks/flashcard/useFlashcardSession.js - session state pattern
+src/hooks/flashcard/useProgressTracking.js - progress update pattern
+src/components/flashcard/DifficultyButtons.jsx - button styling
+src/components/flashcard/FloatingFeedback.jsx - animation pattern
+src/pages/Flashcards.jsx - page structure pattern
+
+
+KEY DETAILS
+Fragment data comes from: sentence_fragments table (already populated with 2,145 fragments)
+Join path: chapters → sentences → sentence_fragments
+Book ID: Query books table for "El Principito" to get the book_id
+Scoring:
+
+Got It = 1.0 points
+Hard = 0.5 points
+Need Help = 0.0 points
+Sentence score = sum / fragment count
+
+FSRS rating mapping:
+
+Score >= 90% → Rating 3 (Good)
+Score >= 60% → Rating 2 (Hard)
+Score < 60% → Rating 1 (Again)
+
+
+Begin with Phase 1 (database tables). Show me the complete SQL before I run it.

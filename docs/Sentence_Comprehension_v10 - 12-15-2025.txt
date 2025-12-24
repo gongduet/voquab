@@ -1,0 +1,98 @@
+TASK: Fix Admin Save Issues + Header Styling
+Two bugs and one styling improvement:
+
+Bug 1: Sentence Translation Not Saving
+Problem: Editing the sentence translation in the modal and clicking "Save Changes" doesn't persist to the database.
+Debug:
+
+Check SentenceEditModal.jsx - is the save handler calling the update function?
+Check if sentence_translation is being passed to the update query
+Add console.log to trace:
+
+javascriptconsole.log('Saving sentence:', sentenceId, 'translation:', translation);
+
+Check Supabase query - is it updating the correct column?
+
+Expected behavior: After clicking "Save Changes", the sentences.sentence_translation column should be updated.
+
+Bug 2: Paragraph Toggle Not Persisting
+Problem: Clicking the paragraph toggle (○/●) in the table changes the UI but doesn't save to database.
+Debug:
+
+Check ParagraphToggle.jsx or wherever the toggle click is handled
+Is it calling the Supabase update?
+Add console.log:
+
+javascriptconsole.log('Toggling paragraph for sentence:', sentenceId, 'to:', newValue);
+
+Check if is_paragraph_start column exists (it should - Peter ran the SQL)
+
+Expected behavior: Single click on ○ should:
+
+Update UI to ●
+Call Supabase to update sentences.is_paragraph_start = true
+Change should persist on page refresh
+
+
+Styling: Notion-like Header
+Current: Basic header with "Admin Dashboard" title
+Improve to Notion-style:
+jsx<header className="border-b border-neutral-200 bg-white">
+  <div className="max-w-7xl mx-auto px-6 py-4">
+    {/* Breadcrumb / Navigation */}
+    <div className="flex items-center gap-2 text-sm text-neutral-500 mb-1">
+      <span className="hover:text-neutral-700 cursor-pointer">Admin</span>
+      <span>/</span>
+      <span className="text-neutral-900">Sentences</span>
+    </div>
+    
+    {/* Title */}
+    <h1 className="text-2xl font-semibold text-neutral-900">
+      Sentence Management
+    </h1>
+    <p className="text-sm text-neutral-500 mt-1">
+      Edit sentences and fragments for each chapter
+    </p>
+  </div>
+</header>
+Notion characteristics:
+
+Clean white background
+Subtle bottom border
+Breadcrumb navigation
+Large, simple title (not bold/heavy)
+Muted subtitle
+Generous padding
+No icons in header (keep it minimal)
+
+Also update the tab navigation to be more Notion-like:
+jsx<nav className="border-b border-neutral-200 bg-white">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="flex gap-6">
+      <button className={`py-3 text-sm border-b-2 transition-colors ${
+        activeTab === 'common-words' 
+          ? 'border-neutral-900 text-neutral-900' 
+          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+      }`}>
+        Common Words
+      </button>
+      <button className={`py-3 text-sm border-b-2 transition-colors ${
+        activeTab === 'sentences' 
+          ? 'border-neutral-900 text-neutral-900' 
+          : 'border-transparent text-neutral-500 hover:text-neutral-700'
+      }`}>
+        Sentences
+      </button>
+    </div>
+  </div>
+</nav>
+
+Testing
+After fixes:
+
+ Edit sentence translation → Save → Refresh → Translation persisted
+ Click paragraph toggle → Refresh → Toggle state persisted
+ Header has Notion-like breadcrumb style
+ Tab navigation is cleaner/more minimal
+
+Report which bug was the issue (missing API call, wrong column name, etc.)

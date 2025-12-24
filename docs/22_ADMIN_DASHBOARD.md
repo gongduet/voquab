@@ -1,7 +1,7 @@
 # 22_ADMIN_DASHBOARD.md
 
-**Last Updated:** November 30, 2025  
-**Status:** Draft  
+**Last Updated:** December 23, 2025
+**Status:** Partially Implemented
 **Owner:** Claude + Peter
 
 ---
@@ -13,10 +13,11 @@
 4. [Lemma Management](#lemma-management)
 5. [Validation Queue](#validation-queue)
 6. [Content Review](#content-review)
-7. [Bulk Operations](#bulk-operations)
-8. [UI/UX Requirements](#uiux-requirements)
-9. [Database Operations](#database-operations)
-10. [Implementation Notes](#implementation-notes)
+7. [✅ Sentence Management](#sentence-management) (Implemented)
+8. [Bulk Operations](#bulk-operations)
+9. [UI/UX Requirements](#uiux-requirements)
+10. [Database Operations](#database-operations)
+11. [Implementation Notes](#implementation-notes)
 
 ---
 
@@ -408,6 +409,172 @@ Progress: ▓▓▓░░░░░░░ 0% complete
 
 ---
 
+## ✅ SENTENCE MANAGEMENT
+
+### Overview (Implemented)
+
+**Route:** `/admin/sentences`
+**Purpose:** Manage sentence content, paragraph breaks, and fragment translations for Reading Mode
+
+### Components
+
+```
+src/pages/AdminSentences.jsx
+src/components/admin/
+├── SentenceTable.jsx       # Main Notion-style table
+├── ParagraphToggle.jsx     # Inline toggle for is_paragraph_start
+├── SentenceEditModal.jsx   # Edit modal for translations
+└── FragmentEditor.jsx      # Fragment translation editor
+```
+
+### UI Layout
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ← Admin                  Sentence Management                     ⚙️     │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Chapter: [All Chapters ▼]  Search: [________________] 🔍               │
+│                                                                         │
+│  ┌──────┬────┬────────────────────────────────────┬──────────────┬────┐│
+│  │  #   │ ¶  │ Spanish                            │ English      │ Fr ││
+│  ├──────┼────┼────────────────────────────────────┼──────────────┼────┤│
+│  │  1   │ ●  │ Cuando yo tenía seis años...      │ When I was...│  4 ││
+│  │  2   │    │ Se veía en la lámina...           │ You could... │  3 ││
+│  │  3   │ ●  │ Meditaba luego mucho...           │ I thought... │  2 ││
+│  └──────┴────┴────────────────────────────────────┴──────────────┴────┘│
+│                                                                         │
+│  Showing 1-50 of 815 sentences                   [< Prev] [Next >]     │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Table Columns
+
+| Column | Description |
+|--------|-------------|
+| **#** | Sentence order within chapter |
+| **¶** | Paragraph toggle (● = starts paragraph) |
+| **Spanish** | Sentence text (truncated, full on hover) |
+| **English** | Translation (truncated, full on hover) |
+| **Fr** | Fragment count |
+
+### Paragraph Toggle
+
+**Component:** `ParagraphToggle`
+**Behavior:**
+- Single click toggles `is_paragraph_start` boolean
+- Optimistic update (UI changes immediately)
+- Visual: `○` empty = false, `●` filled = true
+- Background save to Supabase
+
+```javascript
+// Optimistic update pattern
+setSentences(prev => prev.map(s =>
+  s.sentence_id === sentenceId
+    ? { ...s, is_paragraph_start: newValue }
+    : s
+))
+
+// Then persist
+await supabase
+  .from('sentences')
+  .update({ is_paragraph_start: newValue })
+  .eq('sentence_id', sentenceId)
+```
+
+### Sentence Edit Modal
+
+**Triggered by:** Click row or press Enter on selected row
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Edit Sentence #7                                      [X]  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Spanish (read-only):                                       │
+│  ┌────────────────────────────────────────────────────────┐│
+│  │ Cuando yo tenía seis años, vi una magnífica lámina    ││
+│  │ en un libro sobre la selva virgen que se titulaba     ││
+│  │ Historias Vividas.                                     ││
+│  └────────────────────────────────────────────────────────┘│
+│                                                             │
+│  English Translation:                                       │
+│  ┌────────────────────────────────────────────────────────┐│
+│  │ When I was six years old, I saw a magnificent         ││
+│  │ illustration in a book about the virgin forest        ││
+│  │ called "True Stories."                                 ││
+│  └────────────────────────────────────────────────────────┘│
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  Fragments:                                                 │
+│                                                             │
+│  1. "Cuando yo tenía seis años,"                           │
+│     → When I was six years old,                            │
+│     [Edit Fragment]                                         │
+│                                                             │
+│  2. "vi una magnífica lámina"                              │
+│     → I saw a magnificent illustration                      │
+│     [Edit Fragment]                                         │
+│                                                             │
+│  [Cancel]  [Save Changes]                                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate between rows |
+| `Enter` | Open edit modal for selected row |
+| `P` | Toggle paragraph start for selected row |
+| `Escape` | Close modal / Deselect row |
+
+### Database Updates
+
+**Toggle paragraph start:**
+```sql
+UPDATE sentences
+SET is_paragraph_start = :value
+WHERE sentence_id = :sentence_id;
+```
+
+**Update translation:**
+```sql
+UPDATE sentences
+SET sentence_translation = :translation
+WHERE sentence_id = :sentence_id;
+```
+
+**Update fragment:**
+```sql
+UPDATE sentence_fragments
+SET
+  fragment_translation = :translation,
+  context_note = :note
+WHERE fragment_id = :fragment_id;
+```
+
+### RLS Policy
+
+```sql
+-- Admins can update sentences
+CREATE POLICY "Admins can update sentences" ON sentences
+FOR UPDATE
+TO authenticated
+USING (
+  EXISTS (
+    SELECT 1 FROM user_roles
+    WHERE user_id = auth.uid()
+    AND role = 'admin'
+  )
+);
+```
+
+---
+
 ## BULK OPERATIONS
 
 ### Purpose
@@ -770,8 +937,8 @@ CREATE TABLE admin_audit_log (
 
 ## REVISION HISTORY
 
+- 2025-12-23: Added Sentence Management section (implemented)
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
 
 ---
 

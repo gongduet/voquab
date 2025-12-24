@@ -1,0 +1,232 @@
+TASK: Reading Mode UI Refinements
+Apply these UI/UX changes to Reading Mode based on user feedback.
+
+1. Fix Chapter Title Duplication
+File: src/components/reading/ChapterTitle.jsx
+Change: Only show the Roman numeral chapter title, remove the duplicate "Capítulo 1" subtitle.
+jsx// Before: Shows both "CAPÍTULO I" and "Capítulo 1"
+// After: Only shows "CAPÍTULO I"
+Also add a has_chapter_names check - if the book has chapter names, show them. For El Principito, chapters have no names so only show the number.
+
+2. Header Redesign
+File: src/components/reading/StickyHeader.jsx
+New layout:
+
+Left: "← Exit" button (navigates to /dashboard)
+Center: Book title in Spanish ("El Principito")
+Right: Current chapter ("Capítulo I" in Roman numerals)
+
+jsx<header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
+  <div className="flex items-center justify-between px-4 py-3">
+    {/* Left - Exit */}
+    <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1 text-neutral-500 hover:text-neutral-700">
+      <ArrowLeft size={18} />
+      <span className="text-sm">Exit</span>
+    </button>
+    
+    {/* Center - Book Title */}
+    <h1 className="font-serif text-lg text-neutral-700">El Principito</h1>
+    
+    {/* Right - Chapter */}
+    <span className="text-sm text-neutral-500">Capítulo {romanNumeral}</span>
+  </div>
+</header>
+
+3. Fragment Spacing
+File: src/components/reading/ActiveSentence.jsx
+Change: Add space between fragment spans.
+jsx// When rendering fragments, add a space after each (except last)
+{fragments.map((fragment, index) => (
+  <React.Fragment key={fragment.fragment_id}>
+    <span className={getFragmentClass(index)}>
+      {fragment.fragment_text}
+    </span>
+    {index < fragments.length - 1 && ' '} {/* Add space between fragments */}
+  </React.Fragment>
+))}
+Also apply to CompletedSentence.jsx for consistency.
+
+4. Replace Three Buttons with Single Check Button
+File: src/components/reading/FragmentButtons.jsx
+Remove: The three-button grid (Need Help / Hard / Got It)
+Replace with: Single small green check button, right-aligned
+jsxexport function FragmentButtons({ onConfirm }) {
+  return (
+    <div className="flex justify-end mt-4 pr-2">
+      <button
+        onClick={onConfirm}
+        className="p-3 rounded-full bg-emerald-50 hover:bg-emerald-100 
+                   text-emerald-600 transition-colors duration-150"
+        aria-label="I understand"
+      >
+        <Check size={24} />
+      </button>
+    </div>
+  );
+}
+
+5. Tap-to-Peek Tooltip
+File: src/components/reading/ActiveSentence.jsx
+Add: Tap on any fragment to show translation tooltip.
+State:
+jsxconst [peekedFragmentId, setPeekedFragmentId] = useState(null);
+const [peekedFragments, setPeekedFragments] = useState(new Set()); // Track which fragments were peeked
+Fragment click handler:
+jsxconst handleFragmentClick = (fragment, index) => {
+  // Only allow peeking at current or completed fragments, not upcoming
+  if (index <= currentFragmentIndex) {
+    if (peekedFragmentId === fragment.fragment_id) {
+      setPeekedFragmentId(null); // Toggle off
+    } else {
+      setPeekedFragmentId(fragment.fragment_id);
+      setPeekedFragments(prev => new Set([...prev, fragment.fragment_id]));
+    }
+  }
+};
+Tooltip component:
+jsx{peekedFragmentId === fragment.fragment_id && (
+  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 
+                  bg-white rounded-lg shadow-lg border border-neutral-200 
+                  px-3 py-2 text-sm animate-fadeIn z-10 whitespace-nowrap">
+    <p className="text-neutral-600 italic">{fragment.fragment_translation}</p>
+  </div>
+)}
+Dismiss on tap elsewhere:
+jsx// In the parent container
+<div onClick={(e) => {
+  if (!e.target.closest('.fragment-span')) {
+    setPeekedFragmentId(null);
+  }
+}}>
+
+6. Update Scoring Logic
+File: src/hooks/reading/useReadingSession.js
+Change: Modify handleFragmentResponse to accept peek status.
+jsxconst handleConfirm = useCallback(() => {
+  const wasPeeked = peekedFragments.has(currentFragment.fragment_id);
+  const score = wasPeeked ? 0.7 : 1.0;
+  
+  setFragmentResults(prev => [...prev, { 
+    fragmentId: currentFragment.fragment_id, 
+    score,
+    peeked: wasPeeked 
+  }]);
+  
+  // Move to next fragment or complete sentence
+  // ... existing logic
+}, [currentFragment, peekedFragments]);
+
+7. Highlight Toggle (Colored Dot)
+File: src/components/reading/CompletedSentence.jsx
+Add: Small colored dot toggle for highlighting sentences.
+jsx// State
+const [isHighlighted, setIsHighlighted] = useState(sentence.is_highlighted || false);
+
+// Toggle handler
+const handleToggleHighlight = async (e) => {
+  e.stopPropagation(); // Don't trigger expand/collapse
+  const newValue = !isHighlighted;
+  setIsHighlighted(newValue);
+  
+  await supabase
+    .from('user_sentence_progress')
+    .upsert({
+      user_id: userId,
+      sentence_id: sentence.sentence_id,
+      is_highlighted: newValue
+    }, { onConflict: 'user_id,sentence_id' });
+};
+
+// In JSX - right side of sentence, always visible
+<div className="flex items-start gap-2">
+  <div className="flex-1">
+    {/* Sentence text */}
+  </div>
+  <button 
+    onClick={handleToggleHighlight}
+    className="mt-1 p-1 rounded-full hover:bg-neutral-100 transition-colors"
+    aria-label={isHighlighted ? "Remove highlight" : "Highlight for review"}
+  >
+    <div className={`w-3 h-3 rounded-full border-2 transition-colors ${
+      isHighlighted 
+        ? 'bg-amber-400 border-amber-400' 
+        : 'border-neutral-300 hover:border-neutral-400'
+    }`} />
+  </button>
+</div>
+
+// Optional: subtle background tint when highlighted
+<div className={`py-3 px-4 rounded-lg transition-colors ${
+  isHighlighted ? 'bg-amber-50/50' : ''
+}`}>
+
+8. Add is_highlighted Column to Database
+SQL for Peter to run:
+sqlALTER TABLE user_sentence_progress 
+ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT FALSE;
+
+CREATE INDEX idx_sentence_progress_highlighted 
+ON user_sentence_progress(user_id, is_highlighted) 
+WHERE is_highlighted = TRUE;
+
+9. Enhanced Animation (Blur-to-Focus)
+File: src/components/reading/ActiveSentence.jsx
+Update the animation CSS:
+css@keyframes sentenceAppear {
+  from { 
+    opacity: 0; 
+    filter: blur(10px);
+    transform: scale(0.98) translateY(8px);
+  }
+  to { 
+    opacity: 1; 
+    filter: blur(0);
+    transform: scale(1) translateY(0);
+  }
+}
+
+.sentence-enter {
+  animation: sentenceAppear 800ms ease-out forwards;
+}
+Also add fadeIn for tooltip:
+css@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 150ms ease-out;
+}
+
+10. Update Sentence Review Priority (Future-Proofing)
+File: src/hooks/reading/useReadingProgress.js (or wherever sentence review selection happens)
+When selecting sentences for review, order by:
+
+is_highlighted = TRUE first
+Then by due_date ascending
+
+javascriptconst { data: dueSentences } = await supabase
+  .from('user_sentence_progress')
+  .select('*, sentences(*)')
+  .eq('user_id', userId)
+  .lte('due_date', new Date().toISOString())
+  .order('is_highlighted', { ascending: false }) // Highlighted first
+  .order('due_date', { ascending: true });
+
+Testing Checklist
+After implementing, verify:
+
+ Chapter title shows only Roman numeral (no duplicate)
+ Header shows: Exit | El Principito | Capítulo I
+ Fragments have space between them
+ Single green check button, right-aligned
+ Tap fragment shows tooltip with translation
+ Tap elsewhere dismisses tooltip
+ Check button advances to next fragment
+ Completed sentences show colored dot (unfilled by default)
+ Tap dot toggles highlight (fills with amber)
+ Highlighted sentences have subtle amber tint
+ Sentence fade-in uses blur-to-focus animation (800ms)
+ Peek tracking: fragments that were peeked get score 0.7
+
+Show me screenshots when complete!

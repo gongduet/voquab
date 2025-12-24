@@ -15,6 +15,7 @@ import PackageSelection from './pages/PackageSelection'
 import PackageView from './pages/PackageView'
 import Admin from './pages/Admin'
 import AdminCommonWords from './pages/AdminCommonWords'
+import AdminSentences from './pages/AdminSentences'
 
 function App() {
   return (
@@ -115,6 +116,7 @@ function App() {
           {/* Admin Routes (password-protected, no ProtectedRoute needed) */}
           <Route path="/admin" element={<Admin />}>
             <Route path="common-words" element={<AdminCommonWords />} />
+            <Route path="sentences" element={<AdminSentences />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

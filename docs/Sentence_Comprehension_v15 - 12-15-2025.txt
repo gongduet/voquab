@@ -1,0 +1,122 @@
+TASK: Reading Mode Polish - Navigation Position, Seamless Transitions, Blur Preview
+
+1. Move Navigation Controls Closer to Content
+Problem: Navigation controls are too far right, hard to notice.
+Solution: Position them relative to the content area, not the viewport edge.
+jsx// In NavigationControls.jsx
+// Change from fixed right-6 to be closer to content
+
+// Option A: Use a max-width container offset
+<div className="fixed right-[calc(50%-380px)] top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-40">
+
+// Option B: Position relative to content container
+// Move NavigationControls inside the content area in ReadingPage.jsx
+<div className="max-w-3xl mx-auto relative">
+  {/* Content */}
+  
+  {/* Navigation - positioned absolutely within content container */}
+  <div className="absolute -right-16 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+    <NavigationControls ... />
+  </div>
+</div>
+Option B is better - navigation stays near the content regardless of screen width.
+
+2. Seamless Navigation (No Blank Screen)
+Problem: Navigating forward/back causes full reload with blank screen.
+Solution: Update state directly without triggering full data refetch. Manipulate the existing arrays.
+In useReadingSession.js:
+javascript// Go back one sentence - NO reload
+const goToPreviousSentence = useCallback(() => {
+  if (completedSentences.length === 0) return;
+  
+  // Get last completed sentence
+  const prevSentence = completedSentences[completedSentences.length - 1];
+  
+  // Move it from completed to current
+  setCompletedSentences(prev => prev.slice(0, -1));
+  setCurrentSentence(prevSentence);
+  setCurrentFragmentIndex(0);
+  setFragmentResults([]);
+  setPeekedFragments(new Set());
+  
+  // Update position in background (don't await)
+  progress.updatePosition(userId, bookId, prevSentence.sentence_id, 1);
+}, [completedSentences, userId, bookId, progress]);
+
+// Go forward one sentence - NO reload
+const goToNextSentence = useCallback(async () => {
+  if (!canSentenceForward) return;
+  
+  // Move current to completed
+  const completedCurrent = { ...currentSentence };
+  setCompletedSentences(prev => [...prev, completedCurrent]);
+  
+  // Fetch just the next sentence (lightweight)
+  const nextSentence = await progress.fetchNextSentence(currentSentence.sentence_id);
+  
+  setCurrentSentence(nextSentence);
+  setCurrentFragmentIndex(0);
+  setFragmentResults([]);
+  setPeekedFragments(new Set());
+  
+  // Update position in background
+  progress.updatePosition(userId, bookId, nextSentence.sentence_id, 1);
+}, [currentSentence, canSentenceForward, userId, bookId, progress]);
+Key change: Don't set isLoading = true or refetch everything. Just manipulate the existing state arrays.
+
+3. Blur Next Sentence Preview
+Problem: Only current sentence fragments are blurred. Want to see blurred preview of next sentence too.
+Solution: Fetch and display the next sentence in a blurred state below the current one.
+Add to useReadingSession.js:
+javascriptconst [nextSentencePreview, setNextSentencePreview] = useState(null);
+
+// When current sentence changes, fetch preview of next
+useEffect(() => {
+  if (currentSentence) {
+    progress.fetchNextSentence(currentSentence.sentence_id)
+      .then(setNextSentencePreview)
+      .catch(() => setNextSentencePreview(null)); // End of chapter
+  }
+}, [currentSentence?.sentence_id]);
+In ReadingPage.jsx / FlowingParagraph.jsx:
+jsx{/* Current active sentence */}
+<ActiveSentenceInline ... />
+
+{/* Next sentence preview - fully blurred */}
+{nextSentencePreview && (
+  <span className="text-neutral-300 blur-[3px] select-none ml-1">
+    {nextSentencePreview.sentence_text}
+  </span>
+)}
+```
+
+**Visual result:**
+```
+Me puse en pie de un salto como herido por un rayo. [Me froté los ojos.] Miré bien. Vi un hombrecito...
+                                                    ↑ active (bold)      ↑ preview (blurred)
+If next sentence is a paragraph start, show it on next line (still blurred):
+jsx{nextSentencePreview && (
+  <>
+    {nextSentencePreview.is_paragraph_start ? (
+      <p className="text-neutral-300 blur-[3px] select-none mt-4">
+        {nextSentencePreview.sentence_text}
+      </p>
+    ) : (
+      <span className="text-neutral-300 blur-[3px] select-none ml-1">
+        {nextSentencePreview.sentence_text}
+      </span>
+    )}
+  </>
+)}
+
+Testing
+
+ Navigation controls appear closer to content (not far right edge)
+ Going back one sentence is instant (no loading screen)
+ Going forward one sentence is smooth
+ Next sentence appears blurred after current sentence
+ Blurred preview respects paragraph breaks
+ At end of chapter, no preview shown (or shows chapter title blurred?)
+
+
+Answer my question about chapter-only view (Issue 3) before I add that to the prompt, or should I send this as-is for the quick fixes?

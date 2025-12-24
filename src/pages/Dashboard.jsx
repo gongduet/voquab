@@ -24,6 +24,7 @@ export default function Dashboard() {
     // QuickActions
     dueCount: 0,
     newAvailable: 0,
+    hasReadingProgress: false,
     // ChapterCarousel
     chapters: [],
     totalChapters: 0,
@@ -66,7 +67,8 @@ export default function Dashboard() {
         categoryData,
         streakData,
         profileData,
-        userSettings
+        userSettings,
+        readingProgress
       ] = await Promise.all([
         fetchHeroStats(user.id),
         fetchQuickActionStats(user.id),
@@ -76,12 +78,14 @@ export default function Dashboard() {
         fetchCategoryData(user.id),
         fetchStreakData(user.id),
         fetchProfileData(user.id),
-        fetchUserSettings(user.id)
+        fetchUserSettings(user.id),
+        fetchReadingProgress(user.id)
       ])
 
       setDashboardData({
         ...heroStats,
         ...quickActionStats,
+        hasReadingProgress: readingProgress,
         chapters: chaptersData.chapters,
         totalChapters: chaptersData.totalChapters,
         currentChapterIndex: chaptersData.currentChapterIndex,
@@ -144,6 +148,7 @@ export default function Dashboard() {
           <QuickActions
             dueCount={dashboardData.dueCount}
             newAvailable={dashboardData.newAvailable}
+            hasReadingProgress={dashboardData.hasReadingProgress}
             loading={loading}
           />
         </section>
@@ -1118,4 +1123,30 @@ async function fetchUserSettings(userId) {
   return {
     dailyTarget: data?.daily_goal_words || 50
   }
+}
+
+/**
+ * Check if user has reading progress
+ * Returns true if user has started reading (has a row in user_book_reading_progress)
+ */
+async function fetchReadingProgress(userId) {
+  // Get the book ID for El Principito
+  const { data: book } = await supabase
+    .from('books')
+    .select('book_id')
+    .eq('title', 'El Principito')
+    .eq('language_code', 'es')
+    .single()
+
+  if (!book) return false
+
+  // Check if user has reading progress
+  const { data: progress } = await supabase
+    .from('user_book_reading_progress')
+    .select('current_sentence_id')
+    .eq('user_id', userId)
+    .eq('book_id', book.book_id)
+    .single()
+
+  return !!progress?.current_sentence_id
 }

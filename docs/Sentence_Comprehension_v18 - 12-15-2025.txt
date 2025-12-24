@@ -1,0 +1,254 @@
+TASK: Implement Chapter-Only View for Reading Mode
+Refactor Reading Mode to only load and render the current chapter's sentences. This fixes performance issues as the user progresses through the book.
+
+Current Behavior
+
+Loads ALL completed sentences from sentence 1 to current position
+As user progresses, more sentences load → slower performance
+Full book rendered on screen
+
+New Behavior
+
+Load only current chapter's sentences
+Previous chapters are "complete" but not rendered
+Chapter navigation (^^/vv) switches chapters entirely
+Sentence navigation (^/v) works within current chapter
+
+
+Data Loading Changes
+useReadingProgress.js - New function:
+javascript// Fetch sentences for a specific chapter only
+const fetchChapterSentences = async (chapterId, upToSentenceId = null) => {
+  let query = supabase
+    .from('sentences')
+    .select(`
+      *,
+      sentence_fragments(*)
+    `)
+    .eq('chapter_id', chapterId)
+    .order('sentence_order', { ascending: true });
+  
+  // If we have a current position, only get sentences up to that point
+  if (upToSentenceId) {
+    const { data: currentSentence } = await supabase
+      .from('sentences')
+      .select('sentence_order')
+      .eq('sentence_id', upToSentenceId)
+      .single();
+    
+    if (currentSentence) {
+      query = query.lt('sentence_order', currentSentence.sentence_order);
+    }
+  }
+  
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+};
+
+// Fetch chapter info
+const fetchChapterInfo = async (chapterId) => {
+  const { data, error } = await supabase
+    .from('chapters')
+    .select('chapter_id, chapter_number, chapter_title, book_id')
+    .eq('chapter_id', chapterId)
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+// Fetch user's progress summary (which chapters are complete)
+const fetchChapterProgress = async (userId, bookId) => {
+  const { data, error } = await supabase
+    .from('chapters')
+    .select(`
+      chapter_id,
+      chapter_number,
+      sentences(count)
+    `)
+    .eq('book_id', bookId)
+    .order('chapter_number', { ascending: true });
+  
+  // Also get furthest position to know which chapters are accessible
+  // ...
+  
+  return data;
+};
+
+Session Initialization Changes
+useReadingSession.js:
+javascriptconst initializeSession = async () => {
+  setIsLoading(true);
+  
+  try {
+    // Get user's current position
+    const position = await progress.fetchBookProgress(userId, bookId);
+    
+    if (!position) {
+      // New user - start at chapter 1, sentence 1
+      const firstChapter = await progress.fetchFirstChapter(bookId);
+      const firstSentence = await progress.fetchChapterFirstSentence(firstChapter.chapter_id);
+      
+      setCurrentChapter(firstChapter);
+      setCurrentSentence(firstSentence);
+      setCompletedSentences([]);
+    } else {
+      // Returning user - load their current chapter
+      const currentSentence = await progress.fetchSentenceWithFragments(position.current_sentence_id);
+      const chapterInfo = await progress.fetchChapterInfo(currentSentence.chapter_id);
+      
+      // Load only THIS chapter's completed sentences (before current position)
+      const chapterSentences = await progress.fetchChapterSentences(
+        currentSentence.chapter_id,
+        position.current_sentence_id
+      );
+      
+      setCurrentChapter(chapterInfo);
+      setCurrentSentence(currentSentence);
+      setCompletedSentences(chapterSentences);
+    }
+    
+    // Load furthest position for navigation permissions
+    const furthest = await progress.fetchFurthestPosition(userId, bookId);
+    setFurthestPosition(furthest);
+    
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+Chapter Navigation Changes
+javascript// Go to previous chapter
+const goToPreviousChapter = useCallback(async () => {
+  if (!canChapterBack) return;
+  
+  setIsLoading(true);
+  
+  try {
+    const prevChapter = await progress.fetchPreviousChapter(currentChapter.chapter_id);
+    
+    // Load all sentences from previous chapter (it's complete)
+    const chapterSentences = await progress.fetchChapterSentences(prevChapter.chapter_id);
+    
+    // Get last sentence of chapter as current (to review from end)
+    // Or first sentence if user wants to re-read from start
+    const lastSentence = chapterSentences[chapterSentences.length - 1];
+    const firstSentence = await progress.fetchChapterFirstSentence(prevChapter.chapter_id);
+    
+    setCurrentChapter(prevChapter);
+    // Set to first sentence with all others as "completed" for review
+    setCurrentSentence(firstSentence);
+    setCompletedSentences([]);
+    
+    // Update position
+    await progress.updatePosition(userId, bookId, firstSentence.sentence_id, 1);
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentChapter, canChapterBack]);
+
+// Go to next chapter
+const goToNextChapter = useCallback(async () => {
+  if (!canChapterForward) return;
+  
+  setIsLoading(true);
+  
+  try {
+    const nextChapter = await progress.fetchNextChapter(currentChapter.chapter_id);
+    const firstSentence = await progress.fetchChapterFirstSentence(nextChapter.chapter_id);
+    
+    // For next chapter, check if user has been there before
+    // If yes, load their completed sentences
+    // If no, start fresh
+    
+    setCurrentChapter(nextChapter);
+    setCurrentSentence(firstSentence);
+    setCompletedSentences([]);
+    
+    await progress.updatePosition(userId, bookId, firstSentence.sentence_id, 1);
+  } finally {
+    setIsLoading(false);
+  }
+}, [currentChapter, canChapterForward]);
+
+Navigation Permission Changes
+javascript// Can go back a chapter if not on chapter 1
+const canChapterBack = currentChapter?.chapter_number > 1;
+
+// Can go forward a chapter if user has reached that chapter before
+const canChapterForward = furthestPosition?.chapter_number > currentChapter?.chapter_number;
+
+// Can go back a sentence if not at first sentence of chapter
+const canSentenceBack = completedSentences.length > 0;
+
+// Can go forward if within already-visited territory of current chapter
+const canSentenceForward = /* check against furthest sentence in this chapter */;
+
+UI Changes
+ReadingPage.jsx:
+Remove the chapter grouping logic since we only show one chapter now:
+jsx// Before: Group by chapters
+// const groupedByChapter = groupByChapterAndParagraph(completedSentences);
+
+// After: Just group by paragraph within current chapter
+const paragraphs = groupIntoParagraphs(completedSentences);
+
+return (
+  <div>
+    {/* Single chapter title */}
+    <ChapterTitle chapterNumber={currentChapter.chapter_number} />
+    
+    {/* Paragraphs for this chapter */}
+    {paragraphs.map((paragraphSentences, pIndex) => (
+      <FlowingParagraph
+        key={pIndex}
+        sentences={paragraphSentences}
+        // ... other props
+      />
+    ))}
+    
+    {/* Active sentence */}
+    {/* ... */}
+  </div>
+);
+
+State Shape
+javascript// New state in useReadingSession
+const [currentChapter, setCurrentChapter] = useState(null);
+// { chapter_id, chapter_number, chapter_title, book_id }
+
+// completedSentences now only contains current chapter's sentences
+const [completedSentences, setCompletedSentences] = useState([]);
+
+// Track furthest progress for navigation permissions  
+const [furthestPosition, setFurthestPosition] = useState(null);
+// { sentence_id, sentence_order, chapter_id, chapter_number }
+
+Edge Cases
+
+First sentence of chapter: No completed sentences, just active sentence
+Last sentence of chapter: After completion, automatically advance to next chapter OR show chapter complete message
+Rewinding to previous chapter: Load that chapter fresh, position at start
+Fast-forward within chapter: Only allowed up to furthest visited sentence in that chapter
+
+
+Testing Checklist
+
+ Initial load only fetches current chapter's sentences
+ Performance is consistent regardless of book progress
+ Chapter navigation (^^/vv) switches chapters cleanly
+ Sentence navigation (^/v) works within chapter
+ Going to previous chapter positions at chapter start
+ Going to next chapter positions at chapter start (or furthest if visited)
+ Header shows correct chapter number
+ Chapter title displays once at top
+ Paragraph grouping still works within chapter
+ Flowing paragraphs and blur preview still work
+
+
+This is a significant refactor. Build incrementally:
+
+First get chapter-only loading working
+Then fix chapter navigation
+Then handle edge cases

@@ -1,0 +1,21 @@
+TASK: Complete Fragment Generation for Missing Sentences
+Re-run the fragment generation script for chapters with missing sentences. The script already skips sentences that have fragments, so this will only process the 94 missing sentences.
+bashnode scripts/content_pipeline/generate_fragments.js --chapters 5 6 8 10 11 14 15 21 22 26 27
+After completion, run a verification query:
+sqlSELECT 
+  COUNT(*) as total_sentences,
+  COUNT(CASE WHEN sf.sentence_id IS NOT NULL THEN 1 END) as with_fragments,
+  COUNT(CASE WHEN sf.sentence_id IS NULL THEN 1 END) as without_fragments
+FROM sentences s
+LEFT JOIN (
+  SELECT DISTINCT sentence_id FROM sentence_fragments
+) sf ON s.sentence_id = sf.sentence_id;
+Report:
+
+The processing results (sentences processed, fragments created, any errors)
+The verification query results
+If any sentences are still missing, list them by chapter and sentence order
+
+Goal: 815/815 sentences with fragments (100% coverage)
+
+Let me know the final results.

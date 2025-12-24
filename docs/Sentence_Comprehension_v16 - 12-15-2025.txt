@@ -1,0 +1,106 @@
+
+TASK: Fix Chapter Boundary and Sentence Flash Issues
+Two bugs to fix:
+
+Bug 1: Chapter Boundary - Preview Shows Wrong Content
+Problem: At the end of Chapter 1, the blurred preview shows Chapter 2's first sentence. When clicking through, "Capítulo II" title appears AFTER the sentence instead of BEFORE.
+Expected behavior:
+
+At end of chapter: No blurred preview (or show blurred "Capítulo II" as preview)
+When completing last sentence of chapter: Chapter title appears first, THEN next chapter's sentences
+
+Fix in useReadingSession.js:
+When fetching nextSentencePreview, check if it's in a different chapter:
+javascriptuseEffect(() => {
+  if (currentSentence) {
+    progress.fetchNextSentence(currentSentence.sentence_id)
+      .then(nextSentence => {
+        // Check if next sentence is in a different chapter
+        if (nextSentence && nextSentence.chapter_id !== currentSentence.chapter_id) {
+          // Don't show preview across chapter boundary
+          // Or: set a flag to show chapter title preview instead
+          setNextSentencePreview(null);
+          setNextChapterPreview(nextSentence.chapter_number); // New state for chapter preview
+        } else {
+          setNextSentencePreview(nextSentence);
+          setNextChapterPreview(null);
+        }
+      })
+      .catch(() => {
+        setNextSentencePreview(null);
+        setNextChapterPreview(null);
+      });
+  }
+}, [currentSentence?.sentence_id]);
+In the UI, handle chapter preview:
+jsx{/* Next sentence preview OR chapter preview */}
+{nextSentencePreview && (
+  <span className="text-neutral-300 blur-[3px] select-none ml-1">
+    {nextSentencePreview.sentence_text}
+  </span>
+)}
+
+{nextChapterPreview && !nextSentencePreview && (
+  <div className="text-neutral-300 blur-[3px] select-none mt-8 text-center">
+    Capítulo {toRomanNumeral(nextChapterPreview)}
+  </div>
+)}
+Also fix sentence completion logic:
+When completing the last sentence of a chapter, ensure the chapter title is inserted BEFORE the next chapter's sentences in completedSentences or handled in the grouping logic.
+
+Bug 2: Current Sentence Flashes as Next Sentence
+Problem: When completing a sentence, the current sentence briefly appears twice (as both current AND next) before being replaced with the actual next sentence.
+Root cause: Likely a race condition where:
+
+Current sentence moves to completed
+nextSentencePreview (which was the NEXT sentence) hasn't updated yet
+For a moment, the old preview (now current) shows alongside current
+
+Fix - Clear preview immediately on sentence completion:
+javascriptconst handleSentenceComplete = useCallback(async () => {
+  // IMMEDIATELY clear the preview to prevent flash
+  setNextSentencePreview(null);
+  
+  // Move current to completed
+  setCompletedSentences(prev => [...prev, currentSentence]);
+  
+  // The preview we had IS the next sentence - use it directly
+  const nextSentence = nextSentencePreview;
+  
+  if (nextSentence) {
+    setCurrentSentence(nextSentence);
+    setCurrentFragmentIndex(0);
+    // ... reset other state
+    
+    // Now fetch the NEW preview (for the sentence after next)
+    // This happens async, after the transition
+  } else {
+    // End of chapter or book
+    // Handle appropriately
+  }
+}, [currentSentence, nextSentencePreview]);
+Key insight: Use the already-fetched nextSentencePreview as the next current sentence instead of fetching it again. This eliminates the race condition.
+Alternative fix - Use a transition flag:
+javascriptconst [isTransitioning, setIsTransitioning] = useState(false);
+
+const handleSentenceComplete = async () => {
+  setIsTransitioning(true);
+  
+  // Do the transition...
+  
+  // After state settles
+  setTimeout(() => setIsTransitioning(false), 50);
+};
+
+// In render, hide preview during transition
+{!isTransitioning && nextSentencePreview && (
+  <span className="blur-[3px]">...</span>
+)}
+
+Testing
+After fixes:
+
+ At end of Chapter 1, no sentence preview (or blurred chapter title)
+ Completing last sentence of chapter shows "Capítulo II" THEN first sentence
+ No flash/double sentence when completing a sentence
+ Transitions feel smooth

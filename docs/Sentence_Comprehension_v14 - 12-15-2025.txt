@@ -1,0 +1,217 @@
+Love the tape deck concept. Clean and intuitive.
+
+TASK: Reading Mode UI Polish - Check Button Position + Navigation Controls
+Two changes:
+
+1. Move Green Check Button Below Paragraph
+Problem: Check button at end of sentence jumps around as text reflows.
+Solution: Position check button right-aligned below the current paragraph, fixed position relative to the content.
+In FlowingParagraph.jsx or ReadingPage.jsx:
+jsx{/* Current paragraph with active sentence */}
+<div className="mb-6">
+  <p className="text-lg leading-relaxed text-neutral-800">
+    {/* Completed sentences */}
+    {paragraphSentences.map(...)}
+    
+    {/* Active sentence inline */}
+    {isLastParagraph && currentSentence && (
+      <ActiveSentenceInline ... />
+    )}
+  </p>
+  
+  {/* Check button - below paragraph, right-aligned */}
+  {isLastParagraph && currentSentence && (
+    <div className="flex justify-end mt-3">
+      <button
+        onClick={onConfirm}
+        className="p-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 
+                   text-emerald-500 transition-colors duration-150 shadow-sm"
+      >
+        <Check size={16} strokeWidth={2} />
+      </button>
+    </div>
+  )}
+</div>
+```
+
+This keeps the button in a stable position that doesn't jump with text.
+
+---
+
+### 2. Tape Deck Navigation Controls
+
+**Design (from Peter's image):**
+```
+    ^^     ← Chapter back
+    ^      ← Sentence back
+    
+    
+    v      ← Sentence forward
+    vv     ← Chapter forward
+Create new component: NavigationControls.jsx
+jsx// src/components/reading/NavigationControls.jsx
+import { ChevronUp, ChevronDown, ChevronsUp, ChevronsDown } from 'lucide-react';
+
+export default function NavigationControls({
+  onChapterBack,
+  onSentenceBack,
+  onSentenceForward,
+  onChapterForward,
+  canChapterBack,
+  canSentenceBack,
+  canSentenceForward,
+  canChapterForward
+}) {
+  const buttonClass = (enabled) => `
+    p-2 rounded-lg transition-colors
+    ${enabled 
+      ? 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 cursor-pointer' 
+      : 'text-neutral-200 cursor-not-allowed'
+    }
+  `;
+
+  return (
+    <div className="fixed right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 z-40">
+      {/* Chapter back */}
+      <button 
+        onClick={onChapterBack} 
+        disabled={!canChapterBack}
+        className={buttonClass(canChapterBack)}
+        title="Previous chapter"
+      >
+        <ChevronsUp size={20} />
+      </button>
+      
+      {/* Sentence back */}
+      <button 
+        onClick={onSentenceBack} 
+        disabled={!canSentenceBack}
+        className={buttonClass(canSentenceBack)}
+        title="Previous sentence"
+      >
+        <ChevronUp size={20} />
+      </button>
+      
+      {/* Spacer */}
+      <div className="h-16" />
+      
+      {/* Sentence forward */}
+      <button 
+        onClick={onSentenceForward} 
+        disabled={!canSentenceForward}
+        className={buttonClass(canSentenceForward)}
+        title="Next sentence"
+      >
+        <ChevronDown size={20} />
+      </button>
+      
+      {/* Chapter forward */}
+      <button 
+        onClick={onChapterForward} 
+        disabled={!canChapterForward}
+        className={buttonClass(canChapterForward)}
+        title="Next chapter"
+      >
+        <ChevronsDown size={20} />
+      </button>
+    </div>
+  );
+}
+Position: Fixed on right side of screen, vertically centered.
+
+3. Navigation Logic in useReadingSession.js
+Add these methods:
+javascript// Go back one sentence
+const goToPreviousSentence = useCallback(async () => {
+  if (currentSentenceIndex <= 0) return;
+  
+  // Move current sentence back to "not yet reached"
+  // Load previous sentence as current
+  const prevSentence = await progress.fetchSentenceByOrder(
+    bookId, 
+    currentSentenceOrder - 1
+  );
+  
+  setCurrentSentence(prevSentence);
+  setCurrentFragmentIndex(0);
+  setCompletedSentences(prev => prev.slice(0, -1)); // Remove last completed
+  
+  await progress.updatePosition(userId, bookId, prevSentence.sentence_id, 1);
+}, [currentSentenceOrder, ...]);
+
+// Go forward one sentence (only if already visited)
+const goToNextSentence = useCallback(async () => {
+  // Can only go forward if we've already been there (furthest_sentence_reached)
+  if (currentSentenceOrder >= furthestSentenceReached) return;
+  
+  // Complete current sentence instantly (no scoring)
+  // Load next sentence
+  const nextSentence = await progress.fetchSentenceByOrder(
+    bookId,
+    currentSentenceOrder + 1
+  );
+  
+  // Add current to completed
+  setCompletedSentences(prev => [...prev, currentSentence]);
+  setCurrentSentence(nextSentence);
+  setCurrentFragmentIndex(0);
+  
+  await progress.updatePosition(userId, bookId, nextSentence.sentence_id, 1);
+}, [currentSentenceOrder, furthestSentenceReached, ...]);
+
+// Jump to previous chapter
+const goToPreviousChapter = useCallback(async () => {
+  const prevChapter = await progress.fetchPreviousChapter(currentChapterId);
+  if (!prevChapter) return;
+  
+  const firstSentence = await progress.fetchChapterFirstSentence(prevChapter.chapter_id);
+  // Reset to start of that chapter
+  // Rebuild completedSentences for sentences before it
+  ...
+}, [...]);
+
+// Jump to next chapter (only if visited)
+const goToNextChapter = useCallback(async () => {
+  // Similar logic, only allow if user has reached that chapter
+  ...
+}, [...]);
+Can-do checks:
+javascriptconst canSentenceBack = currentSentenceOrder > 1;
+const canSentenceForward = currentSentenceOrder < furthestSentenceReached;
+const canChapterBack = currentChapterNumber > 1;
+const canChapterForward = currentChapterNumber < furthestChapterReached;
+
+4. Wire Up in ReadingPage.jsx
+jsx<NavigationControls
+  onChapterBack={session.goToPreviousChapter}
+  onSentenceBack={session.goToPreviousSentence}
+  onSentenceForward={session.goToNextSentence}
+  onChapterForward={session.goToNextChapter}
+  canChapterBack={session.canChapterBack}
+  canSentenceBack={session.canSentenceBack}
+  canSentenceForward={session.canSentenceForward}
+  canChapterForward={session.canChapterForward}
+/>
+
+5. Remove Start Over Button from Header
+Since we now have proper navigation, remove the RotateCcw button from StickyHeader. The user can use chapter back (^^) repeatedly to get to the start.
+
+Mobile Consideration
+On mobile, the fixed-right navigation might be too intrusive. Options:
+
+Hide on mobile (user scrolls to navigate)
+Move to bottom of screen
+Make it a toggle-able overlay
+
+For now, keep it simple. Can adjust later.
+
+Testing
+
+ Check button is below paragraph, right-aligned, stable position
+ Navigation controls appear on right side of screen
+ ^ goes back one sentence
+ ^^ goes back to start of previous chapter
+ v goes forward one sentence (only if already visited)
+ vv goes forward to start of next chapter (only if already visited)
+ Disabled states show correctly (grayed out when can't navigate)
+ Position updates correctly in database when navigating

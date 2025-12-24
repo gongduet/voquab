@@ -1,0 +1,50 @@
+TASK: Add Paragraph Spacing to Reading Mode
+Add visual paragraph breaks in Reading Mode based on is_paragraph_start flag.
+
+1. Update Data Fetching
+Ensure is_paragraph_start is included when fetching sentences.
+In useReadingProgress.js, check that sentence queries include this field:
+javascript.select(`
+  *,
+  sentence_fragments(*),
+  is_paragraph_start
+`)
+
+2. Add Spacing in ReadingPage.jsx
+Where completed sentences are rendered, add a gap before paragraph starts:
+jsx{completedSentences.map((sentence, index) => (
+  <React.Fragment key={sentence.sentence_id}>
+    {/* Paragraph spacing - but not before first sentence */}
+    {sentence.is_paragraph_start && index > 0 && (
+      <div className="h-6 md:h-8" /> 
+    )}
+    <CompletedSentence sentence={sentence} ... />
+  </React.Fragment>
+))}
+
+3. Also Check Active Sentence
+If the current active sentence is a paragraph start (and there are completed sentences above), add spacing above it:
+jsx{/* Active sentence with potential paragraph spacing */}
+{currentSentence && (
+  <>
+    {currentSentence.is_paragraph_start && completedSentences.length > 0 && (
+      <div className="h-6 md:h-8" />
+    )}
+    <ActiveSentence ... />
+  </>
+)}
+
+4. Chapter Title Already Creates Break
+The ChapterTitle component already creates visual separation, so sentences marked as paragraph start that are also the first sentence of a chapter don't need extra spacing (they follow the chapter title).
+Add a check to avoid double-spacing:
+jsx{sentence.is_paragraph_start && index > 0 && !isFirstSentenceOfChapter(sentence) && (
+  <div className="h-6 md:h-8" />
+)}
+Or simpler - just check index > 0 should be sufficient since the first sentence of each chapter naturally follows the chapter title.
+
+Testing
+
+ Paragraph spacing appears where is_paragraph_start = true
+ No spacing before first sentence of chapter (already has chapter title)
+ Spacing appears for active sentence if it's a paragraph start
+ Spacing is visible but not excessive (h-6 = 24px, h-8 = 32px)

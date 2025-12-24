@@ -1,0 +1,76 @@
+TASK: Reading Mode Fixes - Round 3
+Two issues to fix:
+
+1. Investigate Missing Fragment Breakdowns
+Problem: Some expanded completed sentences only show the full translation, not the fragment breakdown. Others show both.
+Example from screenshot:
+
+"Mi dibujo no representaba un sombrero" → NO fragment breakdown shown
+"Mi dibujo número 2 era así..." → Shows fragment breakdown
+
+Debug steps:
+
+Check CompletedSentence.jsx logic - is there a condition that hides fragments?
+
+Is there if (fragments.length <= 1) logic?
+Is there a check that might skip fragment display?
+
+
+Check how fragments are loaded for completed sentences:
+
+Are they fetched when completedSentences is loaded?
+Is there a join that might fail for some sentences?
+
+
+Query the database to check fragment counts for Chapter 1 sentences:
+
+sqlSELECT 
+  s.sentence_order,
+  LEFT(s.sentence_text, 50) as sentence_start,
+  COUNT(sf.fragment_id) as fragment_count
+FROM sentences s
+JOIN chapters c ON s.chapter_id = c.chapter_id
+LEFT JOIN sentence_fragments sf ON s.sentence_id = sf.sentence_id
+WHERE c.chapter_number = 1
+GROUP BY s.sentence_id, s.sentence_order, s.sentence_text
+ORDER BY s.sentence_order;
+
+Check if there's different behavior based on when the sentence was completed vs which sentence it is.
+
+Fix: Ensure ALL expanded sentences show fragment breakdown (unless truly only 1 fragment which equals the whole sentence).
+
+2. Blur Upcoming Fragments
+Problem: Upcoming fragments are too readable, making it easy to skip ahead accidentally.
+Solution: Apply blur effect to upcoming (not-yet-active) fragments.
+In ActiveSentence.jsx, update the fragment CSS classes:
+css.fragment-upcoming {
+  color: #d4d4d4;
+  filter: blur(3px);
+  transition: all 200ms ease;
+  user-select: none; /* Prevent selecting blurred text */
+}
+
+.fragment-active {
+  font-weight: 600;
+  color: #1a1a1a;
+  filter: blur(0);
+  transition: all 200ms ease;
+}
+
+.fragment-completed {
+  color: #1a1a1a;
+  filter: blur(0);
+  transition: all 200ms ease;
+}
+The blur creates a "coming into focus" effect - text is there but unreadable until it becomes active. When a fragment transitions from upcoming → active, it sharpens into focus (200ms transition).
+
+Testing
+After fixes:
+
+ ALL expanded sentences show fragment breakdown (check short sentences specifically)
+ Upcoming fragments are blurred and unreadable
+ Active fragment is sharp and bold
+ Completed fragments are sharp and normal weight
+ Transition from blurred → sharp looks smooth
+
+Report what you find about the missing fragments - is it code logic or data issue?

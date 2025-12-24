@@ -1,0 +1,67 @@
+TASK: Document Current App Architecture for Reading Mode Planning
+I'm planning to build a new Reading Mode feature and need to understand the existing codebase structure. Please provide a comprehensive overview:
+1. Route/Navigation Structure
+
+List all current routes in the app (from router config)
+How is navigation structured (tabs, sidebar, bottom nav)?
+Where does the chapter carousel/selection currently live?
+What's the current URL pattern for chapter-related pages?
+
+2. Key Component Examples
+For each of these, show the JSX structure and list the hooks used (don't need full implementation):
+a) Flashcard display component
+
+How are the difficulty buttons structured?
+How does card content render?
+Any animations?
+
+b) Chapter carousel/selection
+
+How are chapters displayed?
+How does unlock state show?
+Navigation to chapter content?
+
+c) Any page that has a "session" concept
+
+How does session state work?
+How is progress tracked during a session?
+
+3. Styling & Animation
+
+What styling approach? (Tailwind, CSS modules, etc.)
+Is there a design system or theme file?
+What animation library (if any)? framer-motion? CSS transitions?
+Any existing fade-in or transition patterns I should follow?
+
+4. Data Patterns
+
+How are Supabase queries structured? (hooks, services, direct calls?)
+How is user progress fetched and updated?
+Any shared contexts or global state?
+Pattern for optimistic updates?
+
+5. Relevant Hooks
+List hooks related to:
+
+User progress tracking
+Session management
+Content data fetching
+Any scroll or position tracking
+
+6. File Structure
+Provide a tree view of src/ directory (3 levels deep), highlighting:
+
+Where page components live
+Where shared components live
+Where hooks live
+Where services/utilities live
+
+7. Mobile Considerations
+
+Is there a breakpoint system?
+Any mobile-specific components or patterns?
+How do existing features handle touch vs mouse?
+
+Format this as a structured document that gives a complete picture of how to build a new feature that fits the existing patterns.
+
+Once you share that architecture overview, I'll have everything needed to write a comprehensive, pattern-consistent implementation prompt for Reading Mode.

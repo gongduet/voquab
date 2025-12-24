@@ -1,0 +1,252 @@
+TASK: Build Sentence Admin Interface
+Build a new admin page for managing sentences with Notion-like aesthetics. Focus on efficiency - admins need to quickly scan and edit sentences.
+
+Route
+Add new route: /admin/sentences
+Link from existing /admin page.
+
+Database Update
+First, ensure the column exists:
+sqlALTER TABLE sentences 
+ADD COLUMN IF NOT EXISTS is_paragraph_start BOOLEAN DEFAULT FALSE;
+
+-- Mark first sentence of each chapter as paragraph start by default
+UPDATE sentences s
+SET is_paragraph_start = TRUE
+WHERE sentence_order = 1;
+```
+
+---
+
+## Page Layout
+
+**Header:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ← Back to Admin          Sentence Management               │
+├─────────────────────────────────────────────────────────────┤
+│  Chapter: [All Chapters ▼]    Search: [________________]    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Table View (Notion-style):**
+```
+┌─────┬────┬─────────────────────────────────────┬─────────────────────────────────────┬───────┬────────┐
+│  #  │ ¶  │ Spanish                             │ English                             │ Frags │        │
+├─────┼────┼─────────────────────────────────────┼─────────────────────────────────────┼───────┼────────┤
+│  1  │ ●  │ Cuando yo tenía seis años, vi una   │ When I was six years old, I saw a   │   4   │ [Edit] │
+│     │    │ magnífica lámina en un libro...     │ magnificent illustration in a...    │       │        │
+├─────┼────┼─────────────────────────────────────┼─────────────────────────────────────┼───────┼────────┤
+│  2  │ ○  │ Representaba una serpiente boa      │ It depicted a boa constrictor       │   2   │ [Edit] │
+│     │    │ que se tragaba a una fiera.         │ swallowing a wild animal.           │       │        │
+├─────┼────┼─────────────────────────────────────┼─────────────────────────────────────┼───────┼────────┤
+│  3  │ ●  │ Ésta es la copia del dibujo.        │ This is a copy of the drawing.      │   2   │ [Edit] │
+└─────┴────┴─────────────────────────────────────┴─────────────────────────────────────┴───────┴────────┘
+Key interactions:
+
+Click ¶ column (○/●) to toggle paragraph start directly (no modal needed)
+Click [Edit] to open edit modal
+Chapter dropdown filters the table
+Search filters by Spanish or English text
+
+
+Notion-like Styling
+Table styling:
+css/* Clean borders, subtle hover */
+.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.admin-table tr:hover {
+  background: #f9fafb;
+}
+
+/* Paragraph toggle button */
+.para-toggle {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #d1d5db;
+  cursor: pointer;
+  transition: all 150ms;
+}
+
+.para-toggle.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.para-toggle:hover {
+  border-color: #3b82f6;
+}
+```
+
+**Colors (Notion palette):**
+- Background: #ffffff
+- Table header bg: #f9fafb
+- Border: #e5e7eb (header), #f3f4f6 (rows)
+- Text primary: #1f2937
+- Text secondary: #6b7280
+- Accent: #3b82f6 (blue)
+- Hover: #f9fafb
+
+---
+
+## Edit Modal
+
+When clicking [Edit]:
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Edit Sentence #1                                     [×]   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Spanish                                                    │
+│  ┌─────────────────────────────────────────────────────────┐
+│  │ Cuando yo tenía seis años, vi una magnífica lámina en  │
+│  │ un libro sobre la selva virgen que se titulaba         │
+│  │ Historias vividas, una magnífica lámina.               │
+│  └─────────────────────────────────────────────────────────┘
+│  (read-only for now)                                        │
+│                                                             │
+│  Translation                                                │
+│  ┌─────────────────────────────────────────────────────────┐
+│  │ When I was six years old, I saw a magnificent          │
+│  │ illustration in a book about the virgin forest         │
+│  │ called "True Stories."                                  │
+│  └─────────────────────────────────────────────────────────┘
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  Fragments (4)                                              │
+│                                                             │
+│  1. "Cuando yo tenía seis años,"                           │
+│     → When I was six years old,                            │
+│     Note: tenía + age = was X years old           [Edit]   │
+│                                                             │
+│  2. "vi una magnífica lámina"                              │
+│     → I saw a magnificent illustration            [Edit]   │
+│                                                             │
+│  3. "en un libro sobre la selva virgen"                    │
+│     → in a book about the virgin forest           [Edit]   │
+│                                                             │
+│  4. "que se titulaba Historias vividas."                   │
+│     → called "True Stories."                      [Edit]   │
+│                                                             │
+│  ─────────────────────────────────────────────────────────  │
+│                                                             │
+│  Options                                                    │
+│  [●] Paragraph Start                                        │
+│  [ ] Flag for QA                                            │
+│                                                             │
+│                               [Cancel]  [Save Changes]      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Fragment inline edit:**
+Clicking [Edit] on a fragment expands it to editable fields:
+```
+│  1. "Cuando yo tenía seis años,"                           │
+│     EN: [When I was six years old,________________] ✓ ✗    │
+│     Note: [tenía + age = was X years old__________] ✓ ✗    │
+```
+✓ saves, ✗ cancels.
+
+---
+
+## Components
+
+Create in `src/pages/AdminSentences.jsx` or `src/components/admin/`:
+```
+src/components/admin/
+├── SentenceTable.jsx        # Main table component
+├── SentenceRow.jsx          # Individual row
+├── SentenceEditModal.jsx    # Edit modal
+├── FragmentEditor.jsx       # Fragment editing within modal
+└── ParagraphToggle.jsx      # The ○/● toggle button
+
+Data Fetching
+javascript// Fetch sentences with fragments for a chapter
+const fetchSentences = async (chapterId) => {
+  const { data } = await supabase
+    .from('sentences')
+    .select(`
+      *,
+      chapters!inner(chapter_number, chapter_title),
+      sentence_fragments(*)
+    `)
+    .eq('chapter_id', chapterId)
+    .order('sentence_order');
+  
+  return data;
+};
+
+// Toggle paragraph start (instant, no modal)
+const toggleParagraphStart = async (sentenceId, newValue) => {
+  await supabase
+    .from('sentences')
+    .update({ is_paragraph_start: newValue })
+    .eq('sentence_id', sentenceId);
+};
+
+// Update sentence translation
+const updateSentenceTranslation = async (sentenceId, translation) => {
+  await supabase
+    .from('sentences')
+    .update({ sentence_translation: translation })
+    .eq('sentence_id', sentenceId);
+};
+
+// Update fragment translation
+const updateFragmentTranslation = async (fragmentId, translation, contextNote) => {
+  await supabase
+    .from('sentence_fragments')
+    .update({ 
+      fragment_translation: translation,
+      context_note: contextNote 
+    })
+    .eq('fragment_id', fragmentId);
+};
+
+Keyboard Shortcuts (for efficiency)
+
+↑/↓ - Navigate rows
+Enter - Open edit modal for selected row
+P - Toggle paragraph start for selected row
+Escape - Close modal
+
+
+Testing Checklist
+
+ Table loads all sentences for selected chapter
+ Chapter dropdown filters correctly
+ Paragraph toggle works with single click (no modal)
+ Edit modal opens with sentence + fragments
+ Can edit sentence translation and save
+ Can edit fragment translations and save
+ Can edit fragment context notes
+ Modal closes on Cancel or Save
+ Changes persist in database
+ Notion-like styling applied
+ Responsive on smaller screens
+
+
+Build this first, then we'll move to Priority 2 (flowing paragraphs in Reading Mode).

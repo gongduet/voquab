@@ -1,0 +1,69 @@
+TASK: Audit Fragment Generation Progress
+The fragment generation script encountered errors partway through processing chapters 4-27. I need a complete audit of the current state.
+Run these diagnostic queries and report the results:
+1. Fragment Coverage by Chapter
+For each chapter (1-27), show:
+
+Chapter number
+Total sentences in chapter
+Sentences WITH fragments
+Sentences WITHOUT fragments
+Total fragments created
+Coverage percentage
+
+Format as a table sorted by chapter number.
+2. Identify Missing Sentences
+List all sentences that do NOT have any entries in sentence_fragments:
+
+Chapter number
+Sentence order
+First 50 characters of sentence_text
+Whether it has a translation (yes/no)
+
+Group by chapter so we can see where the gaps are.
+3. Check for Duplicates
+Check if any sentence has duplicate fragment entries:
+sqlSELECT sentence_id, fragment_order, COUNT(*) 
+FROM sentence_fragments 
+GROUP BY sentence_id, fragment_order 
+HAVING COUNT(*) > 1
+```
+
+Report any duplicates found.
+
+### 4. Last Successfully Processed
+
+Identify the last sentence that was successfully processed:
+- Find the highest chapter number that has ANY fragments
+- Within that chapter, find the highest sentence_order with fragments
+- Show that sentence's details
+
+### 5. Error Pattern Analysis
+
+Check if there's a pattern to missing sentences:
+- Are they clustered in specific chapters?
+- Are they sentences without translations?
+- Are they unusually long sentences?
+
+### 6. Summary Report
+
+Provide a clear summary:
+```
+FRAGMENT GENERATION AUDIT
+=========================
+Total chapters: 27
+Chapters complete (100%): X
+Chapters partial: X
+Chapters not started: X
+
+Total sentences in book: XXX
+Sentences with fragments: XXX
+Sentences missing fragments: XXX
+
+Duplicates found: X
+
+RECOMMENDATION:
+[What needs to happen to complete the job]
+Do not modify any data - this is read-only analysis.
+
+Once we see this audit, we'll know exactly what needs to be fixed and how to complete the remaining work.

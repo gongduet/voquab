@@ -31,6 +31,89 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2024-12-23 - Reading Mode Complete Implementation
+
+### Reading Mode Core
+- **Flowing Paragraphs**: Completed sentences flow as continuous text like a real book, grouped by paragraph based on `is_paragraph_start` flag
+- **Fragment-by-Fragment Reading**: Users progress through sentences one fragment at a time, with upcoming fragments blurred (3px blur) until active
+- **Tap-to-Peek Translation**: Tap any fragment to see its translation via tooltip; peeked fragments score 0.7 instead of 1.0
+- **Single Check Button**: Green check button below paragraph confirms fragment comprehension (replaces 3-button flow)
+- **Sentence Highlighting**: Users can highlight sentences for later review via tooltip toggle; highlighted sentences show amber underline/background
+- **Blurred Next Sentence Preview**: Shows blurred preview of upcoming sentence inline, or chapter title ("Capítulo II" in Roman numerals) at chapter boundaries
+- **Chapter-Only View**: Performance optimization - only loads current chapter's sentences instead of entire book history
+- **Smooth Transitions**: Batched state updates, opacity transitions, and `requestAnimationFrame` timing eliminate jarring sentence-to-sentence jumps
+
+### Navigation Controls
+- **Tape Deck Navigation**: Fixed-position controls on right side of content area (`left-[calc(50%+400px)]`)
+  - Single chevron (ChevronUp/ChevronDown): Move one sentence back/forward
+  - Double chevron (ChevronsUp/ChevronsDown): Jump to previous/next chapter
+- **Smart Navigation Permissions**: Forward navigation only enabled for already-visited content (tracked via `furthestPosition`)
+- **Seamless Navigation**: No loading screens when navigating - instant state manipulation using local state
+
+### Reading Mode UI Components
+- **StickyHeader**: Shows "Exit" button, book title ("El Principito"), and current chapter number
+- **ChapterTitle**: Roman numerals (Capítulo I, II, etc.) with elegant typography using custom `toRoman()` function
+- **FlowingParagraph**: Renders completed sentences with inline active sentence when not starting new paragraph
+- **ActiveSentenceInline**: Fragment-by-fragment display with peek tooltips, exposes `wasCurrentFragmentPeeked()` via ref
+- **SentenceTooltip**: Shows translation, fragment breakdown, and highlight toggle when tapping completed sentences
+- **NavigationControls**: Lucide icons for tape-deck style navigation
+
+### Reading Session Hooks
+- **useReadingSession**: Main session hook managing all state and actions
+  - States: `currentChapter`, `currentSentence`, `completedSentences`, `nextSentencePreview`, `nextChapterPreview`, `isTransitioning`
+  - Actions: `handleConfirm`, `jumpToChapter`, `goToPreviousSentence`, `goToNextSentence`, `goToPreviousChapter`, `goToNextChapter`
+  - Uses `handleSentenceCompleteRef` to fix stale closure bug in callbacks
+- **useReadingProgress**: Database operations hook
+  - `fetchChapterSentences()`: Loads only current chapter's completed sentences
+  - `fetchNextSentencePreview()`: Lightweight preview with chapter boundary detection
+  - `fetchChapterFirstSentence()`: Gets first sentence of a chapter by number
+  - `saveSentenceComplete()`: FSRS scheduling integration for sentence progress
+- **useScrollToPosition**: Manages scroll behavior and auto-scroll to current sentence
+
+### Admin - Sentence Management
+- **New Route**: `/admin/sentences` for managing sentence content
+- **Notion-Style Table**: SentenceTable component with columns for sentence number, paragraph toggle, Spanish text, English translation, fragment count
+- **Inline Paragraph Toggle**: ParagraphToggle component - single-click to mark paragraph starts with optimistic updates
+- **Edit Modal**: SentenceEditModal for editing sentence translations, fragment translations, and context notes
+- **Keyboard Shortcuts**: Arrow keys to navigate, Enter to edit, P to toggle paragraph, Escape to close modal
+- **Chapter Filter**: Dropdown to filter sentences by chapter
+- **Search**: Filter by Spanish or English text
+
+### Database Changes
+- Added `is_paragraph_start` boolean column to `sentences` table
+- Added `is_highlighted` boolean column to `user_sentence_progress` table
+- Uses `user_book_reading_progress` table for position tracking with `furthest_sentence_id`
+- RLS policy for authenticated users to update sentences
+
+### Bug Fixes
+- **Stale Closure Bug**: Fixed premature "end of book" detection caused by `moveToNextFragment` calling `handleSentenceComplete` with stale `nextSentencePreview` value - solved using `useRef` pattern
+- **Chapter Boundary Detection**: At chapter end, nextSentencePreview is null but nextChapterPreview is set - now correctly fetches first sentence of next chapter
+- **Fragment Breakdown Display**: Fragment translations now show correctly in peek tooltips
+- **Sentence Transition Flash**: Eliminated duplicate content flash by clearing previews immediately and using `!isTransitioning` guards
+- **React Temporal Dead Zone**: Fixed `canSentenceForward` referenced before defined by calculating inline
+
+### Performance
+- **Chapter-Only Loading**: Only loads sentences for current chapter, not entire book history
+- **Lightweight Previews**: `fetchNextSentencePreview()` fetches minimal fields (sentence_text, is_paragraph_start, chapter_id, chapter_number)
+- **Background DB Operations**: `Promise.all()` for non-blocking saves after sentence completion
+- **Batched State Updates**: React 18 automatic batching plus explicit grouping for clarity
+
+### Technical Implementation Details
+- **File Structure**:
+  - `src/hooks/reading/useReadingSession.js` - 670+ lines, main session hook
+  - `src/hooks/reading/useReadingProgress.js` - 950+ lines, database operations
+  - `src/components/reading/` - 12 React components
+  - `src/pages/AdminSentences.jsx` - Admin page for sentence management
+  - `src/components/admin/` - SentenceTable, ParagraphToggle, SentenceEditModal, FragmentEditor
+
+### Future Enhancements (Documented)
+- Virtualized full-book view for seamless scrolling across chapters
+- Sentence Review mode with FSRS scheduling for weak sentences
+- Session summary on exit with stats
+- Chapter unlock trigger on chapter entry, not first sentence completion
+
+---
+
 ## [0.1.5] - Dashboard Polish & Bug Fixes (December 15, 2025)
 
 ### Added

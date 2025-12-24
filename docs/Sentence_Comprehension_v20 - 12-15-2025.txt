@@ -1,0 +1,50 @@
+TASK: Fix Stale Closure Bug in Reading Session
+Problem: moveToNextFragment is calling a stale version of handleSentenceComplete that has nextSentencePreview: undefined instead of the actual value.
+Solution: Use a ref to always get the latest version of handleSentenceComplete.
+In useReadingSession.js:
+javascriptimport { useState, useEffect, useCallback, useRef } from 'react'
+
+// ... existing code ...
+
+// Create a ref to always hold the latest handleSentenceComplete
+const handleSentenceCompleteRef = useRef(null)
+
+// Update the ref whenever handleSentenceComplete changes
+useEffect(() => {
+  handleSentenceCompleteRef.current = handleSentenceComplete
+}, [handleSentenceComplete])
+
+/**
+ * Move to the next fragment or complete the sentence
+ */
+const moveToNextFragment = useCallback(async (results) => {
+  if (!currentSentence) return
+
+  const fragments = currentSentence.fragments || []
+  const nextIndex = currentFragmentIndex + 1
+
+  if (nextIndex >= fragments.length) {
+    // All fragments completed - use ref to get latest handleSentenceComplete
+    if (handleSentenceCompleteRef.current) {
+      await handleSentenceCompleteRef.current(results)
+    }
+  } else {
+    // Move to next fragment
+    setCurrentFragmentIndex(nextIndex)
+
+    // Save position
+    if (bookId) {
+      await progress.updatePosition(bookId, currentSentence.sentence_id, nextIndex + 1)
+    }
+  }
+}, [currentSentence, currentFragmentIndex, bookId, progress])
+Also add nextChapterPreview to handleSentenceComplete's dependencies (line 386):
+javascript}, [currentSentence, currentChapter, bookId, nextSentencePreview, nextChapterPreview, progress])
+This ensures handleSentenceComplete is recreated when either preview changes.
+
+Testing:
+
+ Navigate to middle of Chapter 2
+ Console shows nextSentencePreview with actual value (not undefined)
+ Clicking green button advances to next sentence
+ Does NOT show "Fin" screen prematurely

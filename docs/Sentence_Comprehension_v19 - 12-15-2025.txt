@@ -1,0 +1,71 @@
+TASK: Debug Premature End-of-Book Detection
+Problem: In the middle of Chapter 2, clicking the green button shows "Fin - You've completed El Principito!" instead of continuing to the next sentence.
+Root cause likely in: handleSentenceComplete in useReadingSession.js - the chapter boundary or end-of-book detection is triggering incorrectly.
+Debug steps:
+
+Add logging to identify where the logic goes wrong:
+
+javascriptconst handleSentenceComplete = async () => {
+  console.log('=== handleSentenceComplete ===');
+  console.log('currentSentence:', currentSentence?.sentence_id, currentSentence?.sentence_order);
+  console.log('currentChapter:', currentChapter?.chapter_number);
+  console.log('nextSentencePreview:', nextSentencePreview?.sentence_id);
+  console.log('nextChapterPreview:', nextChapterPreview);
+  
+  // ... existing logic
+  
+  // At each decision point:
+  console.log('Is chapter boundary?', /* condition */);
+  console.log('Is end of book?', /* condition */);
+};
+
+Check the end-of-book condition:
+
+The bug is likely here - something like:
+javascript// WRONG - triggers if nextSentencePreview is null for any reason
+if (!nextSentencePreview && !nextChapterPreview) {
+  setIsEndOfBook(true); // BUG: This triggers mid-chapter
+}
+Correct logic should be:
+javascript// Check if this is actually the last sentence of the last chapter
+const isLastSentenceOfChapter = !nextSentencePreview && nextChapterPreview;
+const isEndOfBook = !nextSentencePreview && !nextChapterPreview;
+
+if (isEndOfBook) {
+  // Verify it's actually the end by checking if there are more chapters
+  const nextChapter = await progress.fetchNextChapter(currentChapter.chapter_id);
+  if (!nextChapter) {
+    setIsEndOfBook(true);
+  } else {
+    // Not actually end of book - there's a next chapter
+    // This shouldn't happen if preview logic is correct
+    console.error('Preview logic bug - next chapter exists but no preview');
+  }
+}
+
+Check fetchNextSentencePreview:
+
+The preview fetch might be failing silently:
+javascriptconst fetchNextSentencePreview = async (sentenceId) => {
+  console.log('Fetching preview for sentence:', sentenceId);
+  
+  // ... fetch logic
+  
+  console.log('Preview result:', result);
+  return result;
+};
+
+Check if sentence_order is correct:
+
+The query might be using wrong ordering:
+sql-- Should get the NEXT sentence, not any sentence
+SELECT * FROM sentences 
+WHERE chapter_id = ? 
+AND sentence_order > current_sentence_order
+ORDER BY sentence_order ASC
+LIMIT 1
+Report:
+
+What do the console logs show?
+What's the value of nextSentencePreview when the bug occurs?
+What condition is triggering the end-of-book state?

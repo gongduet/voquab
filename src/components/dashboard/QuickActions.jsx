@@ -1,18 +1,20 @@
 import { useNavigate } from 'react-router-dom'
-import { RotateCcw, Sparkles } from 'lucide-react'
+import { RotateCcw, Sparkles, BookOpen } from 'lucide-react'
 
 /**
- * QuickActions - Review Due / Learn New buttons
+ * QuickActions - Review Due / Learn New / Continue Reading buttons
  * Uses inline styles as fallback to ensure visibility
  *
  * @param {Object} props
  * @param {number} props.dueCount - Number of cards due for review
  * @param {number} props.newAvailable - Number of new words available to learn
+ * @param {boolean} props.hasReadingProgress - Whether user has reading progress
  * @param {boolean} props.loading - Loading state
  */
 export default function QuickActions({
   dueCount = 0,
   newAvailable = 0,
+  hasReadingProgress = false,
   loading = false
 }) {
   const navigate = useNavigate()
@@ -25,17 +27,25 @@ export default function QuickActions({
     navigate('/flashcards?mode=learn')
   }
 
+  const handleContinueReading = () => {
+    navigate('/read')
+  }
+
   if (loading) {
     return (
-      <div className="grid grid-cols-2 gap-4 px-4">
-        <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
-        <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
+      <div className="space-y-3 px-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
+          <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
+        </div>
+        <div className="h-14 bg-neutral-200 rounded-2xl animate-pulse" />
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 px-4">
+    <div className="space-y-3 px-4">
+      <div className="grid grid-cols-2 gap-4">
       {/* Review Due Button - using inline styles for guaranteed visibility */}
       <button
         onClick={handleReview}
@@ -73,6 +83,25 @@ export default function QuickActions({
         <span className="text-lg font-bold">Learn New</span>
         <span style={{ opacity: 0.8 }} className="text-sm font-medium">
           {newAvailable} available
+        </span>
+      </button>
+      </div>
+
+      {/* Continue Reading Button - full width below */}
+      <button
+        onClick={handleContinueReading}
+        style={{
+          backgroundColor: '#6d6875',
+          color: 'white',
+          height: '3.5rem',
+          borderRadius: '1rem',
+          boxShadow: '0 2px 4px -1px rgb(0 0 0 / 0.1)'
+        }}
+        className="w-full flex items-center justify-center gap-3 transition-all duration-150 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+      >
+        <BookOpen className="w-5 h-5" strokeWidth={2} />
+        <span className="text-base font-semibold">
+          {hasReadingProgress ? 'Continue Reading' : 'Start Reading'}
         </span>
       </button>
     </div>

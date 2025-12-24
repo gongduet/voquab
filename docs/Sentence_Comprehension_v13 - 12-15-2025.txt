@@ -1,0 +1,210 @@
+TASK: Reading Mode Fixes - Active Sentence Position, Tooltip, and Navigation
+
+Issue 1: Active Sentence Should Flow in Paragraph
+Problem: Active sentence appears as a separate line below completed paragraphs. It should flow inline at the end of the current paragraph.
+Solution: Render the active sentence inline within the last paragraph (or start a new paragraph if is_paragraph_start = true).
+In ReadingPage.jsx:
+jsx// Determine if active sentence starts new paragraph or continues last one
+const activeStartsNewParagraph = currentSentence?.is_paragraph_start;
+
+// Render paragraphs
+{paragraphs.map((paragraphSentences, pIndex) => {
+  const isLastParagraph = pIndex === paragraphs.length - 1;
+  
+  return (
+    <div key={pIndex} className="mb-6">
+      <p className="text-lg leading-relaxed text-neutral-800">
+        {/* Completed sentences in this paragraph */}
+        {paragraphSentences.map((sentence) => (
+          <FlowingSentence
+            key={sentence.sentence_id}
+            sentence={sentence}
+            ...
+          />
+        ))}
+        
+        {/* Active sentence flows here if it's in this paragraph */}
+        {isLastParagraph && currentSentence && !activeStartsNewParagraph && (
+          <ActiveSentenceInline 
+            sentence={currentSentence}
+            fragments={currentSentence.fragments}
+            currentFragmentIndex={currentFragmentIndex}
+            ...
+          />
+        )}
+      </p>
+    </div>
+  );
+})}
+
+{/* Active sentence as new paragraph (if it starts one) */}
+{currentSentence && activeStartsNewParagraph && (
+  <div className="mb-6">
+    <p className="text-lg leading-relaxed text-neutral-800">
+      <ActiveSentenceInline 
+        sentence={currentSentence}
+        ...
+      />
+    </p>
+  </div>
+)}
+New Component: ActiveSentenceInline.jsx
+Renders active sentence as inline spans (not block), with the same fragment highlighting:
+jsxexport default function ActiveSentenceInline({
+  sentence,
+  fragments,
+  currentFragmentIndex,
+  onFragmentClick,
+  peekedFragmentId
+}) {
+  return (
+    <span className="sentence-enter">
+      {fragments.map((fragment, index) => {
+        const isCompleted = index < currentFragmentIndex;
+        const isActive = index === currentFragmentIndex;
+        const isUpcoming = index > currentFragmentIndex;
+        
+        return (
+          <React.Fragment key={fragment.fragment_id}>
+            <span
+              className={`
+                relative
+                transition-all duration-200
+                ${isCompleted ? 'text-neutral-800' : ''}
+                ${isActive ? 'font-semibold text-neutral-900' : ''}
+                ${isUpcoming ? 'text-neutral-300 blur-[3px] select-none' : ''}
+              `}
+              onClick={() => isActive && onFragmentClick?.(fragment)}
+            >
+              {fragment.fragment_text}
+              {/* Tooltip for peeked fragment */}
+              {peekedFragmentId === fragment.fragment_id && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 ...">
+                  {fragment.fragment_translation}
+                </span>
+              )}
+            </span>
+            {index < fragments.length - 1 && ' '}
+          </React.Fragment>
+        );
+      })}
+    </span>
+  );
+}
+
+Issue 2: Tooltip Positioning
+Problem: Tooltip appears too high, sometimes off-screen.
+Solution: Smart positioning that checks viewport bounds.
+In SentenceTooltip.jsx:
+jsxconst [adjustedPosition, setAdjustedPosition] = useState({ x: 0, y: 0 });
+const tooltipRef = useRef(null);
+
+useEffect(() => {
+  if (tooltipRef.current) {
+    const tooltip = tooltipRef.current;
+    const rect = tooltip.getBoundingClientRect();
+    
+    let newX = position.x;
+    let newY = position.y;
+    let placement = 'above'; // or 'below'
+    
+    // Check if tooltip goes off top
+    if (position.y - rect.height - 16 < 0) {
+      // Position below instead
+      placement = 'below';
+      newY = position.y + position.height + 8; // position.height = clicked element height
+    } else {
+      newY = position.y - 8;
+    }
+    
+    // Check horizontal overflow
+    const halfWidth = rect.width / 2;
+    if (newX - halfWidth < 16) {
+      newX = halfWidth + 16; // Pad from left
+    } else if (newX + halfWidth > window.innerWidth - 16) {
+      newX = window.innerWidth - halfWidth - 16; // Pad from right
+    }
+    
+    setAdjustedPosition({ x: newX, y: newY, placement });
+  }
+}, [position]);
+
+// Use adjustedPosition in style
+<div
+  ref={tooltipRef}
+  style={{
+    position: 'fixed',
+    left: adjustedPosition.x,
+    top: adjustedPosition.y,
+    transform: adjustedPosition.placement === 'above' 
+      ? 'translate(-50%, -100%)' 
+      : 'translate(-50%, 0)',
+  }}
+>
+Also pass element height from click handler:
+jsxconst handleSentenceClick = (sentence, event) => {
+  const rect = event.target.getBoundingClientRect();
+  setTooltipPosition({
+    x: rect.left + rect.width / 2,
+    y: rect.top,
+    height: rect.height // Include height for below positioning
+  });
+  setActiveTooltipSentence(sentence);
+};
+
+Issue 3: Rewind/Forward Navigation
+Problem: User wants to go back and re-read from earlier positions.
+Solution: Add navigation buttons to move backward/forward through sentences.
+Add to header or floating UI:
+jsx// In StickyHeader.jsx or as floating component
+<div className="flex items-center gap-1">
+  <button
+    onClick={onRewind}
+    disabled={!canRewind}
+    className="p-2 rounded-lg hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+    title="Previous sentence"
+  >
+    <ChevronUp size={18} />
+  </button>
+  <button
+    onClick={onFastForward}
+    disabled={!canFastForward}
+    className="p-2 rounded-lg hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+    title="Next sentence"
+  >
+    <ChevronDown size={18} />
+  </button>
+</div>
+Logic in ReadingPage.jsx:
+jsxconst canRewind = currentSentenceIndex > 0;
+const canFastForward = false; // Can only go forward by completing fragments
+
+const handleRewind = () => {
+  // Move current sentence back to completed
+  // Load previous sentence as current
+  // This effectively "un-completes" the current position
+};
+Important consideration: What does "rewind" mean?
+Option A: View-only rewind - Scroll up to see previous content, but current position stays
+Option B: True rewind - Reset position to earlier sentence, re-do those sentences
+Recommendation: Start with a simple "Jump to start" option:
+jsx<button onClick={handleJumpToStart}>
+  <RotateCcw size={16} />
+  Start Over
+</button>
+This resets current_sentence_order to 1 but keeps all progress data. User re-reads from beginning.
+For fine-grained up/down navigation, we need to decide:
+
+Does going back un-complete sentences?
+Or just scroll to view them?
+
+
+Testing
+After fixes:
+
+ Active sentence flows inline at end of current paragraph
+ If active sentence is paragraph start, it starts new paragraph
+ Tooltip never goes off screen (top, left, right)
+ Tooltip appears below if not enough space above
+ Start Over / rewind option available
+ Navigation works correctly

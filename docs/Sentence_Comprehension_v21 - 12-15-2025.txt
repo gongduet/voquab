@@ -1,0 +1,153 @@
+TASK: Documentation Updates - Reading Mode Sprint
+Update documentation to capture all the work from this development sprint. Review the actual codebase to ensure nothing is missed.
+
+Files to Update
+
+docs/99_LIVING_CHANGELOG.md - Add new entries
+docs/31_SENTENCE_COMPREHENSION.md - Update to reflect actual implementation
+docs/05_READING_EXPERIENCE.md - Update or add reading mode section
+docs/22_ADMIN_DASHBOARD.md - Add sentence management section
+
+
+Instructions for Claude Code
+Before writing documentation:
+
+Review these recently modified files to capture all features accurately:
+
+src/hooks/reading/useReadingSession.js
+src/hooks/reading/useReadingProgress.js
+src/components/reading/ (all components)
+src/pages/ReadingPage.jsx
+src/pages/AdminSentences.jsx
+src/components/admin/ (all components)
+
+
+Add any features, fixes, or implementation details I may have missed in my draft below.
+
+
+Draft Changelog Entries for 99_LIVING_CHANGELOG.md
+Add under a new date header (use today's date):
+markdown## 2024-12-XX - Reading Mode Complete Implementation
+
+### Reading Mode Core
+- **Flowing Paragraphs**: Completed sentences now flow as continuous text like a real book, grouped by paragraph based on `is_paragraph_start` flag
+- **Fragment-by-Fragment Reading**: Users progress through sentences one fragment at a time, with upcoming fragments blurred until active
+- **Tap-to-Peek Translation**: Tap any fragment to see its translation via tooltip; peeked fragments score 0.7 instead of 1.0
+- **Sentence Highlighting**: Users can highlight sentences for later review via tooltip toggle; highlighted sentences show amber underline/background
+- **Blurred Next Sentence Preview**: Shows blurred preview of upcoming sentence (or chapter title at chapter boundaries) to maintain reading flow
+- **Chapter-Only View**: Performance optimization - only loads current chapter's sentences instead of entire book history
+- **Smooth Transitions**: Batched state updates and opacity transitions eliminate jarring sentence-to-sentence jumps
+
+### Navigation Controls
+- **Tape Deck Navigation**: Fixed-position controls on right side of content area
+  - Single chevron (^/v): Move one sentence back/forward
+  - Double chevron (^^/vv): Jump to previous/next chapter
+- **Smart Navigation Permissions**: Forward navigation only enabled for already-visited content
+- **Seamless Navigation**: No loading screens when navigating - instant state manipulation
+
+### Reading Mode UI
+- **Sticky Header**: Shows "Exit" button, book title ("El Principito"), and current chapter
+- **Chapter Titles**: Roman numerals (Capítulo I, II, etc.) with elegant typography
+- **Green Check Button**: Small, subtle confirmation button positioned below current paragraph
+- **Sentence Tooltip**: Shows translation, fragment breakdown, and highlight toggle when tapping completed sentences
+
+### Admin - Sentence Management
+- **New Route**: `/admin/sentences` for managing sentence content
+- **Notion-Style Table**: Clean table view with columns for sentence number, paragraph toggle, Spanish text, English translation, fragment count
+- **Inline Paragraph Toggle**: Single-click to mark paragraph starts (no modal needed)
+- **Edit Modal**: Edit sentence translations, fragment translations, and context notes
+- **Keyboard Shortcuts**: Arrow keys to navigate, Enter to edit, P to toggle paragraph
+
+### Database Changes
+- Added `is_paragraph_start` boolean column to `sentences` table
+- Added `is_highlighted` boolean column to `user_sentence_progress` table
+- Added RLS policy for authenticated users to update sentences
+
+### Bug Fixes
+- Fixed stale closure bug causing premature "end of book" detection
+- Fixed chapter boundary detection for blurred previews
+- Fixed fragment breakdown not showing for some completed sentences
+- Fixed tooltip positioning (now stays within viewport bounds)
+- Fixed sentence transition flash/duplicate content
+
+### Performance
+- Chapter-only loading eliminates increasing load times as user progresses
+- Preview fetching is lightweight (minimal fields)
+- Background database operations don't block UI transitions
+
+### Future Enhancements (Documented)
+- Virtualized full-book view for seamless scrolling across chapters
+- Chapter unlock should trigger on chapter entry, not first sentence completion
+- Session summary on exit
+- Sentence Review mode with FSRS scheduling
+
+Updates for 31_SENTENCE_COMPREHENSION.md
+Update the document to reflect actual implementation:
+
+Mark completed items with ✅
+Update interaction flow to match tap-to-peek model (not 3-button)
+Add section on chapter-only view architecture
+Add section on navigation controls
+Document the highlight feature
+Add "Future Enhancements" section for:
+
+Virtualized full-book view
+Sentence Review mode (FSRS-scheduled review of completed sentences)
+Chapter gate (vocab check before advancing)
+
+
+
+
+Updates for 22_ADMIN_DASHBOARD.md
+Add new section for Sentence Management:
+markdown## Sentence Management
+
+### Route
+`/admin/sentences`
+
+### Features
+- **Chapter Filter**: Dropdown to filter sentences by chapter
+- **Search**: Filter by Spanish or English text
+- **Paragraph Toggle**: Click to mark sentence as paragraph start
+- **Edit Modal**: 
+  - View/edit sentence translation
+  - View/edit fragment translations
+  - Add context notes to fragments
+  - Toggle paragraph start
+
+### Keyboard Shortcuts
+- `↑/↓` - Navigate rows
+- `Enter` - Open edit modal
+- `P` - Toggle paragraph start
+- `Escape` - Close modal
+
+### Database
+Updates `sentences.is_paragraph_start` and `sentences.sentence_translation`
+Updates `sentence_fragments.fragment_translation` and `sentence_fragments.context_note`
+
+Updates for 05_READING_EXPERIENCE.md
+Review this file and either:
+
+Update existing content to match new implementation
+Or add a new section documenting the Reading Mode feature
+
+Key points to cover:
+
+Fragment-by-fragment progression
+Tap-to-peek interaction model
+Flowing paragraph display
+Chapter-only view for performance
+Navigation controls
+Highlight feature
+
+
+Claude Code Instructions
+
+Read the draft above
+Review the actual source files listed to verify accuracy and add missing details
+Update all four documentation files
+Add any implementation details I missed - you have intimate knowledge of the code
+Ensure consistency between changelog and spec documents
+Use the existing style/format of each document
+
+Report back with a summary of what was added/updated in each file.

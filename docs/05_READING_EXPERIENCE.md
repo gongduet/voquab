@@ -1,7 +1,7 @@
 # 05_READING_EXPERIENCE.md
 
-**Last Updated:** November 30, 2025  
-**Status:** Draft  
+**Last Updated:** December 23, 2025
+**Status:** Partially Implemented
 **Owner:** Claude + Peter
 
 ---
@@ -9,12 +9,13 @@
 ## TABLE OF CONTENTS
 1. [Overview](#overview)
 2. [Design Philosophy](#design-philosophy)
-3. [Reading Interface](#reading-interface)
-4. [Word Interaction](#word-interaction)
-5. [Chapter Navigation](#chapter-navigation)
-6. [Progress Tracking](#progress-tracking)
-7. [Mobile Optimization](#mobile-optimization)
-8. [Implementation Guide](#implementation-guide)
+3. [✅ Reading Mode](#reading-mode) (Implemented - Sentence Comprehension)
+4. [Reading Interface](#reading-interface) (Word-level - Future)
+5. [Word Interaction](#word-interaction)
+6. [Chapter Navigation](#chapter-navigation)
+7. [Progress Tracking](#progress-tracking)
+8. [Mobile Optimization](#mobile-optimization)
+9. [Implementation Guide](#implementation-guide)
 
 ---
 
@@ -30,6 +31,117 @@ The reading experience is where contextual learning happens. Users read El Princ
 - Add words to study queue
 - Beautiful typography and layout
 - Chapter-by-chapter progression
+
+**Note:** This document covers two reading experiences:
+1. **Reading Mode** (✅ Implemented) - Fragment-by-fragment comprehension with sentence learning. See [31_SENTENCE_COMPREHENSION.md](31_SENTENCE_COMPREHENSION.md) for details.
+2. **Word-Level Reading** (Future) - Tap-for-definition immersive reading. Sections below describe this future feature.
+
+---
+
+## ✅ READING MODE (Implemented)
+
+### Overview
+
+Reading Mode provides structured sentence comprehension practice. Users progress through chapters fragment-by-fragment, confirming understanding of each chunk before advancing.
+
+**Route:** `/reading`
+**Entry Point:** Dashboard "Read" button or chapter selection
+
+### Core Features
+
+| Feature | Description |
+|---------|-------------|
+| **Flowing Paragraphs** | Completed sentences display as continuous text, grouped by `is_paragraph_start` |
+| **Fragment-by-Fragment** | Current sentence shows fragments: completed (normal), active (bold), upcoming (blurred) |
+| **Tap-to-Peek** | Tap active fragment to see translation; marks fragment as "peeked" for scoring |
+| **Single Check Button** | Green check confirms understanding; peeked = 0.7 score, not peeked = 1.0 |
+| **Chapter-Only View** | Only loads current chapter's sentences for performance |
+| **Blurred Preview** | Next sentence or chapter title shown blurred beneath current sentence |
+| **Sentence Highlighting** | Tap completed sentences to toggle highlight for later review |
+
+### UI Layout
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ← Exit               El Principito               Capítulo I            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│                           Capítulo I                                    │
+│                                                                         │
+│    Cuando yo tenía seis años, vi una magnífica lámina en un libro      │
+│  sobre la selva virgen que se titulaba Historias Vividas.              │
+│                                                                         │
+│    Se veía en la lámina una serpiente boa tragándose a una fiera.      │
+│                                                                         │
+│    [En el libro decía:] "Las serpientes boas tragan enteras a sus      │
+│  presas, sin masticarlas."                                              │
+│                                              ┌──────────────────┐       │
+│  ← Active fragment (bold)                    │ it said: / read:│       │
+│                                              └──────────────────┘       │
+│                                                                         │
+│    Siguiente oración aquí borrosa...  ← Blurred preview                │
+│                                                                         │
+│                                                               [✓]       │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Navigation Controls
+
+Fixed-position "tape deck" controls on right side:
+
+| Button | Icon | Action |
+|--------|------|--------|
+| `^^` | ChevronsUp | Previous chapter |
+| `^` | ChevronUp | Previous sentence |
+| `v` | ChevronDown | Next sentence (if visited) |
+| `vv` | ChevronsDown | Next chapter (if visited) |
+
+### Component Structure
+
+```
+src/
+├── pages/
+│   └── Reading.jsx                    # Route handler
+├── components/reading/
+│   ├── ReadingPage.jsx                # Main container
+│   ├── StickyHeader.jsx               # Exit button, title, chapter
+│   ├── ChapterTitle.jsx               # Roman numeral chapter headings
+│   ├── FlowingParagraph.jsx           # Completed sentences + inline active
+│   ├── ActiveSentenceInline.jsx       # Fragment display with peek
+│   ├── SentenceTooltip.jsx            # Translation + highlight toggle
+│   └── NavigationControls.jsx         # Tape deck navigation
+├── hooks/reading/
+│   ├── useReadingSession.js           # Main state management (670+ lines)
+│   ├── useReadingProgress.js          # Database operations (950+ lines)
+│   └── useScrollToPosition.js         # Scroll behavior management
+```
+
+### State Management
+
+```javascript
+// useReadingSession state
+const [bookId, setBookId] = useState(null)
+const [currentChapter, setCurrentChapter] = useState(null)
+const [currentSentence, setCurrentSentence] = useState(null)
+const [currentFragmentIndex, setCurrentFragmentIndex] = useState(0)
+const [completedSentences, setCompletedSentences] = useState([])
+const [nextSentencePreview, setNextSentencePreview] = useState(null)
+const [nextChapterPreview, setNextChapterPreview] = useState(null)
+const [isTransitioning, setIsTransitioning] = useState(false)
+const [furthestPosition, setFurthestPosition] = useState(null)
+```
+
+### Database Tables
+
+- `user_book_reading_progress` - Position tracking with `current_sentence_id`, `current_fragment_index`, `furthest_sentence_id`
+- `user_sentence_progress` - FSRS scheduling + `is_highlighted` flag
+- `sentences` - Content with `is_paragraph_start` for paragraph grouping
+- `sentence_fragments` - Fragment text and translations
+
+### See Also
+
+For complete implementation details, see [31_SENTENCE_COMPREHENSION.md](31_SENTENCE_COMPREHENSION.md).
 
 ---
 
@@ -718,8 +830,8 @@ async function handleAddToQueue(lemmaId) {
 
 ## REVISION HISTORY
 
+- 2025-12-23: Added Reading Mode section documenting implemented sentence comprehension
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
 
 ---
 

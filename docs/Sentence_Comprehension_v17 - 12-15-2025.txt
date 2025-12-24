@@ -1,0 +1,141 @@
+TASK: Fix Jarring Sentence Transitions
+Problem: When completing a sentence, the transition is jarring - there's still a flash or abrupt change rather than smooth progression.
+Root cause analysis:
+The issue is likely multiple React state updates causing multiple re-renders:
+
+setCompletedSentences(...) → re-render
+setCurrentSentence(...) → re-render
+setCurrentFragmentIndex(0) → re-render
+setNextSentencePreview(...) → re-render
+
+Each re-render shows a different intermediate state.
+Solution: Batch all state updates together
+Option A: Use React 18's automatic batching with a single callback:
+javascriptconst handleSentenceComplete = useCallback(() => {
+  // React 18 batches these automatically in event handlers
+  // but we need to ensure they ALL happen in one synchronous block
+  
+  const nextSentence = nextSentencePreview;
+  const completedSentence = { ...currentSentence };
+  
+  // All state updates in one synchronous block
+  setIsTransitioning(true);
+  setNextSentencePreview(null);
+  setNextChapterPreview(null);
+  setCompletedSentences(prev => [...prev, completedSentence]);
+  setCurrentSentence(nextSentence);
+  setCurrentFragmentIndex(0);
+  setFragmentResults([]);
+  setPeekedFragments(new Set());
+  
+  // End transition after React has processed all updates
+  requestAnimationFrame(() => {
+    setIsTransitioning(false);
+  });
+  
+  // Fetch new preview in background (non-blocking)
+  if (nextSentence) {
+    fetchNextPreview(nextSentence.sentence_id);
+  }
+}, [currentSentence, nextSentencePreview]);
+Option B: Use flushSync to force synchronous updates (more aggressive):
+javascriptimport { flushSync } from 'react-dom';
+
+const handleSentenceComplete = useCallback(() => {
+  const nextSentence = nextSentencePreview;
+  const completedSentence = { ...currentSentence };
+  
+  flushSync(() => {
+    setNextSentencePreview(null);
+    setNextChapterPreview(null);
+    setCompletedSentences(prev => [...prev, completedSentence]);
+    setCurrentSentence(nextSentence);
+    setCurrentFragmentIndex(0);
+    setFragmentResults([]);
+    setPeekedFragments(new Set());
+  });
+  
+  // Now fetch new preview
+  if (nextSentence) {
+    fetchNextPreview(nextSentence.sentence_id);
+  }
+}, [currentSentence, nextSentencePreview]);
+Option C: Use a reducer to batch related state:
+javascript// Combine related state into a single useReducer
+const [readingState, dispatch] = useReducer(readingReducer, initialState);
+
+// Single dispatch updates everything atomically
+dispatch({ 
+  type: 'COMPLETE_SENTENCE',
+  payload: { 
+    completedSentence: currentSentence,
+    nextSentence: nextSentencePreview 
+  }
+});
+
+Additional fix: Hide content during transition
+If there's still a flash, hide the changing content briefly:
+jsx{/* Active sentence area */}
+<div className={`transition-opacity duration-100 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+  <ActiveSentenceInline ... />
+  {nextSentencePreview && !isTransitioning && (
+    <span className="blur-[3px]">...</span>
+  )}
+</div>
+This creates a quick fade-out/fade-in that masks the state change.
+
+Animation approach (smoothest):
+Instead of instant state swap, animate the transition:
+jsx// CSS
+.sentence-exit {
+  animation: sentenceExit 150ms ease-out forwards;
+}
+
+@keyframes sentenceExit {
+  to { 
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+
+.sentence-enter {
+  animation: sentenceEnter 300ms ease-out forwards;
+}
+
+@keyframes sentenceEnter {
+  from { 
+    opacity: 0;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+javascriptconst handleSentenceComplete = useCallback(() => {
+  // 1. Start exit animation
+  setIsExiting(true);
+  
+  // 2. After exit animation, swap content
+  setTimeout(() => {
+    // Do all the state updates
+    setCompletedSentences(prev => [...prev, currentSentence]);
+    setCurrentSentence(nextSentencePreview);
+    // ... etc
+    
+    setIsExiting(false);
+    setIsEntering(true);
+    
+    // 3. After enter animation completes
+    setTimeout(() => setIsEntering(false), 300);
+  }, 150); // Match exit animation duration
+}, [...]);
+
+Recommended approach: Try Option A first (batching with requestAnimationFrame). If still jarring, add the opacity transition to mask the change.
+
+Testing:
+
+ Complete a sentence - transition should be smooth
+ No flash of duplicate content
+ No jarring jump
+ Preview appears smoothly after transition settles
