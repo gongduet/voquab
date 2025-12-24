@@ -1,0 +1,76 @@
+Found it! The logs show:
+
+✅ Chapter boundary detected (isAtChapterBoundary: 4)
+✅ Vocab check ran (ready: false, percentage: 97)
+❌ Then [Preview] No current sentence, clearing previews - meaning currentSentence got set to null
+
+The chapter gate IS triggering, but something is still setting currentSentence to null afterward, which causes the "Fin" screen.
+
+TASK: Fix Chapter Gate Not Blocking Properly
+Problem: The vocab check runs and returns ready: false, but the code still sets currentSentence to null, triggering the end-of-book screen.
+The bug: After calling setChapterLocked(...), the code is NOT returning early. Or there's a state update happening after the return.
+In useReadingSession.js handleSentenceComplete, find the chapter gate section and ensure it returns BEFORE any other state changes:
+javascript// At chapter boundary, check if next chapter's vocab is ready
+if (isAtChapterBoundary && capturedNextChapterPreview) {
+  console.log('[ChapterGate] Checking vocab for chapter:', capturedNextChapterPreview);
+  
+  try {
+    const vocabStatus = await progress.checkChapterVocabReady(bookId, capturedNextChapterPreview);
+    console.log('[ChapterGate] Vocab status for chapter', capturedNextChapterPreview, ':', vocabStatus);
+    
+    if (!vocabStatus.ready) {
+      console.log('[ChapterGate] BLOCKING - setting chapterLocked state and returning');
+      
+      // Set the locked state
+      setChapterLocked({
+        chapterNumber: capturedNextChapterPreview,
+        percentage: vocabStatus.percentage,
+        seen: vocabStatus.seen,
+        total: vocabStatus.total
+      });
+      
+      // End transition
+      setIsTransitioning(false);
+      
+      // CRITICAL: Save progress for the completed sentence before returning
+      // (so user doesn't lose progress on the sentence they just finished)
+      await Promise.all([
+        progress.saveSentenceComplete(completedSentence.sentence_id, score, results),
+        progress.incrementSentencesCompleted(bookId),
+        progress.updateFurthestPosition(bookId, completedSentence.sentence_id)
+      ]);
+      
+      console.log('[ChapterGate] Returning early - should NOT see any more logs after this');
+      return; // STOP HERE - do not proceed to load next sentence
+    }
+    
+    console.log('[ChapterGate] Vocab ready, proceeding to next chapter');
+  } catch (err) {
+    console.error('[ChapterGate] ERROR:', err);
+    // On error, block anyway to be safe
+    setChapterLocked({
+      chapterNumber: capturedNextChapterPreview,
+      percentage: 0,
+      error: true
+    });
+    setIsTransitioning(false);
+    return;
+  }
+}
+
+// If we get here, either:
+// 1. Not at chapter boundary (nextSentenceId exists)
+// 2. At chapter boundary AND vocab is ready
+// In both cases, proceed to load next sentence
+
+if (!nextSentenceIdToFetch) {
+  // This should only happen if truly end of book (no next sentence, no next chapter)
+  console.log('[EndOfBook] No next sentence to fetch - this is the real end');
+  setCurrentSentence(null);
+  // ... rest of end-of-book handling
+}
+Also check: Is there any code AFTER the return statement that could still execute? Look for any finally blocks or callbacks that might set currentSentence to null.
+Add this log right before setting currentSentence to null:
+javascriptconsole.log('[DEBUG] About to set currentSentence to null - WHY?');
+setCurrentSentence(null);
+Report: Add the debug log and share what triggers the currentSentence = null after the chapter gate returns.

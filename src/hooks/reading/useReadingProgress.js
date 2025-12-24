@@ -659,6 +659,77 @@ export default function useReadingProgress(userId) {
   }
 
   /**
+   * Check if a chapter's vocabulary is ready (100% introduced)
+   * Returns { ready: boolean, percentage: number }
+   */
+  async function checkChapterVocabReady(bookId, chapterNumber) {
+    if (!userId || !bookId || !chapterNumber) {
+      return { ready: false, percentage: 0 }
+    }
+
+    try {
+      // Get all unique lemma IDs for this chapter (excluding stop words)
+      const { data: chapterLemmas, error: lemmaError } = await supabase
+        .from('words')
+        .select(`
+          lemma_id,
+          sentences!inner (
+            chapters!inner (
+              chapter_number,
+              book_id
+            )
+          ),
+          lemmas!inner (
+            is_stop_word
+          )
+        `)
+        .eq('sentences.chapters.book_id', bookId)
+        .eq('sentences.chapters.chapter_number', chapterNumber)
+        .eq('lemmas.is_stop_word', false)
+
+      if (lemmaError) {
+        console.error('Error fetching chapter lemmas:', lemmaError)
+        return { ready: false, percentage: 0 }
+      }
+
+      // Get unique lemma IDs
+      const uniqueLemmaIds = [...new Set(chapterLemmas?.map(w => w.lemma_id) || [])]
+      const totalLemmas = uniqueLemmaIds.length
+
+      if (totalLemmas === 0) {
+        // No lemmas in this chapter - consider it ready
+        return { ready: true, percentage: 100 }
+      }
+
+      // Get count of these lemmas that the user has introduced (reps >= 1)
+      const { count: seenCount, error: seenError } = await supabase
+        .from('user_lemma_progress')
+        .select('lemma_id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .in('lemma_id', uniqueLemmaIds)
+        .gte('reps', 1)
+
+      if (seenError) {
+        console.error('Error fetching user lemma progress:', seenError)
+        return { ready: false, percentage: 0 }
+      }
+
+      const seenLemmas = seenCount || 0
+      const percentage = Math.round((seenLemmas / totalLemmas) * 100)
+
+      return {
+        ready: seenLemmas >= totalLemmas,
+        percentage,
+        seen: seenLemmas,
+        total: totalLemmas
+      }
+    } catch (err) {
+      console.error('Error checking chapter vocab:', err)
+      return { ready: false, percentage: 0 }
+    }
+  }
+
+  /**
    * Get the furthest sentence info
    */
   async function fetchFurthestPosition(bookId) {
@@ -712,6 +783,48 @@ export default function useReadingProgress(userId) {
 
     if (error) {
       console.error('Error updating position:', error)
+    }
+  }
+
+  /**
+   * Register that a chapter has been reached (for immediate navigation back)
+   * Called when entering a new chapter, not when completing a sentence
+   */
+  async function registerChapterReached(bookId, chapterNumber, sentenceId) {
+    if (!userId || !bookId) return
+
+    try {
+      // Get current furthest position
+      const { data: progress } = await supabase
+        .from('user_book_reading_progress')
+        .select('furthest_sentence_id')
+        .eq('user_id', userId)
+        .eq('book_id', bookId)
+        .single()
+
+      if (!progress) return
+
+      // Get the chapter number of current furthest
+      const { data: furthestSentence } = await supabase
+        .from('sentences')
+        .select('chapters!inner(chapter_number)')
+        .eq('sentence_id', progress.furthest_sentence_id)
+        .single()
+
+      if (!furthestSentence) return
+
+      const furthestChapterNum = furthestSentence.chapters.chapter_number
+
+      // Only update if this chapter is further than current furthest
+      if (chapterNumber > furthestChapterNum) {
+        await supabase
+          .from('user_book_reading_progress')
+          .update({ furthest_sentence_id: sentenceId })
+          .eq('user_id', userId)
+          .eq('book_id', bookId)
+      }
+    } catch (err) {
+      console.error('Error registering chapter reached:', err)
     }
   }
 
@@ -937,10 +1050,12 @@ export default function useReadingProgress(userId) {
     fetchPreviousChapter,
     fetchNextChapter,
     fetchFurthestPosition,
+    checkChapterVocabReady,
 
     // Update functions
     updatePosition,
     updateFurthestPosition,
+    registerChapterReached,
     saveSentenceComplete,
     incrementFragmentStats,
     incrementSentencesCompleted,

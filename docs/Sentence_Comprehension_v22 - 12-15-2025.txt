@@ -1,0 +1,92 @@
+TASK: Chapter Gate and Chapter Unlock Fixes
+Two fixes for reading mode navigation:
+
+Fix 1: Chapter Gate - Block Advancing to Locked Chapters
+When user tries to navigate to next chapter (vv button or completing last sentence of current chapter):
+
+Check if Chapter N+1 vocab is 100% introduced
+Check if current chapter is fully completed
+
+If next chapter is locked, show a message instead of advancing:
+jsx// New component or modal
+<div className="text-center py-12">
+  <h2 className="text-xl font-semibold text-neutral-800 mb-2">
+    Chapter {nextChapterNumber} Locked
+  </h2>
+  <p className="text-neutral-600 mb-6">
+    You need to study more vocabulary before continuing.
+  </p>
+  <p className="text-sm text-neutral-500 mb-6">
+    {vocabProgress}% of Chapter {nextChapterNumber} words introduced
+  </p>
+  <button 
+    onClick={() => navigate('/dashboard')}
+    className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700"
+  >
+    Return to Dashboard
+  </button>
+</div>
+Check vocab progress:
+javascript// In useReadingProgress.js or similar
+const checkChapterVocabReady = async (bookId, chapterNumber) => {
+  // Get count of lemmas for this chapter
+  const { count: totalLemmas } = await supabase
+    .from('word_lemma_sentence')
+    .select('lemma_id', { count: 'exact', head: true })
+    .eq('chapter_number', chapterNumber)
+    .eq('book_id', bookId);
+  
+  // Get count of lemmas user has seen (introduced)
+  const { count: seenLemmas } = await supabase
+    .from('user_lemma_progress')
+    .select('lemma_id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .in('lemma_id', /* lemmas from this chapter */);
+  
+  return {
+    ready: seenLemmas >= totalLemmas,
+    percentage: Math.round((seenLemmas / totalLemmas) * 100)
+  };
+};
+Apply gate in these places:
+
+goToNextChapter() - check before jumping
+handleSentenceComplete() - when completing last sentence of chapter
+Navigation button (vv) - disable or show tooltip if next chapter locked
+
+For the vv button when locked:
+Show tooltip on hover/click: "Chapter X needs more vocabulary study"
+
+Fix 2: Chapter Unlock on First Fragment View
+Current behavior: Chapter registers as "reached" after completing first sentence
+Desired behavior: Chapter registers as "reached" when user sees first fragment
+Implementation:
+In initializeSession or when chapter changes, update furthest position immediately:
+javascript// When a new chapter is entered (not just sentence completed)
+const registerChapterReached = async (bookId, chapterId, chapterNumber, sentenceId) => {
+  // Update furthest position to include this chapter
+  await supabase
+    .from('user_book_reading_progress')
+    .update({
+      furthest_chapter_number: chapterNumber,
+      furthest_sentence_id: sentenceId
+    })
+    .eq('user_id', userId)
+    .eq('book_id', bookId)
+    .lt('furthest_chapter_number', chapterNumber); // Only if this is further than before
+};
+Call this when:
+
+User navigates to a new chapter via jumpToChapter()
+User advances from Chapter N to Chapter N+1 naturally (after completing last sentence)
+On session init if currentSentence is in a chapter beyond furthestPosition
+
+Result: User can immediately use ^^ to return to a chapter they've just entered.
+
+Testing Checklist
+
+ Cannot advance to Chapter 2 if vocab not 100% introduced
+ Shows "Chapter Locked" message with return to dashboard button
+ vv button shows tooltip when next chapter is locked
+ Entering Chapter 4 immediately allows navigating back to it (^^ then vv)
+ Furthest position updates on chapter entry, not sentence completion

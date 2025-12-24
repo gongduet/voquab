@@ -39,6 +39,10 @@ export default function useReadingSession(userId) {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [error, setError] = useState(null)
 
+  // Chapter gate state - when next chapter is locked due to vocab
+  const [chapterLocked, setChapterLocked] = useState(null)
+  // { chapterNumber: number, vocabPercentage: number }
+
   // Navigation state - tracks furthest position for enabling forward navigation
   const [furthestPosition, setFurthestPosition] = useState(null)
 
@@ -323,10 +327,38 @@ export default function useReadingSession(userId) {
       return
     }
 
-    // If at chapter boundary, fetch the first sentence of the next chapter
+    // If at chapter boundary, check if next chapter's vocab is ready
     let nextSentenceIdToFetch = nextSentenceId
     if (isAtChapterBoundary) {
-      // Fetch first sentence of next chapter
+      // Check if next chapter's vocabulary is 100% introduced
+      const vocabStatus = await progress.checkChapterVocabReady(bookId, capturedNextChapterPreview)
+      console.log('[ChapterGate] Vocab status for chapter', capturedNextChapterPreview, ':', vocabStatus)
+
+      if (!vocabStatus.ready) {
+        console.log('[ChapterGate] BLOCKING - setting chapterLocked state and returning')
+        // Chapter locked - show the locked message instead of advancing
+        // IMPORTANT: Do NOT set currentSentence to null - keep showing the last sentence
+        // The chapterLocked state will trigger the locked UI in ReadingPage
+        setChapterLocked({
+          chapterNumber: capturedNextChapterPreview,
+          vocabPercentage: vocabStatus.percentage
+        })
+        setIsTransitioning(false)
+
+        // Save the completed sentence progress in background
+        Promise.all([
+          progress.saveSentenceComplete(completedSentence.sentence_id, score, results),
+          progress.incrementSentencesCompleted(bookId),
+          progress.updateFurthestPosition(bookId, completedSentence.sentence_id)
+        ]).catch(err => {
+          console.error('Error saving sentence progress:', err)
+        })
+
+        console.log('[ChapterGate] Returning early - should NOT see any more logs after this')
+        return
+      }
+
+      // Vocab is ready, fetch first sentence of next chapter
       const firstSentence = await progress.fetchChapterFirstSentence(bookId, capturedNextChapterPreview)
       if (firstSentence) {
         nextSentenceIdToFetch = firstSentence.sentence_id
@@ -358,6 +390,13 @@ export default function useReadingSession(userId) {
         const newChapterInfo = await progress.fetchChapterInfo(nextSentence.chapter_id)
         setCurrentChapter(newChapterInfo)
         setCompletedSentences([]) // Fresh start for new chapter
+
+        // Register chapter as reached immediately (Fix 2: enables navigation back)
+        await progress.registerChapterReached(bookId, newChapterInfo.chapter_number, nextSentence.sentence_id)
+
+        // Update furthest position state so navigation buttons update
+        const updatedFurthest = await progress.fetchFurthestPosition(bookId)
+        setFurthestPosition(updatedFurthest)
       }
 
       // Update current sentence state
@@ -458,6 +497,13 @@ export default function useReadingSession(userId) {
       // Update position
       await progress.updatePosition(bookId, sentence.sentence_id, 1)
 
+      // Register chapter as reached immediately (if further than before)
+      await progress.registerChapterReached(bookId, chapterNumber, sentence.sentence_id)
+
+      // Refresh furthest position after registration
+      const updatedFurthest = await progress.fetchFurthestPosition(bookId)
+      setFurthestPosition(updatedFurthest)
+
       // Load ONLY this chapter's completed sentences (starts empty for first sentence)
       // When jumping to a chapter start, there are no completed sentences before the first one
       setCompletedSentences([])
@@ -538,6 +584,13 @@ export default function useReadingSession(userId) {
       const newChapterInfo = await progress.fetchChapterInfo(nextSentence.chapter_id)
       setCurrentChapter(newChapterInfo)
       setCompletedSentences([]) // Fresh start for new chapter
+
+      // Register chapter as reached immediately (enables navigation back)
+      await progress.registerChapterReached(bookId, newChapterInfo.chapter_number, nextSentence.sentence_id)
+
+      // Update furthest position state
+      const updatedFurthest = await progress.fetchFurthestPosition(bookId)
+      setFurthestPosition(updatedFurthest)
     } else {
       // Same chapter - add current to completed
       setCompletedSentences(prev => [...prev, currentSentence])
@@ -564,7 +617,7 @@ export default function useReadingSession(userId) {
   }, [currentChapter, bookId, isTransitioning, jumpToChapter])
 
   /**
-   * Go to the next chapter (only if already visited)
+   * Go to the next chapter (only if already visited AND vocab is ready)
    */
   const goToNextChapter = useCallback(async () => {
     if (!currentChapter || !bookId || isTransitioning) return
@@ -578,8 +631,27 @@ export default function useReadingSession(userId) {
       return
     }
 
-    await jumpToChapter(chapterNum + 1)
-  }, [currentChapter, bookId, isTransitioning, furthestPosition, jumpToChapter])
+    // Also check vocab readiness for next chapter
+    const nextChapterNum = chapterNum + 1
+    const vocabStatus = await progress.checkChapterVocabReady(bookId, nextChapterNum)
+    if (!vocabStatus.ready) {
+      // Show chapter locked message
+      setChapterLocked({
+        chapterNumber: nextChapterNum,
+        vocabPercentage: vocabStatus.percentage
+      })
+      return
+    }
+
+    await jumpToChapter(nextChapterNum)
+  }, [currentChapter, bookId, isTransitioning, furthestPosition, jumpToChapter, progress])
+
+  /**
+   * Dismiss the chapter locked message
+   */
+  const dismissChapterLocked = useCallback(() => {
+    setChapterLocked(null)
+  }, [])
 
   /**
    * Get the current fragment being worked on
@@ -643,6 +715,8 @@ export default function useReadingSession(userId) {
     isTransitioning,
     error,
     isEndOfBook,
+    chapterLocked,
+    dismissChapterLocked,
 
     // Progress
     sentenceProgress,

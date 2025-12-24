@@ -225,9 +225,45 @@ export default function ReadingPage({ chapterNumber }) {
     )
   }
 
+  // Chapter locked state - next chapter requires more vocabulary study
+  if (session.chapterLocked) {
+    return (
+      <div className="min-h-screen bg-white">
+        <StickyHeader bookTitle="El Principito" chapterNumber={session.currentChapter?.chapter_number} />
+        <div className="flex flex-col items-center justify-center h-64 px-4 text-center">
+          <h2 className="text-xl font-semibold text-neutral-800 mb-2">
+            Chapter {session.chapterLocked.chapterNumber} Locked
+          </h2>
+          <p className="text-neutral-600 mb-4">
+            You need to study more vocabulary before continuing.
+          </p>
+          <p className="text-sm text-neutral-500 mb-6">
+            {session.chapterLocked.vocabPercentage}% of Chapter {session.chapterLocked.chapterNumber} words introduced
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                session.dismissChapterLocked()
+                navigate('/dashboard')
+              }}
+              className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700"
+            >
+              Return to Dashboard
+            </button>
+            <button
+              onClick={session.dismissChapterLocked}
+              className="px-6 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200"
+            >
+              Stay Here
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Determine if active sentence starts a new paragraph or continues the last one
   const activeStartsNewParagraph = session.currentSentence?.is_paragraph_start
-  const lastParagraph = paragraphs[paragraphs.length - 1]
   const hasCompletedSentences = paragraphs.length > 0
 
   return (
