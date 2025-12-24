@@ -16,6 +16,11 @@ import PackageView from './pages/PackageView'
 import Admin from './pages/Admin'
 import AdminCommonWords from './pages/AdminCommonWords'
 import AdminSentences from './pages/AdminSentences'
+import SentenceDeepDive from './pages/SentenceDeepDive'
+import LemmaDeepDive from './pages/LemmaDeepDive'
+import OrphanedWords from './pages/OrphanedWords'
+import AdminPhrases from './pages/AdminPhrases'
+import PhraseDeepDive from './pages/PhraseDeepDive'
 
 function App() {
   return (
@@ -116,7 +121,12 @@ function App() {
           {/* Admin Routes (password-protected, no ProtectedRoute needed) */}
           <Route path="/admin" element={<Admin />}>
             <Route path="common-words" element={<AdminCommonWords />} />
+            <Route path="lemmas/orphaned" element={<OrphanedWords />} />
+            <Route path="lemmas/:lemmaId" element={<LemmaDeepDive />} />
+            <Route path="phrases" element={<AdminPhrases />} />
+            <Route path="phrases/:phraseId" element={<PhraseDeepDive />} />
             <Route path="sentences" element={<AdminSentences />} />
+            <Route path="sentences/:sentenceId" element={<SentenceDeepDive />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

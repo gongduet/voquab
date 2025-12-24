@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import SentenceTable from '../components/admin/SentenceTable'
 import SentenceEditModal from '../components/admin/SentenceEditModal'
-import { Search, ChevronDown } from 'lucide-react'
+import { Search, ChevronDown, CheckCircle, Circle } from 'lucide-react'
 
 export default function AdminSentences() {
   // State
@@ -22,6 +22,7 @@ export default function AdminSentences() {
   const [sentences, setSentences] = useState([])
   const [filteredSentences, setFilteredSentences] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [filterReviewed, setFilterReviewed] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSentenceId, setSelectedSentenceId] = useState(null)
   const [editingSentence, setEditingSentence] = useState(null)
@@ -73,20 +74,28 @@ export default function AdminSentences() {
     fetchSentences()
   }, [selectedChapterId])
 
-  // Filter sentences when search query changes
+  // Filter sentences when search query or review filter changes
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredSentences(sentences)
-      return
+    let filtered = sentences
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(s =>
+        s.sentence_text?.toLowerCase().includes(query) ||
+        s.sentence_translation?.toLowerCase().includes(query)
+      )
     }
 
-    const query = searchQuery.toLowerCase()
-    const filtered = sentences.filter(s =>
-      s.sentence_text?.toLowerCase().includes(query) ||
-      s.sentence_translation?.toLowerCase().includes(query)
-    )
+    // Review status filter
+    if (filterReviewed === 'reviewed') {
+      filtered = filtered.filter(s => s.is_reviewed)
+    } else if (filterReviewed === 'unreviewed') {
+      filtered = filtered.filter(s => !s.is_reviewed)
+    }
+
     setFilteredSentences(filtered)
-  }, [searchQuery, sentences])
+  }, [searchQuery, filterReviewed, sentences])
 
   // Keyboard navigation
   useEffect(() => {
@@ -236,6 +245,27 @@ export default function AdminSentences() {
     }
   }, [])
 
+  const handleToggleReviewed = useCallback(async (sentence) => {
+    const newValue = !sentence.is_reviewed
+    const { error } = await supabase
+      .from('sentences')
+      .update({
+        is_reviewed: newValue,
+        reviewed_at: newValue ? new Date().toISOString() : null
+      })
+      .eq('sentence_id', sentence.sentence_id)
+
+    if (!error) {
+      setSentences(prev => prev.map(s =>
+        s.sentence_id === sentence.sentence_id
+          ? { ...s, is_reviewed: newValue }
+          : s
+      ))
+    } else {
+      console.error('Error toggling reviewed:', error)
+    }
+  }, [])
+
   // Get selected chapter info
   const selectedChapter = chapters.find(c => c.chapter_id === selectedChapterId)
 
@@ -277,6 +307,17 @@ export default function AdminSentences() {
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
+        {/* Review status filter */}
+        <select
+          value={filterReviewed}
+          onChange={(e) => setFilterReviewed(e.target.value)}
+          className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">All Review Status</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="unreviewed">Needs Review</option>
+        </select>
       </div>
 
       {/* Keyboard hints */}
@@ -294,6 +335,7 @@ export default function AdminSentences() {
           onSelect={setSelectedSentenceId}
           onEdit={handleEdit}
           onToggleParagraph={handleToggleParagraph}
+          onToggleReviewed={handleToggleReviewed}
           isLoading={isLoading}
         />
       </div>

@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 15, 2025
+**Last Updated:** December 23, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -31,7 +31,301 @@ Working on final polish and testing before MVP launch.
 
 ---
 
-## 2024-12-23 - Reading Mode Complete Implementation
+## 2025-12-24 - Admin Suite Phase 2d: Sentences Review Status
+
+### Added
+
+- **Review status filter** on Sentences list (All/Reviewed/Needs Review)
+- **Reviewed toggle column** in Sentences table
+- **Reviewed toggle button** in Sentence Deep Dive header
+
+### Completed
+
+- Admin Suite Phase 2 is now complete!
+
+---
+
+## 2025-12-24 - Admin Suite Phase 2c: Phrases Management
+
+### Added
+
+- **Phrases Tab** in Admin navigation (between Lemmas and Sentences)
+
+- **Phrases List Page** (`/admin/phrases`)
+  - View all phrases with occurrence counts
+  - Filter by type (idiom, compound, collocation, expression)
+  - Filter by chapter, review status
+  - Search by phrase text or definition
+  - Toggle reviewed status
+  - Create new phrase modal
+  - Keyboard navigation (↑/↓ to navigate, Enter to open)
+
+- **Phrase Deep Dive** (`/admin/phrases/:phraseId`)
+  - Edit phrase text, definitions, type
+  - Toggle reviewed status
+  - View all occurrences grouped by chapter
+  - Link to sentence deep dive from occurrences
+  - Delete individual occurrences
+  - Delete phrase (cascades to occurrences)
+
+- **Create Phrase Modal**
+  - Add phrase text
+  - Multiple definitions
+  - Select type
+
+### Files Created
+
+- `src/pages/AdminPhrases.jsx`
+- `src/pages/PhraseDeepDive.jsx`
+- `src/components/admin/CreatePhraseModal.jsx`
+
+### Files Modified
+
+- `src/App.jsx` - Added phrases routes
+- `src/pages/Admin.jsx` - Added Phrases tab and dashboard card
+
+---
+
+## 2025-12-24 - Admin Suite Phase 2b: Orphaned Words & Delete Safeguards
+
+### Added
+
+- **Orphaned Words Page** (`/admin/lemmas/orphaned`)
+  - View all words without valid lemma assignments (lemma_id is NULL)
+  - Grouped by chapter for easy navigation
+  - Assign lemma to each orphaned word via search modal
+  - Link from main Lemmas page (AlertTriangle icon button)
+  - Empty state celebration when no orphaned words exist
+
+- **Enhanced Delete Lemma Flow** (`LemmaDeepDive.jsx`)
+  - Warning when words are assigned to lemma being deleted
+  - Option to make words orphaned (for later reassignment)
+  - Option to bulk reassign all words to another lemma before deletion
+  - Target lemma search modal for reassignment
+  - Confirmation required before deletion
+
+### Changed
+
+- LemmaReassignModal now supports `currentLemmaId` prop to exclude a lemma from search results
+- LemmaReassignModal `onConfirm` callback now passes lemma data as second argument
+
+### Files Created
+
+- `src/pages/OrphanedWords.jsx`
+
+### Files Modified
+
+- `src/App.jsx` - Added `/admin/lemmas/orphaned` route (before `:lemmaId` route)
+- `src/pages/AdminCommonWords.jsx` - Added link to Orphaned Words page
+- `src/pages/LemmaDeepDive.jsx` - Enhanced delete confirmation modal with orphan/reassign options
+- `src/components/admin/LemmaReassignModal.jsx` - Added currentLemmaId exclusion support
+
+---
+
+## 2025-12-24 - Admin Suite Phase 2a: Lemmas Management
+
+### Added
+
+**Enhanced Lemmas List** (renamed from Common Words):
+- Tab and dashboard card renamed from "Common Words" to "Lemmas"
+- `is_reviewed` toggle column with visual indicator (checkmark/circle icon)
+- POS filter dropdown (Nouns, Verbs, Adjectives, etc.)
+- Chapter filter dropdown (shows lemmas appearing in specific chapters)
+- Review status filter (reviewed/unreviewed)
+- Definition filter (has/missing definition)
+- Deep dive link for each lemma (ExternalLink icon)
+- Create New Lemma button and modal
+
+**Lemma Deep Dive** (`/admin/lemmas/:lemmaId`):
+- Edit lemma text, definitions, POS, gender
+- Toggle stop word and reviewed status
+- Word occurrences grouped by chapter with expandable sections
+- Sentence context for each occurrence
+- Reassign words to different lemma
+- Delete lemma (with safeguards - blocks if words still attached)
+- Link to Sentence Deep Dive from occurrences
+
+**Create Lemma Modal** (`CreateLemmaModal.jsx`):
+- Full form for new lemma creation
+- Multiple definitions support with add/remove
+- POS and gender selection
+- Stop word checkbox
+
+### Fixed
+- AddPhraseModal now includes `component_lemmas` when creating new phrases (required field)
+- Changed `definitions: null` to `definitions: []` in AddPhraseModal
+
+### Files Created
+- `src/components/admin/CreateLemmaModal.jsx`
+- `src/pages/LemmaDeepDive.jsx`
+
+### Files Modified
+- `src/pages/Admin.jsx` - Renamed tab, updated descriptions and routing logic
+- `src/pages/AdminCommonWords.jsx` - Added filters, reviewed column, create button
+- `src/App.jsx` - Added `/admin/lemmas/:lemmaId` route
+
+---
+
+## 2025-12-24 - Admin Suite Final Fixes
+
+### Common Words Enhancements
+
+**Fixed 1000 word limit** (`AdminCommonWords.jsx`):
+- Added `.range(0, 9999)` to fetch all ~1,854 lemmas (Supabase defaults to 1000)
+- Console logs now show actual total count
+
+**Word frequency counts**:
+- Fetches all words and counts occurrences per lemma
+- Displays frequency column with color-coded badges (>50: blue, >10: light blue, else neutral)
+- Bulk "Mark Top N" now correctly uses frequency to identify most common words
+
+**Sorting options**:
+- Sort by Frequency (default, descending)
+- Sort Alphabetically
+- Toggle sort order (↑/↓ button)
+
+**Find in sentences link**:
+- External link icon next to each word's action buttons
+- Links to `/admin/sentences?search={lemma}` to find all occurrences
+
+---
+
+## 2025-12-24 - Admin Suite Bug Fixes & Enhancements
+
+### Bug Fixes
+
+**Phrase toggle refresh fix** (`PhrasesSection.jsx`):
+- Added `e.preventDefault()` and `e.stopPropagation()` to reviewed toggle handler
+- Added `type="button"` to prevent form submission behavior
+- Phrase reviewed status now toggles without page refresh
+
+**Lemma reassign debugging** (`SentenceDeepDive.jsx`):
+- Added console logging for reassign operations
+- Uses `.select()` to verify database update
+
+### Enhancements
+
+**Multiple definitions UI** (`WordsTable.jsx`):
+- Definitions now treated as array (JSONB format)
+- Inline editing shows each definition separately with remove button
+- "Add definition" button to append new definitions
+- Enter in last input adds new definition, or saves if empty
+- Handles both array and legacy string formats
+
+**Stop word toggle on word rows** (`WordsTable.jsx`, `SentenceDeepDive.jsx`):
+- Clickable badge next to lemma text: "stop" or "mark stop"
+- Hover states show intent (red for unmark, green for mark)
+- `handleToggleStopWord` updates lemma and local state
+
+**Add phrase modal** (`AddPhraseModal.jsx`, `PhrasesSection.jsx`):
+- New "Add Phrase" button in PhrasesSection header
+- Modal with:
+  - Start/end position dropdowns (populated from words)
+  - Live preview of selected word range
+  - Radio toggle: "Link to existing phrase" vs "Create new phrase"
+  - Existing phrase search with debounced results
+  - New phrase form: text, definition, type (compound/idiom/collocation/expression)
+- Creates phrase_occurrences record (and phrases record if new)
+
+### Common Words UI Refresh (`AdminCommonWords.jsx`)
+
+Complete redesign to match Notion aesthetic:
+- Removed all `font-serif` classes
+- Stats cards: border instead of shadow, neutral colors
+- Flattened filters: inline search + dropdown + bulk menu
+- Bulk actions moved to dropdown menu instead of colorful buttons
+- Applied `.admin-table` styling with subtle borders
+- Added keyboard navigation (↑/↓ to move, S to toggle stop word)
+- Keyboard hint row matching AdminSentences pattern
+
+---
+
+## 2025-12-23 - Admin Suite Phase 1: Sentence Deep Dive
+
+### New Components
+
+**`src/pages/SentenceDeepDive.jsx`** - Main page for complete sentence breakdown:
+- Route: `/admin/sentences/:sentenceId`
+- Fetches sentence with fragments, words with lemmas, phrase occurrences
+- Prev/next sentence navigation within chapter
+- Keyboard shortcuts: `←/→` navigate sentences, `Esc` back to list
+- Handlers for translation save, paragraph toggle, fragment save, lemma edit/reassign
+
+**`src/components/admin/SentenceHeader.jsx`**:
+- Displays Spanish sentence text (read-only)
+- Inline editable translation with Enter to save, Esc to cancel
+- Paragraph start toggle button
+- Chapter info display
+
+**`src/components/admin/WordsTable.jsx`**:
+- Table of words with position, word text, lemma, POS, definitions
+- Inline editable definitions
+- Stop word and gender indicators
+- Reassign lemma action button
+
+**`src/components/admin/LemmaReassignModal.jsx`**:
+- Search lemmas by text (debounced)
+- Display results with definitions and POS
+- Confirm reassignment updates word-to-lemma mapping
+
+**`src/components/admin/PhrasesSection.jsx`**:
+- List phrase occurrences with phrase info
+- Edit phrase definitions inline
+- Toggle reviewed status
+- Delete occurrence button
+
+### Changes
+- **`src/App.jsx`**: Added route for `/admin/sentences/:sentenceId`
+- **`src/pages/Admin.jsx`**: Updated breadcrumb and tab highlighting for deep dive route
+- **`src/components/admin/SentenceRow.jsx`**: Added deep dive link (external link icon) alongside quick edit button
+- **`src/components/admin/SentenceTable.jsx`**: Updated Actions column header
+
+---
+
+## 2025-12-23 - Chapter Gate & Navigation Fixes
+
+### Chapter Gate (v22)
+- **New function**: `checkChapterVocabReady(bookId, chapterNumber)` in `useReadingProgress.js`
+  - Fetches all unique lemma IDs for target chapter (excluding stop words via `lemmas.is_stop_word = false`)
+  - Counts how many user has introduced (`reps >= 1` in `user_lemma_progress`)
+  - Returns `{ ready: boolean, percentage: number, seen: number, total: number }`
+- **Chapter Locked UI** in `ReadingPage.jsx`:
+  - Shows "Chapter X Locked" with percentage of words introduced
+  - "Return to Dashboard" button dismisses and navigates
+  - "Stay Here" button dismisses and keeps user on last sentence
+- **Gate applied in three places**:
+  - `handleSentenceComplete` - blocks when completing last sentence of chapter
+  - `goToNextChapter` - blocks manual chapter forward navigation (vv button)
+  - Both check vocab readiness before allowing advancement
+
+### Chapter Unlock Timing Fix (v22)
+- **New function**: `registerChapterReached(bookId, chapterNumber, sentenceId)` in `useReadingProgress.js`
+  - Updates `furthest_sentence_id` immediately when entering a new chapter
+  - Compares against current furthest to only update if further
+- **Called in three places**:
+  - `handleSentenceComplete` - when crossing chapter boundary
+  - `goToNextSentence` - when navigating forward crosses chapter
+  - `jumpToChapter` - when explicitly jumping to a chapter
+- **Result**: User can immediately use `^^` to return to a chapter they just entered
+
+### Bug Fixes
+- **v23: Chapter gate showing "Fin" instead of locked message**
+  - Root cause: Code was setting `setCurrentSentence(null)` when chapter locked, which triggered `isEndOfBook` check
+  - Fix: Removed `setCurrentSentence(null)` from locked block - keep showing last sentence while locked UI displays
+  - The `chapterLocked` state is checked before `isEndOfBook` in ReadingPage render logic
+- **v20: Stale closure in handleSentenceComplete**
+  - Root cause: `moveToNextFragment` called `handleSentenceComplete` directly, capturing stale `nextSentencePreview` value
+  - Fix: Added `handleSentenceCompleteRef` (useRef) that always holds latest callback
+  - `moveToNextFragment` now calls `handleSentenceCompleteRef.current()` instead
+
+### Files Modified
+- `src/hooks/reading/useReadingProgress.js` - Added `checkChapterVocabReady`, `registerChapterReached`
+- `src/hooks/reading/useReadingSession.js` - Added `chapterLocked` state, gate checks, ref pattern
+- `src/components/reading/ReadingPage.jsx` - Added Chapter Locked UI render block
+
+---
+
+## 2025-12-23 - Reading Mode Complete Implementation
 
 ### Reading Mode Core
 - **Flowing Paragraphs**: Completed sentences flow as continuous text like a real book, grouped by paragraph based on `is_paragraph_start` flag

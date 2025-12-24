@@ -1,0 +1,38 @@
+Found it. Look at lines 126-134 in the handleSave function:
+javascriptconst { data: newPhrase, error: phraseError } = await supabase
+  .from('phrases')
+  .insert({
+    phrase_text: newPhraseText.trim(),
+    definitions: newDefinition.trim() ? [newDefinition.trim()] : null,
+    phrase_type: newPhraseType,
+    is_reviewed: false
+    // Missing: component_lemmas
+  })
+The phrases table requires component_lemmas (array of lemma UUIDs), but it's not being included.
+Quick fix for Claude Code:
+In src/components/admin/AddPhraseModal.jsx, update the handleSave function to extract lemma IDs from the selected words:
+javascript// Inside handleSave, before the insert, add:
+const selectedWords = words
+  .filter(w => w.word_position >= start && w.word_position <= end)
+  .sort((a, b) => a.word_position - b.word_position)
+
+// Get unique lemma IDs from selected words
+const componentLemmas = [...new Set(
+  selectedWords
+    .map(w => w.lemmas?.lemma_id || w.lemma_id)
+    .filter(Boolean)
+)]
+
+// Then update the insert to include component_lemmas:
+const { data: newPhrase, error: phraseError } = await supabase
+  .from('phrases')
+  .insert({
+    phrase_text: newPhraseText.trim(),
+    definitions: newDefinition.trim() ? [newDefinition.trim()] : [],
+    phrase_type: newPhraseType,
+    is_reviewed: false,
+    component_lemmas: componentLemmas  // ADD THIS
+  })
+  .select()
+  .single()
+Also change definitions: null to definitions: [] since it's likely also NOT NULL.

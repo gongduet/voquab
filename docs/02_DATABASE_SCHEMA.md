@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 24, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -146,8 +146,11 @@ CREATE TABLE sentences (
   sentence_translation TEXT NOT NULL, -- English translation
   narrative_context TEXT, -- "The narrator reflects on childhood"
   speaker TEXT, -- "The Prince", "The Narrator", etc.
+  is_paragraph_start BOOLEAN DEFAULT FALSE, -- Marks paragraph boundaries
+  is_reviewed BOOLEAN DEFAULT FALSE, -- Manual review status for admin curation
+  reviewed_at TIMESTAMPTZ, -- When sentence was reviewed
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(chapter_id, sentence_order)
 );
 ```
@@ -178,15 +181,18 @@ CREATE TABLE lemmas (
   gender TEXT CHECK (gender IN ('M', 'F', NULL)), -- For nouns
   definitions JSONB NOT NULL DEFAULT '[]'::jsonb, -- Array of English translations
   is_stop_word BOOLEAN DEFAULT FALSE,
+  is_reviewed BOOLEAN DEFAULT FALSE, -- Manual review status for admin curation
+  reviewed_at TIMESTAMPTZ, -- When lemma was reviewed
   admin_notes TEXT, -- Manual notes for tricky words
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(lemma_text, language_code)
 );
 
 COMMENT ON COLUMN lemmas.definitions IS 'JSONB array: ["to live", "to reside", "to dwell"]';
 COMMENT ON COLUMN lemmas.lemma_text IS 'For verbs: infinitive. For nouns: singular with article (el libro, la casa)';
+COMMENT ON COLUMN lemmas.is_reviewed IS 'Admin curation status - true when manually reviewed';
 ```
 
 **Examples:**
@@ -236,18 +242,19 @@ Individual word instances as they appear in sentences.
 CREATE TABLE words (
   word_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   word_text TEXT NOT NULL, -- The word as it appears: "vivía", "libros"
-  lemma_id UUID NOT NULL REFERENCES lemmas(lemma_id) ON DELETE CASCADE,
+  lemma_id UUID REFERENCES lemmas(lemma_id) ON DELETE SET NULL, -- Nullable for orphaned words
   book_id UUID NOT NULL REFERENCES books(book_id) ON DELETE CASCADE,
   chapter_id UUID NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
   sentence_id UUID NOT NULL REFERENCES sentences(sentence_id) ON DELETE CASCADE,
   word_position INTEGER NOT NULL, -- Position in sentence (1-indexed)
   grammatical_info JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(sentence_id, word_position)
 );
 
 COMMENT ON COLUMN words.grammatical_info IS 'Verb: {tense, person, number}. Noun: {number}. Adj: {gender, number}';
+COMMENT ON COLUMN words.lemma_id IS 'Nullable - words with NULL lemma_id are "orphaned" and need reassignment';
 ```
 
 **Examples:**
@@ -294,9 +301,10 @@ CREATE TABLE phrases (
   phrase_text TEXT NOT NULL UNIQUE, -- "personas mayores", "dar miedo"
   definitions JSONB DEFAULT '[]'::jsonb, -- Array of English translations
   component_lemmas UUID[], -- Lemmas that make up the phrase
-  phrase_type TEXT, -- 'idiom', 'collocation', 'compound'
+  phrase_type TEXT, -- 'idiom', 'collocation', 'compound', 'expression'
   frequency_rank INTEGER,
   is_reviewed BOOLEAN DEFAULT FALSE, -- Manual approval status
+  reviewed_at TIMESTAMPTZ, -- When phrase was reviewed
   admin_notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -1109,6 +1117,91 @@ WHERE ucp.user_id = :user_id AND ucp.chapter_id = :chapter_id;
 
 ---
 
+## RLS POLICIES (Admin Suite)
+
+The following Row Level Security policies enable admin CRUD operations:
+
+### Lemmas
+
+```sql
+-- Allow authenticated users to insert lemmas
+CREATE POLICY "Allow insert for authenticated" ON lemmas
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+-- Allow authenticated users to update lemmas
+CREATE POLICY "Allow update for authenticated" ON lemmas
+  FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+-- Allow authenticated users to delete lemmas
+CREATE POLICY "Allow delete for authenticated" ON lemmas
+  FOR DELETE TO authenticated USING (true);
+```
+
+### Phrases
+
+```sql
+-- Allow authenticated users full access to phrases
+CREATE POLICY "Allow select for authenticated" ON phrases
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow insert for authenticated" ON phrases
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow update for authenticated" ON phrases
+  FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow delete for authenticated" ON phrases
+  FOR DELETE TO authenticated USING (true);
+```
+
+### Phrase Occurrences
+
+```sql
+-- Allow authenticated users full access to phrase_occurrences
+CREATE POLICY "Allow select for authenticated" ON phrase_occurrences
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Allow insert for authenticated" ON phrase_occurrences
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow update for authenticated" ON phrase_occurrences
+  FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow delete for authenticated" ON phrase_occurrences
+  FOR DELETE TO authenticated USING (true);
+```
+
+### CASCADE Delete Constraints
+
+These foreign key constraints ensure referential integrity when deleting lemmas or phrases:
+
+```sql
+-- user_review_history: CASCADE delete when lemma/phrase is deleted
+ALTER TABLE user_review_history
+  DROP CONSTRAINT IF EXISTS user_review_history_lemma_id_fkey,
+  ADD CONSTRAINT user_review_history_lemma_id_fkey
+    FOREIGN KEY (lemma_id) REFERENCES lemmas(lemma_id) ON DELETE CASCADE;
+
+ALTER TABLE user_review_history
+  DROP CONSTRAINT IF EXISTS user_review_history_phrase_id_fkey,
+  ADD CONSTRAINT user_review_history_phrase_id_fkey
+    FOREIGN KEY (phrase_id) REFERENCES phrases(phrase_id) ON DELETE CASCADE;
+
+-- phrase_occurrences: CASCADE delete when phrase is deleted
+ALTER TABLE phrase_occurrences
+  DROP CONSTRAINT IF EXISTS phrase_occurrences_phrase_id_fkey,
+  ADD CONSTRAINT phrase_occurrences_phrase_id_fkey
+    FOREIGN KEY (phrase_id) REFERENCES phrases(phrase_id) ON DELETE CASCADE;
+
+-- user_phrase_progress: CASCADE delete when phrase is deleted
+ALTER TABLE user_phrase_progress
+  DROP CONSTRAINT IF EXISTS user_phrase_progress_phrase_id_fkey,
+  ADD CONSTRAINT user_phrase_progress_phrase_id_fkey
+    FOREIGN KEY (phrase_id) REFERENCES phrases(phrase_id) ON DELETE CASCADE;
+```
+
+---
+
 ## RELATED DOCUMENTS
 
 - See **03_CONTENT_PIPELINE.md** for how data flows into these tables
@@ -1120,10 +1213,11 @@ WHERE ucp.user_id = :user_id AND ucp.chapter_id = :chapter_id;
 
 ## REVISION HISTORY
 
-- 2025-11-30: Initial draft (Claude)
-- 2025-12-06: Added validation_reports table for AI quality assurance (Claude)
-- 2025-12-12: Updated validation_reports schema to match actual columns (Claude)
+- 2025-12-24: **Admin Suite Phase 2** - Added is_reviewed/reviewed_at to lemmas, sentences, phrases; made words.lemma_id nullable for orphaned words; added RLS policies section; added CASCADE delete constraints
 - 2025-12-13: **Major update** - Added FSRS columns to user_lemma_progress and user_phrase_progress, marked old mastery/health columns as deprecated (Claude)
+- 2025-12-12: Updated validation_reports schema to match actual columns (Claude)
+- 2025-12-06: Added validation_reports table for AI quality assurance (Claude)
+- 2025-11-30: Initial draft (Claude)
 - Status: Active
 
 ---

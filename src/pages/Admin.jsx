@@ -106,11 +106,19 @@ export default function Admin() {
   }
 
   // Admin dashboard
-  const isCommonWordsActive = location.pathname === '/admin/common-words'
-  const isSentencesActive = location.pathname === '/admin/sentences'
+  const isLemmasActive = location.pathname === '/admin/common-words' || location.pathname.startsWith('/admin/lemmas/')
+  const isLemmaDeepDive = location.pathname.startsWith('/admin/lemmas/') && location.pathname !== '/admin/lemmas'
+  const isPhrasesActive = location.pathname === '/admin/phrases' || location.pathname.startsWith('/admin/phrases/')
+  const isPhraseDeepDive = location.pathname.startsWith('/admin/phrases/') && location.pathname !== '/admin/phrases'
+  const isSentencesActive = location.pathname === '/admin/sentences' || location.pathname.startsWith('/admin/sentences/')
+  const isSentenceDeepDive = location.pathname.startsWith('/admin/sentences/') && location.pathname !== '/admin/sentences'
 
   // Get current page name for breadcrumb
-  const currentPage = isCommonWordsActive ? 'Common Words'
+  const currentPage = isLemmaDeepDive ? 'Lemma Details'
+    : isLemmasActive ? 'Lemmas'
+    : isPhraseDeepDive ? 'Phrase Details'
+    : isPhrasesActive ? 'Phrases'
+    : isSentenceDeepDive ? 'Sentence Details'
     : isSentencesActive ? 'Sentences'
     : 'Dashboard'
 
@@ -144,8 +152,12 @@ export default function Admin() {
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
             {currentPage === 'Dashboard' && 'Manage vocabulary and system settings'}
-            {currentPage === 'Common Words' && 'Mark common/stop words that shouldn\'t appear in learning sessions'}
+            {currentPage === 'Lemmas' && 'Manage lemmas, definitions, and stop words'}
+            {currentPage === 'Lemma Details' && 'Complete lemma breakdown with words, occurrences, and phrases'}
+            {currentPage === 'Phrases' && 'Manage multi-word expressions, idioms, and collocations'}
+            {currentPage === 'Phrase Details' && 'Complete phrase breakdown with definitions and occurrences'}
             {currentPage === 'Sentences' && 'Edit sentences, fragments, and translations'}
+            {currentPage === 'Sentence Details' && 'Complete sentence breakdown with words, lemmas, and phrases'}
           </p>
         </div>
       </header>
@@ -157,12 +169,22 @@ export default function Admin() {
             <Link
               to="/admin/common-words"
               className={`py-3 text-sm border-b-2 transition-colors ${
-                isCommonWordsActive
+                isLemmasActive
                   ? 'border-neutral-900 text-neutral-900'
                   : 'border-transparent text-neutral-500 hover:text-neutral-700'
               }`}
             >
-              Common Words
+              Lemmas
+            </Link>
+            <Link
+              to="/admin/phrases"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isPhrasesActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Phrases
             </Link>
             <Link
               to="/admin/sentences"
@@ -182,16 +204,28 @@ export default function Admin() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {location.pathname === '/admin' ? (
           // Default admin home
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <Link
               to="/admin/common-words"
               className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
             >
               <h3 className="text-base font-medium text-neutral-900 mb-1">
-                Common Words
+                Lemmas
               </h3>
               <p className="text-sm text-neutral-500">
-                Mark common/stop words that shouldn't appear in learning sessions
+                Manage lemmas, definitions, and stop words
+              </p>
+            </Link>
+
+            <Link
+              to="/admin/phrases"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Phrases
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Manage multi-word expressions, idioms, and collocations
               </p>
             </Link>
 

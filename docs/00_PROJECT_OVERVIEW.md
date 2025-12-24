@@ -1,8 +1,8 @@
 # VOQUAB PROJECT OVERVIEW
 
-**Last Updated:** November 30, 2025  
-**Status:** Foundation Phase - Database redesign in progress  
-**Version:** 2.0 (Clean slate rebuild)
+**Last Updated:** December 24, 2025
+**Status:** Active Development - Admin Suite Phase 2 Complete
+**Version:** 2.0
 
 ---
 
@@ -64,13 +64,20 @@ The book isn't just source material - it's an interactive reading experience whe
 **Existing Implementation:**
 - React 19 + Vite frontend
 - Supabase backend with authentication
-- Basic flashcard system with 4 difficulty levels
-- Chapter reading interface
-- Daily stats tracking
-- Calendar heat map
-- Admin dashboard (basic)
+- FSRS-based flashcard system with spaced repetition
+- Chapter reading interface with sentence comprehension
+- Daily stats tracking with calendar heat map
+- Complete Admin Suite (Phase 1 + 2)
 
-**Refactored Recently (Nov 26):**
+**Admin Suite (Dec 2025):**
+- Sentences management with fragment editing
+- Lemmas management with deep dive, filters, review workflow
+- Phrases management with deep dive, filters, review workflow
+- Orphaned words view for reassignment
+- Delete safeguards with orphan/reassign options
+- Keyboard navigation and URL-based filter persistence
+
+**Refactored Recently:**
 - Flashcard code reduced from 2,522 lines → 339 lines (87% reduction)
 - Modular component architecture
 - Custom hooks for data/session/progress
@@ -92,7 +99,7 @@ The book isn't just source material - it's an interactive reading experience whe
 
 **MVP Requirements Still Needed:**
 - Complete El Principito import (all chapters)
-- Admin dashboard for manual edits
+- ~~Admin dashboard for manual edits~~ ✅ Complete
 - Interactive reading mode with click-for-definition
 - Reading comprehension tracking
 - Time-gated mastery enforcement
@@ -484,8 +491,9 @@ Include DOCUMENTATION_ROADMAP.md and this PROJECT_OVERVIEW.md for context.
 
 ## REVISION HISTORY
 
+- 2025-12-24: Updated with Admin Suite Phase 2 completion (Claude)
 - 2025-11-30: Complete rewrite for v2.0 architecture (Claude)
-- Status: Awaiting Peter's approval
+- Status: Active
 
 ---
 

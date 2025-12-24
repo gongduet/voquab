@@ -10,7 +10,8 @@
  * - Edit button
  */
 
-import { Edit2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Edit2, ExternalLink, CheckCircle, Circle } from 'lucide-react'
 import ParagraphToggle from './ParagraphToggle'
 
 export default function SentenceRow({
@@ -18,7 +19,8 @@ export default function SentenceRow({
   isSelected,
   onSelect,
   onEdit,
-  onToggleParagraph
+  onToggleParagraph,
+  onToggleReviewed
 }) {
   const fragments = sentence.sentence_fragments || []
   const fragmentCount = fragments.length
@@ -76,18 +78,50 @@ export default function SentenceRow({
         </span>
       </td>
 
-      {/* Edit button */}
-      <td className="px-4 py-3 w-20">
+      {/* Reviewed toggle */}
+      <td className="px-4 py-3 text-center w-20">
         <button
           onClick={(e) => {
             e.stopPropagation()
-            onEdit(sentence)
+            onToggleReviewed(sentence)
           }}
-          className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+          className={`p-1 rounded transition-colors ${
+            sentence.is_reviewed
+              ? 'text-green-600 hover:bg-green-50'
+              : 'text-neutral-300 hover:bg-neutral-50 hover:text-neutral-500'
+          }`}
+          title={sentence.is_reviewed ? 'Reviewed' : 'Mark as reviewed'}
         >
-          <Edit2 size={12} />
-          Edit
+          {sentence.is_reviewed ? (
+            <CheckCircle size={18} className="fill-green-100" />
+          ) : (
+            <Circle size={18} />
+          )}
         </button>
+      </td>
+
+      {/* Actions */}
+      <td className="px-4 py-3 w-28">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onEdit(sentence)
+            }}
+            className="px-2 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+            title="Quick edit"
+          >
+            <Edit2 size={12} />
+          </button>
+          <Link
+            to={`/admin/sentences/${sentence.sentence_id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1"
+            title="Deep dive"
+          >
+            <ExternalLink size={12} />
+          </Link>
+        </div>
       </td>
     </tr>
   )

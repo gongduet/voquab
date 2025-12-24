@@ -1,8 +1,68 @@
 # 22_ADMIN_DASHBOARD.md
 
-**Last Updated:** December 23, 2025
-**Status:** Partially Implemented
+**Last Updated:** December 24, 2025
+**Status:** Phase 1 + Phase 2 Complete
 **Owner:** Claude + Peter
+
+---
+
+## IMPLEMENTATION STATUS
+
+### Completed (Phase 1 + Phase 2 Complete)
+
+**Sentences Management:**
+- ✅ Sentence Management table (`/admin/sentences`)
+- ✅ Sentence Deep Dive view (`/admin/sentences/:id`)
+- ✅ Fragment editing (inline translations + context notes)
+- ✅ Words table with lemma info
+- ✅ Phrase occurrences display
+- ✅ Add phrase modal (link existing or create new)
+- ✅ Sentences review workflow (`is_reviewed` toggle)
+
+**Lemmas Management:**
+- ✅ Lemmas page (`/admin/common-words`)
+- ✅ Lemma Deep Dive page (`/admin/lemmas/:id`)
+- ✅ Create New Lemma modal
+- ✅ Lemma definition editing (multiple definitions)
+- ✅ Lemma reassignment modal
+- ✅ Lemma review workflow (`is_reviewed` toggle)
+- ✅ Stop word toggle (on word rows)
+- ✅ Advanced filters (POS, chapter, reviewed status, definition)
+- ✅ Orphaned Words page (`/admin/lemmas/orphaned`)
+- ✅ Delete lemma with safeguards (orphan/reassign options)
+- ✅ Bulk word reassignment on lemma delete
+
+**Phrases Management:**
+- ✅ Phrases List page (`/admin/phrases`)
+- ✅ Phrase Deep Dive page (`/admin/phrases/:id`)
+- ✅ Create Phrase modal
+- ✅ Phrases navigation tab
+
+**General:**
+- ✅ Keyboard navigation throughout
+- ✅ URL-based filter persistence
+
+### Future (Phase 3+)
+- 🔲 QA workflow (status tracking)
+- 🔲 QA dashboard widget
+- 🔲 Validation Queue (AI suggestions)
+
+---
+
+## ROUTES
+
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/admin` | `Admin.jsx` | Dashboard home with navigation |
+| `/admin/common-words` | `AdminCommonWords.jsx` | Lemmas list with filters |
+| `/admin/lemmas/orphaned` | `OrphanedWords.jsx` | Words without lemma assignments |
+| `/admin/lemmas/:lemmaId` | `LemmaDeepDive.jsx` | Individual lemma management |
+| `/admin/phrases` | `AdminPhrases.jsx` | Phrases list with filters |
+| `/admin/phrases/:phraseId` | `PhraseDeepDive.jsx` | Individual phrase management |
+| `/admin/sentences` | `AdminSentences.jsx` | Sentences list by chapter |
+| `/admin/sentences/:sentenceId` | `SentenceDeepDive.jsx` | Individual sentence management |
+
+**Note:** The `/admin/lemmas/orphaned` route must be defined BEFORE `/admin/lemmas/:lemmaId` in App.jsx to prevent "orphaned" from being matched as a lemmaId.
 
 ---
 
@@ -14,10 +74,11 @@
 5. [Validation Queue](#validation-queue)
 6. [Content Review](#content-review)
 7. [✅ Sentence Management](#sentence-management) (Implemented)
-8. [Bulk Operations](#bulk-operations)
-9. [UI/UX Requirements](#uiux-requirements)
-10. [Database Operations](#database-operations)
-11. [Implementation Notes](#implementation-notes)
+8. [✅ Common Words](#common-words) (Implemented)
+9. [Bulk Operations](#bulk-operations)
+10. [UI/UX Requirements](#uiux-requirements)
+11. [Database Operations](#database-operations)
+12. [Implementation Notes](#implementation-notes)
 
 ---
 
@@ -575,6 +636,88 @@ USING (
 
 ---
 
+## ✅ COMMON WORDS
+
+### Overview (Implemented)
+
+**Route:** `/admin/common-words`
+**Purpose:** Manage stop words (common words that shouldn't appear in learning sessions)
+
+### Components
+
+```
+src/pages/AdminCommonWords.jsx
+```
+
+### Features
+
+**Stats Cards:**
+- Total Words count
+- Stop Words count
+- Active Learning Words count
+
+**Filters:**
+- Search by lemma or definition
+- Filter: All / Active Only / Stop Words Only
+- Sort: by Frequency / Alphabetically
+- Sort order toggle (↑/↓)
+
+**Bulk Actions Dropdown:**
+- Mark Top 50 (by frequency)
+- Mark Top 100 (by frequency)
+- Mark Top 200 (by frequency)
+
+**Table Columns:**
+| Column | Description |
+|--------|-------------|
+| Word | Lemma text (Spanish) |
+| Definition | First definition |
+| POS | Part of speech |
+| Frequency | Word count in book (color-coded) |
+| Status | "stop" badge or dash |
+| Actions | Mark/Unmark button + Find in sentences link |
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `↑` / `↓` | Navigate between rows |
+| `S` | Toggle stop word for selected row |
+
+### Database Queries
+
+**Fetch all lemmas (with count):**
+```javascript
+// Fetch lemmas (up to 10,000)
+const { data } = await supabase
+  .from('lemmas')
+  .select('lemma_id, lemma_text, definitions, part_of_speech, is_stop_word', { count: 'exact' })
+  .eq('language_code', 'es')
+  .range(0, 9999)
+
+// Fetch word counts
+const { data: allWords } = await supabase
+  .from('words')
+  .select('lemma_id')
+  .range(0, 99999)
+
+// Count per lemma
+const countMap = allWords.reduce((acc, w) => {
+  acc[w.lemma_id] = (acc[w.lemma_id] || 0) + 1
+  return acc
+}, {})
+```
+
+**Toggle stop word:**
+```javascript
+await supabase
+  .from('lemmas')
+  .update({ is_stop_word: newValue })
+  .eq('lemma_id', lemmaId)
+```
+
+---
+
 ## BULK OPERATIONS
 
 ### Purpose
@@ -937,6 +1080,8 @@ CREATE TABLE admin_audit_log (
 
 ## REVISION HISTORY
 
+- 2025-12-24: Phase 2 complete - Added Phrases management (2c), Sentences review toggle (2d), Orphaned Words (2b), Lemma Deep Dive enhancements (2a), Routes section
+- 2025-12-24: Added Implementation Status section, Common Words section, marked Phase 1 complete
 - 2025-12-23: Added Sentence Management section (implemented)
 - 2025-11-30: Initial draft (Claude)
 

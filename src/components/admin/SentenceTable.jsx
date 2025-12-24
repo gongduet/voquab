@@ -16,6 +16,7 @@ export default function SentenceTable({
   onSelect,
   onEdit,
   onToggleParagraph,
+  onToggleReviewed,
   isLoading
 }) {
   if (isLoading) {
@@ -78,7 +79,8 @@ export default function SentenceTable({
               <th>Spanish</th>
               <th>English</th>
               <th className="w-20 text-center">Frags</th>
-              <th className="w-20"></th>
+              <th className="w-20 text-center">Reviewed</th>
+              <th className="w-28">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -90,6 +92,7 @@ export default function SentenceTable({
                 onSelect={() => onSelect(sentence.sentence_id)}
                 onEdit={onEdit}
                 onToggleParagraph={onToggleParagraph}
+                onToggleReviewed={onToggleReviewed}
               />
             ))}
           </tbody>
