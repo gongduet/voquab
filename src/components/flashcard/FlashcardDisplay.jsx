@@ -13,7 +13,7 @@ export default function FlashcardDisplay({
 
   // Extract display data - handle both new and legacy data structures
   const displayLemma = card.lemma || card.lemma_text || 'No word'
-  const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions[0] : 'No translation')
+  const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions.join(', ') : 'No translation')
 
   // Format part of speech to full word
   const formatPartOfSpeech = (pos) => {
@@ -157,7 +157,7 @@ export default function FlashcardDisplay({
               <div className="mb-auto"></div>
               <div>
                 <h1
-                  className="text-7xl font-bold text-slate-800 mb-4 tracking-tight lowercase"
+                  className="text-4xl font-bold text-slate-800 mb-4 tracking-tight lowercase break-words"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   {displayLemma}
@@ -187,7 +187,7 @@ export default function FlashcardDisplay({
               <div className="mb-auto"></div>
               <div>
                 <h1
-                  className="text-6xl font-bold text-slate-800 mb-4"
+                  className="text-3xl font-bold text-slate-800 mb-4 break-words"
                   style={{ fontFamily: 'Montserrat, sans-serif' }}
                 >
                   {displayTranslation}
