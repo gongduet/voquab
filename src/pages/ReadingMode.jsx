@@ -5,8 +5,10 @@
  * Handles route params and renders ReadingPage component.
  *
  * Routes:
- * - /read → Load from user's saved position
- * - /read/:chapterNumber → Jump to start of specific chapter
+ * - /read → Load from user's saved position (legacy, uses active book)
+ * - /read/:chapterNumber → Jump to start of specific chapter (legacy)
+ * - /book/:bookId/read → Load from user's saved position for specific book
+ * - /book/:bookId/read/:chapterNumber → Jump to specific chapter of book
  */
 
 import { useParams, useNavigate } from 'react-router-dom'
@@ -16,98 +18,100 @@ import { supabase } from '../lib/supabase'
 import ReadingPage from '../components/reading/ReadingPage'
 
 export default function ReadingMode() {
-  const { chapterNumber } = useParams()
+  const { bookId, chapterNumber } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [isCheckingUnlock, setIsCheckingUnlock] = useState(true)
   const [unlockError, setUnlockError] = useState(null)
+  const [resolvedBookId, setResolvedBookId] = useState(null)
 
   // Check if chapter is unlocked (100% vocab introduced)
   useEffect(() => {
     async function checkChapterUnlock() {
-      // If no specific chapter requested, user's position will be validated by ReadingPage
-      if (!chapterNumber) {
-        setIsCheckingUnlock(false)
-        return
-      }
-
-      const chapterNum = parseInt(chapterNumber, 10)
+      console.log('[ReadingMode] Starting checkChapterUnlock', { bookId, chapterNumber, userId: user?.id })
 
       try {
-        // Get book ID
-        const { data: book } = await supabase
-          .from('books')
-          .select('book_id')
-          .eq('title', 'El Principito')
-          .eq('language_code', 'es')
-          .single()
+        // Resolve book ID: use param, active book, or default to El Principito
+        let targetBookId = bookId
 
-        if (!book) {
-          setUnlockError('Book not found')
+        if (!targetBookId) {
+          // Try to get active book from settings
+          const { data: settings } = await supabase
+            .from('user_settings')
+            .select('active_book_id')
+            .eq('user_id', user.id)
+            .maybeSingle()
+
+          targetBookId = settings?.active_book_id
+          console.log('[ReadingMode] Got active book from settings:', targetBookId)
+        }
+
+        if (!targetBookId) {
+          // Fall back to El Principito
+          const { data: defaultBook } = await supabase
+            .from('books')
+            .select('book_id')
+            .eq('title', 'El Principito')
+            .eq('language_code', 'es')
+            .single()
+
+          targetBookId = defaultBook?.book_id
+          console.log('[ReadingMode] Fell back to El Principito:', targetBookId)
+        }
+
+        if (!targetBookId) {
+          console.error('[ReadingMode] No book available')
+          setUnlockError('No book available')
           setIsCheckingUnlock(false)
           return
         }
 
+        console.log('[ReadingMode] Resolved book ID:', targetBookId)
+        setResolvedBookId(targetBookId)
+
+        // If no specific chapter requested, user's position will be validated by ReadingPage
+        if (!chapterNumber) {
+          console.log('[ReadingMode] No chapter specified, proceeding to ReadingPage')
+          setIsCheckingUnlock(false)
+          return
+        }
+
+        const chapterNum = parseInt(chapterNumber, 10)
+        console.log('[ReadingMode] Checking chapter:', chapterNum)
+
         // Get chapter info
-        const { data: chapter } = await supabase
+        const { data: chapter, error: chapterError } = await supabase
           .from('chapters')
           .select('chapter_id')
-          .eq('book_id', book.book_id)
+          .eq('book_id', targetBookId)
           .eq('chapter_number', chapterNum)
           .single()
 
-        if (!chapter) {
+        if (chapterError || !chapter) {
+          console.error('[ReadingMode] Chapter not found:', chapterError)
           setUnlockError('Chapter not found')
           setIsCheckingUnlock(false)
           return
         }
 
-        // Check vocab progress for this chapter
-        // A chapter is unlocked if all its vocab has been introduced (seen at least once)
-        const { data: vocabStats } = await supabase
-          .from('book_vocabulary')
-          .select('vocab_id')
-          .eq('first_chapter_id', chapter.chapter_id)
+        console.log('[ReadingMode] Found chapter:', chapter.chapter_id)
 
-        if (!vocabStats || vocabStats.length === 0) {
-          // Chapter has no vocab to learn - it's unlocked
-          setIsCheckingUnlock(false)
-          return
-        }
-
-        // Check how many of these vocab items the user has seen
-        const vocabIds = vocabStats.map(v => v.vocab_id)
-
-        const { data: userProgress } = await supabase
-          .from('user_lemma_progress')
-          .select('vocab_id')
-          .eq('user_id', user.id)
-          .in('vocab_id', vocabIds)
-          .gt('reps', 0) // Has been seen at least once
-
-        const seenCount = userProgress?.length || 0
-        const totalCount = vocabIds.length
-
-        if (seenCount < totalCount) {
-          setUnlockError(`Chapter ${chapterNum} is locked. Complete vocab study first. (${seenCount}/${totalCount} words introduced)`)
-          setIsCheckingUnlock(false)
-          return
-        }
-
-        // Chapter is unlocked
+        // For now, skip the complex unlock check and allow access
+        // The vocab gating logic was using a non-existent book_vocabulary table
+        // TODO: Implement proper chapter unlock logic using lemmas → words → sentences → chapters
         setIsCheckingUnlock(false)
 
       } catch (err) {
-        console.error('Error checking chapter unlock:', err)
+        console.error('[ReadingMode] Error checking chapter unlock:', err)
         setUnlockError('Could not verify chapter access')
         setIsCheckingUnlock(false)
       }
     }
 
-    if (user) {
+    if (user?.id) {
       checkChapterUnlock()
     }
-  }, [chapterNumber, user])
+  }, [bookId, chapterNumber, user?.id])
 
   // Loading state while checking unlock
   if (isCheckingUnlock) {
@@ -154,5 +158,5 @@ export default function ReadingMode() {
   }
 
   // Render the reading page
-  return <ReadingPage chapterNumber={chapterNumber} />
+  return <ReadingPage bookId={resolvedBookId} chapterNumber={chapterNumber} />
 }

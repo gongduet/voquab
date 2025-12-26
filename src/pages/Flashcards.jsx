@@ -22,9 +22,11 @@ export default function Flashcards() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Get mode and chapter from URL params
+  // Get mode, chapter, and song from URL params
   const urlMode = searchParams.get('mode') || SessionMode.REVIEW
   const urlChapter = searchParams.get('chapter') ? parseInt(searchParams.get('chapter')) : null
+  const urlSongId = searchParams.get('songId') || null
+  const urlLearnOnly = searchParams.get('learnOnly') === 'true'
 
   // Local state
   const [mode, setMode] = useState(urlMode)
@@ -33,6 +35,7 @@ export default function Flashcards() {
   const [error, setError] = useState(null)
   const [sessionStats, setSessionStats] = useState(null)
   const [chapterInfo, setChapterInfo] = useState(null)
+  const [songInfo, setSongInfo] = useState(null)
 
   // Floating feedback animation state
   const [feedbackMessage, setFeedbackMessage] = useState('')
@@ -65,21 +68,29 @@ export default function Flashcards() {
       loadSession()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, mode, urlChapter])
+  }, [user?.id, mode, urlChapter, urlSongId])
 
   async function loadSession() {
     setReviewedCards(new Map())  // Reset reviewed cards for new session
     setLoading(true)
     setError(null)
+    setSongInfo(null)
 
     try {
       const options = {
         // sessionSize is now fetched from user_settings in sessionBuilder
-        chapterNumber: urlChapter || undefined
+        chapterNumber: urlChapter || undefined,
+        songId: urlSongId || undefined,
+        learnOnly: urlLearnOnly
       }
 
       // Determine effective mode
-      const effectiveMode = urlChapter ? SessionMode.CHAPTER : mode
+      let effectiveMode = mode
+      if (urlSongId) {
+        effectiveMode = SessionMode.SONG
+      } else if (urlChapter) {
+        effectiveMode = SessionMode.CHAPTER
+      }
 
       console.log('🎴 Loading session:', { mode: effectiveMode, options })
 
@@ -97,6 +108,7 @@ export default function Flashcards() {
         setCards(result.cards || [])
         setSessionStats(result.stats)
         setChapterInfo(result.chapterInfo || null)
+        setSongInfo(result.songInfo || null)
 
         if (result.message) {
           console.log('ℹ️ Session message:', result.message)
@@ -155,7 +167,7 @@ export default function Flashcards() {
 
     // Track all reviewed cards for session summary
     if (result?.success) {
-      const cardId = currentCard.phrase_id || currentCard.lemma_id
+      const cardId = currentCard.slang_id || currentCard.phrase_id || currentCard.lemma_id
       const isAgain = difficulty === 'again' || difficulty === 'dont-know'
 
       setReviewedCards(prev => {
@@ -324,6 +336,15 @@ export default function Flashcards() {
             <div className="text-center">
               <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
                 Chapter {urlChapter}: {chapterInfo.title || 'Focus Mode'}
+              </span>
+            </div>
+          )}
+
+          {/* Song indicator */}
+          {urlSongId && songInfo && (
+            <div className="text-center">
+              <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                {songInfo.title} - {songInfo.artist}
               </span>
             </div>
           )}

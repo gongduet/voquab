@@ -20,10 +20,13 @@ export default function HeroStats({
   const masteredPct = totalCount > 0 ? Math.round((masteredCount / totalCount) * 100) : 0
   const familiarPct = totalCount > 0 ? Math.round((familiarCount / totalCount) * 100) : 0
   const learningPct = totalCount > 0 ? Math.round((learningCount / totalCount) * 100) : 0
-  // notSeenPct is implicit (the gray background)
 
-  // Calculate not seen count for stats display
+  // Calculate not seen count and percentage for stats display
   const notSeenCount = totalCount - introducedCount
+  const notSeenPct = totalCount > 0 ? Math.round((notSeenCount / totalCount) * 100) : 0
+
+  // Format numbers with commas for readability
+  const formatNum = (n) => n.toLocaleString()
 
   if (loading) {
     return (
@@ -45,18 +48,18 @@ export default function HeroStats({
             cy="100"
             r={radius}
             fill="none"
-            stroke="#d6d3d1"
+            stroke="#e5e5e5"
             strokeWidth="14"
           />
 
-          {/* Learning segment (light blue) - starts at 0 */}
+          {/* Learning segment (muted blue) - starts at 0 */}
           {learningPct + familiarPct + masteredPct > 0 && (
             <circle
               cx="100"
               cy="100"
               r={radius}
               fill="none"
-              stroke="#38bdf8"
+              stroke="#93c5fd"
               strokeWidth="14"
               strokeDasharray={circumference}
               strokeDashoffset={circumference - ((learningPct + familiarPct + masteredPct) / 100) * circumference}
@@ -64,14 +67,14 @@ export default function HeroStats({
             />
           )}
 
-          {/* Familiar segment (dark blue) - overlays learning */}
+          {/* Familiar segment (medium blue) - overlays learning */}
           {familiarPct + masteredPct > 0 && (
             <circle
               cx="100"
               cy="100"
               r={radius}
               fill="none"
-              stroke="#0369a1"
+              stroke="#2563eb"
               strokeWidth="14"
               strokeDasharray={circumference}
               strokeDashoffset={circumference - ((familiarPct + masteredPct) / 100) * circumference}
@@ -79,14 +82,14 @@ export default function HeroStats({
             />
           )}
 
-          {/* Mastered segment (near-black) - overlays familiar */}
+          {/* Mastered segment (dark blue-gray) - overlays familiar */}
           {masteredPct > 0 && (
             <circle
               cx="100"
               cy="100"
               r={radius}
               fill="none"
-              stroke="#1e3a5f"
+              stroke="#1e40af"
               strokeWidth="14"
               strokeDasharray={circumference}
               strokeDashoffset={circumference - (masteredPct / 100) * circumference}
@@ -97,32 +100,36 @@ export default function HeroStats({
 
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Star className="w-7 h-7 mb-1" style={{ color: '#f59e0b' }} fill="currentColor" />
-          <span className="text-5xl font-bold text-neutral-900">{masteredPct}%</span>
-          <span className="text-sm font-medium text-neutral-600 mt-1">Mastered</span>
+          <Star className="w-7 h-7 mb-1" style={{ color: '#d4a24e' }} fill="currentColor" />
+          <span className="text-5xl font-bold" style={{ color: '#37352f' }}>{masteredPct}%</span>
+          <span className="text-sm font-medium text-neutral-500 mt-1">Mastered</span>
         </div>
       </div>
 
       {/* 4-level stats below ring */}
       <div className="mt-6 flex gap-4 text-center">
         <div className="px-3">
-          <div className="text-2xl font-bold" style={{ color: '#1e3a5f' }}>{masteredCount}</div>
+          <div className="text-2xl font-bold" style={{ color: '#1e40af' }}>{formatNum(masteredCount)}</div>
           <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Mastered</div>
+          <div className="text-xs text-neutral-400 mt-0.5">{masteredPct}%</div>
         </div>
-        <div className="w-px bg-neutral-300" />
+        <div className="w-px bg-neutral-200" />
         <div className="px-3">
-          <div className="text-2xl font-bold" style={{ color: '#0369a1' }}>{familiarCount}</div>
+          <div className="text-2xl font-bold" style={{ color: '#2563eb' }}>{formatNum(familiarCount)}</div>
           <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Familiar</div>
+          <div className="text-xs text-neutral-400 mt-0.5">{familiarPct}%</div>
         </div>
-        <div className="w-px bg-neutral-300" />
+        <div className="w-px bg-neutral-200" />
         <div className="px-3">
-          <div className="text-2xl font-bold" style={{ color: '#38bdf8' }}>{learningCount}</div>
+          <div className="text-2xl font-bold" style={{ color: '#93c5fd' }}>{formatNum(learningCount)}</div>
           <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Learning</div>
+          <div className="text-xs text-neutral-400 mt-0.5">{learningPct}%</div>
         </div>
-        <div className="w-px bg-neutral-300" />
+        <div className="w-px bg-neutral-200" />
         <div className="px-3">
-          <div className="text-2xl font-bold" style={{ color: '#a3a3a3' }}>{notSeenCount}</div>
+          <div className="text-2xl font-bold" style={{ color: '#a3a3a3' }}>{formatNum(notSeenCount)}</div>
           <div className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wide">Not Seen</div>
+          <div className="text-xs text-neutral-400 mt-0.5">{notSeenPct}%</div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 23, 2025
+**Last Updated:** December 25, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,268 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2025-12-25 - Critical Fixes & Notion-like Design Refresh
+
+### Fixed
+
+#### Database Query Fixes
+- **404 Error Fixed**: Changed queries from non-existent `user_chapter_reading_progress` to correct `user_book_reading_progress` table
+  - `src/components/dashboard/ActiveContentCards.jsx` - Fixed reading progress query
+  - `src/pages/BookDashboard.jsx` - Fixed reading progress and vocabulary queries
+
+- **Book Dashboard Data**: Now queries book-specific vocabulary (lemmas via chapters → sentences → words) instead of all user progress
+  - Mastery thresholds: ≥80 (mastered), ≥50 (familiar), >0 (learning), 0 (not seen)
+
+- **Song Dashboard Themes**: Added `Array.isArray()` check with `join(' · ')` separator for theme display
+
+- **Song Study Blur**: Blurred/future lines now have `pointer-events-none` and conditional click handler to prevent interaction
+
+### Changed
+
+#### Notion-like Design Language
+Updated color palette across all dashboard components for a cleaner, more professional look:
+
+- **Tailwind Config** (`tailwind.config.js`):
+  - Primary accent: `#2563eb` (Notion-like blue)
+  - Muted amber for books: `#d4a24e`, `#b8862f`
+  - Muted purple for songs: `#8b7aa3`, `#6f5d8a`
+  - Neutrals aligned with Notion: `#37352f` (text), `#6b7280` (secondary), `#e5e5e5` (borders)
+
+- **Components Updated**:
+  - `HeroStats.jsx` - Muted blue progress ring and stats
+  - `QuickActions.jsx` - Notion-blue Review button
+  - `ActiveContentCards.jsx` - Muted amber/purple theme with subtle shadows
+  - `BookDashboard.jsx` - Muted amber progress circle, updated action buttons
+  - `SongDashboard.jsx` - Muted purple progress circle, updated action buttons
+  - `SongStudy.jsx` - Muted purple progress bar and line highlighting
+
+#### Chapter Grid Improvements
+- Added Lock icons for locked chapters
+- Added "Next" chapter styling (dashed amber border)
+- Added chapter count header ("X of Y")
+- Added legend showing Complete/Current/Next/Locked states
+
+---
+
+## 2025-12-25 - Library & Dashboard Restructure (Phases 1-8)
+
+### Added
+
+#### Database Changes
+- Added `active_book_id` and `active_song_id` columns to `user_settings` for active content tracking
+- Added `allow_explicit_content` boolean to `user_settings` for vulgar slang filtering
+- Created migration file: `migrations/library-dashboard-restructure.sql`
+
+#### Settings Page Updates
+- Added "Content Settings" section with explicit content toggle
+- Toggle controls whether vulgar slang terms are shown in song vocabulary
+
+#### Content Switcher Component
+- **ContentSwitcher.jsx** - Header dropdown for switching active book/song
+- Shows current active content with chevron indicator
+- Clicking content navigates to that content's dashboard
+- "Browse Library" link to /library
+- Integrated into DashboardHeader
+
+#### Library Page (`/library`)
+- **Library.jsx** - Browse all available content
+- Tabs for Books and Songs with counts
+- Content cards showing title, author/artist, metadata
+- "Active" badge on currently selected content
+- "Set as Active" action on cards
+- Search functionality across title and author/artist
+- Click card navigates to content dashboard
+
+#### Book Dashboard (`/book/:bookId`)
+- **BookDashboard.jsx** - Deep dive into specific book progress
+- Progress circle with completion percentage
+- Vocabulary stats grid (Mastered/Familiar/Learning/Not Seen)
+- Review and Learn New action buttons
+- Continue Reading button with current chapter info
+- Chapter grid with unlock status and navigation
+
+#### Song Dashboard (`/song/:songId`)
+- **SongDashboard.jsx** - Deep dive into specific song progress
+- Progress tracking with completion percentage
+- Slang terms preview (respects explicit content setting)
+- Section structure display with type badges
+- Learn Slang, Review, and Study Lyrics action buttons
+- Themes display
+
+#### Main Dashboard Refactor
+- **ActiveContentCards.jsx** - Shows active book and song cards
+- Cards display progress bars and quick actions
+- "Continue Reading" and "Study Lyrics" CTAs
+- Links to Library for browsing more content
+- Integrated into Dashboard between QuickActions and CategoryPills
+
+#### Route Structure Updates
+- Added routes: `/book/:bookId/read`, `/book/:bookId/read/:chapterNumber`
+- Added routes: `/song/:songId/vocab`, `/song/:songId/study`
+- Legacy routes maintained for backward compatibility
+- ReadingMode now accepts `bookId` param (falls back to active book or El Principito)
+
+### Changed
+- Updated navigation links throughout app to use new route format
+- SlangFlashcards and SongStudy now navigate back to song dashboard
+- QuickActions "Songs" button now goes to Library
+
+### Fixed
+- Fixed Tailwind dynamic class issue in Library ContentCard (JIT compilation)
+
+---
+
+## 2025-12-25 - Lyrics Database Phase 3 & 4: Admin & User Interface
+
+### Added
+
+#### Admin Interface (Phase 3)
+
+- **AdminSongs.jsx** (`/admin/songs`) - Song management list page
+  - Stats cards (total, published, draft)
+  - Filters: difficulty, publication status, search
+  - Sorting by title, artist, lines, slang count
+  - Keyboard navigation (↑/↓/Enter)
+  - Toggle published status
+
+- **SongDeepDive.jsx** (`/admin/songs/:songId`) - Song detail/edit page
+  - Edit song metadata (title, artist, album, difficulty, dialect, themes)
+  - View sections with line counts
+  - Stats overview
+  - Published toggle
+
+- **AdminSlang.jsx** (`/admin/slang`) - Slang terms management page
+  - Stats cards (total, approved, needs review)
+  - Filters: region, formality, approval status, search
+  - Keyboard navigation
+  - Toggle approval status
+
+- **SlangDeepDive.jsx** (`/admin/slang/:slangId`) - Slang term detail/edit page
+  - Edit term, definition, region, formality
+  - Cultural context and examples editing
+  - View linked songs
+
+#### User-Facing Interface (Phase 4)
+
+- **Songs.jsx** (`/songs`) - Song browser page
+  - Browse published songs with difficulty filter
+  - Search by title/artist
+  - Song cards with stats (lines, slang count, difficulty)
+  - Links to flashcards and study mode
+
+- **SlangFlashcards.jsx** (`/songs/:songId/vocab`) - Slang flashcard review
+  - Card-flip interaction
+  - Show term, definition, cultural context
+  - Progress tracking through deck
+  - Keyboard navigation (←/→/Space/C)
+
+- **SongStudy.jsx** (`/songs/:songId/study`) - Line-by-line study mode
+  - Lyrics display by section
+  - Translation toggle
+  - Auto-play mode
+  - Cultural notes for each line
+  - Expandable slang term reference
+  - Keyboard navigation (↑/↓/T/P)
+
+#### Dashboard Integration
+
+- **QuickActions.jsx** - Added purple "Songs" button alongside Read button
+  - Purple (#9333ea) color to match Songs theme
+
+#### Routing
+
+- Added admin routes: `/admin/songs`, `/admin/songs/:songId`, `/admin/slang`, `/admin/slang/:slangId`
+- Added user routes: `/songs`, `/songs/:songId/vocab`, `/songs/:songId/study`
+- Updated Admin.jsx navigation with Songs and Slang tabs (separated by divider)
+- Updated Admin.jsx dashboard cards for Songs and Slang
+
+### Files Created
+
+- `src/pages/AdminSongs.jsx`
+- `src/pages/SongDeepDive.jsx`
+- `src/pages/AdminSlang.jsx`
+- `src/pages/SlangDeepDive.jsx`
+- `src/pages/Songs.jsx`
+- `src/pages/SlangFlashcards.jsx`
+- `src/pages/SongStudy.jsx`
+
+### Files Modified
+
+- `src/App.jsx` - Added all new routes and imports
+- `src/pages/Admin.jsx` - Added Songs/Slang tabs and dashboard cards
+- `src/components/dashboard/QuickActions.jsx` - Added Songs button
+
+---
+
+## 2025-12-25 - Lyrics Database Phase 2: Seed Data
+
+### Added
+
+- **Seed script** (`scripts/seed-lyrics-poc.js`) - Inserts complete song data
+- **Verify script** (`scripts/verify-lyrics-seed.js`) - Validates seeded data
+
+### Seeded Data
+
+- **Song:** "Debí Tirar Más Fotos" by Bad Bunny
+- **14 sections:** intro, verses, pre-chorus, chorus, interlude, outro
+- **54 lines** with Spanish lyrics and English translations
+- **38 slang terms** with definitions, regions, and cultural notes
+- **38 song-slang links**
+
+### Documentation
+
+- Updated `32_LYRICS_DATABASE_SPEC.md` with Phase 2 completion
+- Added `song_phrases` table to documentation (manually added by Peter)
+
+---
+
+## 2025-12-25 - Lyrics Database Phase 1: Database Setup
+
+### Added
+
+- **Lyrics Database Schema** - 10 new tables for lyrics-based vocabulary learning (POC)
+  - `songs` - Song metadata (title, artist, album, dialect, themes)
+  - `song_sections` - Structural divisions (verse, chorus, bridge, etc.)
+  - `song_lines` - Individual lyric lines with translations
+  - `slang_terms` - Non-standard vocabulary with cultural context
+  - `song_slang` - Junction table linking slang to songs
+  - `song_lemmas` - Junction table linking standard lemmas to songs
+  - `song_phrases` - Junction table linking standard phrases to songs (added by Peter)
+  - `user_slang_progress` - FSRS-scheduled slang learning progress
+  - `user_line_progress` - FSRS-scheduled line comprehension progress
+  - `user_song_progress` - Overall song learning progress
+
+- **11 Performance Indexes** for lyrics queries
+
+### Files Created
+
+- `supabase/migrations/20251225_lyrics_database.sql` - Complete migration
+- `scripts/run-lyrics-migration.js` - Migration info script
+- `scripts/execute-lyrics-migration.js` - Migration executor
+- `scripts/verify-supabase-connection.js` - Connection verification
+
+### Documentation Updated
+
+- `02_DATABASE_SCHEMA.md` - Added Lyrics Tables (POC) section with all 9 tables
+
+---
+
+## 2025-12-25 - Flashcard Display Improvements
+
+### Changed
+
+- **FlashcardDisplay.jsx** - Show all definitions joined with comma (was only showing first)
+- **FlashcardDisplay.jsx** - Reduced Spanish word font size from `text-7xl` to `text-4xl`
+- **FlashcardDisplay.jsx** - Reduced English translation font size from `text-6xl` to `text-3xl`
+- **FlashcardDisplay.jsx** - Added `break-words` class to prevent long words/phrases from overflowing card
+
+### Technical Details
+
+- `displayTranslation` now uses `definitions.join(', ')` instead of `definitions[0]`
+- Long definitions like "to answer, to reply, to respond" now display correctly
 
 ---
 

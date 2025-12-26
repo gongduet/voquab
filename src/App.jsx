@@ -1,11 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
-import Book from './pages/Book'
 import ReadingMode from './pages/ReadingMode'
 import Flashcards from './pages/Flashcards'
 import Progress from './pages/Progress'
@@ -21,6 +20,21 @@ import LemmaDeepDive from './pages/LemmaDeepDive'
 import OrphanedWords from './pages/OrphanedWords'
 import AdminPhrases from './pages/AdminPhrases'
 import PhraseDeepDive from './pages/PhraseDeepDive'
+import AdminSongs from './pages/AdminSongs'
+import SongDeepDive from './pages/SongDeepDive'
+import AdminSlang from './pages/AdminSlang'
+import SlangDeepDive from './pages/SlangDeepDive'
+import Songs from './pages/Songs'
+import SongStudy from './pages/SongStudy'
+import Library from './pages/Library'
+import BookDashboard from './pages/BookDashboard'
+import SongDashboard from './pages/SongDashboard'
+
+// Redirect component for song vocab routes → unified flashcards
+function SongVocabRedirect() {
+  const { songId } = useParams()
+  return <Navigate to={`/flashcards?songId=${songId}`} replace />
+}
 
 function App() {
   return (
@@ -54,11 +68,12 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* /book without ID → redirect to library */}
           <Route
             path="/book"
             element={
               <ProtectedRoute>
-                <Book />
+                <Navigate to="/library" replace />
               </ProtectedRoute>
             }
           />
@@ -118,6 +133,94 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* Library - Browse all content */}
+          <Route
+            path="/library"
+            element={
+              <ProtectedRoute>
+                <Library />
+              </ProtectedRoute>
+            }
+          />
+          {/* Book Dashboard */}
+          <Route
+            path="/book/:bookId"
+            element={
+              <ProtectedRoute>
+                <BookDashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Book Reading Mode */}
+          <Route
+            path="/book/:bookId/read"
+            element={
+              <ProtectedRoute>
+                <ReadingMode />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/book/:bookId/read/:chapterNumber"
+            element={
+              <ProtectedRoute>
+                <ReadingMode />
+              </ProtectedRoute>
+            }
+          />
+          {/* Song Dashboard */}
+          <Route
+            path="/song/:songId"
+            element={
+              <ProtectedRoute>
+                <SongDashboard />
+              </ProtectedRoute>
+            }
+          />
+          {/* Songs (Lyrics-based learning) */}
+          <Route
+            path="/songs"
+            element={
+              <ProtectedRoute>
+                <Songs />
+              </ProtectedRoute>
+            }
+          />
+          {/* Song Vocab → redirect to unified flashcards */}
+          <Route
+            path="/song/:songId/vocab"
+            element={
+              <ProtectedRoute>
+                <SongVocabRedirect />
+              </ProtectedRoute>
+            }
+          />
+          {/* Song Study (new route) */}
+          <Route
+            path="/song/:songId/study"
+            element={
+              <ProtectedRoute>
+                <SongStudy />
+              </ProtectedRoute>
+            }
+          />
+          {/* Legacy song routes - redirect to unified flashcards */}
+          <Route
+            path="/songs/:songId/vocab"
+            element={
+              <ProtectedRoute>
+                <SongVocabRedirect />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/songs/:songId/study"
+            element={
+              <ProtectedRoute>
+                <SongStudy />
+              </ProtectedRoute>
+            }
+          />
           {/* Admin Routes (password-protected, no ProtectedRoute needed) */}
           <Route path="/admin" element={<Admin />}>
             <Route path="common-words" element={<AdminCommonWords />} />
@@ -127,6 +230,10 @@ function App() {
             <Route path="phrases/:phraseId" element={<PhraseDeepDive />} />
             <Route path="sentences" element={<AdminSentences />} />
             <Route path="sentences/:sentenceId" element={<SentenceDeepDive />} />
+            <Route path="songs" element={<AdminSongs />} />
+            <Route path="songs/:songId" element={<SongDeepDive />} />
+            <Route path="slang" element={<AdminSlang />} />
+            <Route path="slang/:slangId" element={<SlangDeepDive />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

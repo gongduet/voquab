@@ -1,0 +1,163 @@
+Voquab Restructure - Complete Implementation Roadmap
+Execute these phases in order. Pause after Phase A to confirm bugs are fixed.
+
+PHASE A: Critical Bug Fixes (Do First)
+A1. Library.jsx - Empty content
+
+Debug why books and songs queries return 0 results
+Check RLS policies allow SELECT on books and songs tables for authenticated users
+Add console.log to see raw query results and errors
+The books table has El Principito, songs table has "Debí Tirar Más Fotos" - both should appear
+Check if there's a filter like is_published = true that might be excluding content
+
+A2. ReadingMode.jsx - Broken/flashing page
+
+Route changed from /read to /book/:bookId/read
+Check if bookId param is being received and used correctly
+Look for infinite re-render loops (check useEffect dependencies)
+Add console.log at component mount and in effects to trace the issue
+Ensure the book lookup query uses bookId param, not hardcoded values
+
+A3. SlangFlashcards.jsx - Column error
+
+Error: column slang_terms_1.examples does not exist
+The slang_terms table has example_spanish and example_english columns, NOT examples
+Find and fix the Supabase select query
+
+
+PHASE B: Dashboard Cleanup
+B1. Simplify Quick Actions
+In QuickActions.jsx and/or Dashboard.jsx:
+
+Remove "Songs" button (purple) - access via Library or Active Content Cards
+Remove "Reading" button (gray) - access via Book Dashboard
+Remove "Learn New" button (orange) - Learn New is content-specific, not global
+Keep only ONE primary action button: Review (blue, full width, prominent)
+The Review button pulls most urgent due cards from ALL content (excluding slang)
+
+B2. Fix Active Content Cards Progress
+In ActiveContentCards.jsx:
+
+Book progress: Query user_lemma_progress joined with lemmas that appear in this book (via words → sentences → chapters → book_id). Calculate % of book's lemmas that are mastered or familiar.
+Song progress: Query user_line_progress for this song's lines. Calculate % of lines completed. Also show slang progress separately if desired.
+
+
+PHASE C: Song Dashboard Parity with Books
+C1. Redesign SongDashboard.jsx to match BookDashboard.jsx structure
+Layout (top to bottom):
+
+Header: Back arrow (→ Dashboard), Song title, Artist · Dialect
+Progress ring: centered, shows overall completion %
+Three stat boxes in a row:
+
+Vocabulary: mastered/familiar/learning/new counts (from song_lemmas → user_lemma_progress)
+Phrases: X / Y learned (from song_phrases → user_phrase_progress)
+Slang: X / Y learned (from song_slang → user_slang_progress)
+
+
+Themes: displayed with " · " separator (fix current "nostalgiamemoryhomefriendship" bug)
+Three action buttons in a row:
+
+Learn Vocab - introduce standard lemmas from this song (query unlearned from song_lemmas)
+Learn Slang - introduce slang terms from this song (query unlearned from song_slang, respect allow_explicit_content setting)
+Review - review due cards from this song (lemmas + phrases + slang)
+
+
+Primary CTA: Study Lyrics button (purple, full width) - shows current position
+Section grid: like chapter grid, showing all sections with progress indicators
+
+C2. Song Flashcards for Standard Vocabulary
+Create or update route /song/:songId/learn for learning standard vocabulary:
+
+Query lemmas via song_lemmas junction table
+Use existing flashcard components
+Track progress in user_lemma_progress (same as books - unified!)
+
+C3. Slang Flashcards Update
+Update /song/:songId/vocab (slang flashcards):
+
+Respect allow_explicit_content setting - filter out formality = 'vulgar' if false
+Show cultural notes and regional context
+Track progress in user_slang_progress
+
+
+PHASE D: Study Lyrics = Reading Mode Experience
+D1. Review ReadingPage.jsx patterns
+Study src/components/reading/ReadingPage.jsx to understand:
+
+How sentences flow as continuous text
+How tap-to-translate tooltips work
+How blur-to-focus animations work
+How navigation controls work
+
+D2. Refactor SongStudy.jsx to match
+Rebuild the lyrics study experience:
+
+Lines flow as continuous text within sections (not separate cards)
+Section headers appear inline: "VERSE 1 - Nostalgia" styled like chapter headers
+Tap a line to reveal translation in a tooltip (not a separate panel)
+Blur-to-focus animation as lines are revealed
+Skippable lines (vocalizations like "Eh-eh-eh") appear dimmed/muted
+Cultural notes appear in the tooltip when present
+Progress bar at top showing position in song
+
+D3. Navigation controls
+
+Tape-deck style: back/forward through lines
+Can tap previous lines to re-reveal translation
+Section jumping (tap section header to jump)
+Track progress in user_line_progress
+
+
+PHASE E: Polish & Edge Cases
+E1. Loading States
+
+Add skeleton loaders to Dashboard, Library, BookDashboard, SongDashboard
+Show loading state while data fetches
+
+E2. Empty States
+
+Library with no content: "No books available yet"
+Song with no progress: "Start learning to see your progress"
+No due reviews: "All caught up! 🎉"
+
+E3. Mobile Optimization
+
+Test all pages on mobile viewport
+Ensure buttons are tap-friendly (min 44px)
+Stack elements vertically on small screens
+
+E4. Error Handling
+
+Graceful error messages when queries fail
+Retry buttons where appropriate
+
+E5. Documentation
+
+Update 33_LIBRARY_DASHBOARD_SPEC.md with final implementation details
+Update 99_LIVING_CHANGELOG.md
+Add to roadmap: Settings page Notion-like styling (future sprint)
+
+
+Data Flow Reference
+Standard Vocabulary (unified across books and songs):
+Books: lemmas → words → sentences → chapters → books
+Songs: lemmas → song_lemmas → songs
+Progress: user_lemma_progress (same table for both!)
+Phrases (unified across books and songs):
+Books: phrases → phrase_occurrences → sentences → chapters → books
+Songs: phrases → song_phrases → songs
+Progress: user_phrase_progress (same table for both!)
+Slang (songs only):
+Songs: slang_terms → song_slang → songs
+Progress: user_slang_progress
+Filter: respect allow_explicit_content setting for formality='vulgar'
+
+Execution Notes
+
+After Phase A, report status and confirm bugs are fixed before continuing
+After Phase C, the Song Dashboard should look structurally identical to Book Dashboard
+After Phase D, Study Lyrics should feel like Reading Mode
+Reference existing components: ReadingPage.jsx, BookDashboard.jsx, Flashcards.jsx
+
+Begin with Phase A now.

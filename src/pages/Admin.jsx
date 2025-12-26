@@ -112,6 +112,10 @@ export default function Admin() {
   const isPhraseDeepDive = location.pathname.startsWith('/admin/phrases/') && location.pathname !== '/admin/phrases'
   const isSentencesActive = location.pathname === '/admin/sentences' || location.pathname.startsWith('/admin/sentences/')
   const isSentenceDeepDive = location.pathname.startsWith('/admin/sentences/') && location.pathname !== '/admin/sentences'
+  const isSongsActive = location.pathname === '/admin/songs' || location.pathname.startsWith('/admin/songs/')
+  const isSongDeepDive = location.pathname.startsWith('/admin/songs/') && location.pathname !== '/admin/songs'
+  const isSlangActive = location.pathname === '/admin/slang' || location.pathname.startsWith('/admin/slang/')
+  const isSlangDeepDive = location.pathname.startsWith('/admin/slang/') && location.pathname !== '/admin/slang'
 
   // Get current page name for breadcrumb
   const currentPage = isLemmaDeepDive ? 'Lemma Details'
@@ -120,6 +124,10 @@ export default function Admin() {
     : isPhrasesActive ? 'Phrases'
     : isSentenceDeepDive ? 'Sentence Details'
     : isSentencesActive ? 'Sentences'
+    : isSongDeepDive ? 'Song Details'
+    : isSongsActive ? 'Songs'
+    : isSlangDeepDive ? 'Slang Details'
+    : isSlangActive ? 'Slang'
     : 'Dashboard'
 
   return (
@@ -158,6 +166,10 @@ export default function Admin() {
             {currentPage === 'Phrase Details' && 'Complete phrase breakdown with definitions and occurrences'}
             {currentPage === 'Sentences' && 'Edit sentences, fragments, and translations'}
             {currentPage === 'Sentence Details' && 'Complete sentence breakdown with words, lemmas, and phrases'}
+            {currentPage === 'Songs' && 'Manage songs for lyrics-based learning'}
+            {currentPage === 'Song Details' && 'Edit song metadata, sections, and linked slang'}
+            {currentPage === 'Slang' && 'Manage slang terms, definitions, and cultural context'}
+            {currentPage === 'Slang Details' && 'Edit slang term details and view linked songs'}
           </p>
         </div>
       </header>
@@ -195,6 +207,27 @@ export default function Admin() {
               }`}
             >
               Sentences
+            </Link>
+            <div className="border-l border-neutral-200 mx-2" />
+            <Link
+              to="/admin/songs"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isSongsActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Songs
+            </Link>
+            <Link
+              to="/admin/slang"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isSlangActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Slang
             </Link>
           </div>
         </div>
@@ -238,6 +271,30 @@ export default function Admin() {
               </h3>
               <p className="text-sm text-neutral-500">
                 Edit sentences, fragments, translations, and paragraph breaks
+              </p>
+            </Link>
+
+            <Link
+              to="/admin/songs"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Songs
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Manage songs for lyrics-based vocabulary learning
+              </p>
+            </Link>
+
+            <Link
+              to="/admin/slang"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Slang
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Manage slang terms, definitions, and cultural context
               </p>
             </Link>
           </div>

@@ -35,14 +35,14 @@ These are essential before any implementation work begins.
 
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
-| 00 | PROJECT_OVERVIEW.md | ⬜ | 5-7 | What is Voquab, vision, goals |
-| 01 | MVP_DEFINITION.md | ⬜ | 6-8 | What's in/out, success criteria |
+| 00 | PROJECT_OVERVIEW.md | ✅ | 5-7 | What is Voquab, vision, goals |
+| 01 | MVP_DEFINITION.md | ✅ | 6-8 | What's in/out, success criteria |
 | 02 | DATABASE_SCHEMA.md | ✅ | 8-10 | Complete SQL, relationships |
 | 03 | CONTENT_PIPELINE.md | ✅ | 10-12 | Text → production workflow |
-| 07 | WORKING_WITH_CLAUDE_CODE.md | ⬜ | 4-6 | Collaboration protocols |
-| 21 | MIGRATION_PLAN.md | ⬜ | 6-8 | Old → new schema transition |
-| 22 | ADMIN_DASHBOARD.md | ⬜ | 5-7 | Manual editing requirements |
-| 23 | DECISION_LOG.md | ⬜ | 3-5 | Why we chose this approach |
+| 07 | WORKING_WITH_CLAUDE_CODE.md | ✅ | 4-6 | Collaboration protocols |
+| 21 | MIGRATION_PLAN.md | ✅ | 6-8 | Old → new schema transition |
+| 22 | ADMIN_DASHBOARD.md | ✅ | 5-7 | Manual editing requirements |
+| 23 | DECISION_LOG.md | ✅ | 3-5 | Why we chose this approach |
 
 **Total Tier 1:** 8 documents (~50-65 pages total)
 
@@ -53,11 +53,11 @@ These define the learning algorithm and user experience.
 
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
-| 04 | LEARNING_ALGORITHM.md | ⬜ | 12-15 | Spaced repetition, health, mastery | x
-| 05 | READING_EXPERIENCE.md | ⬜ | 8-10 | Interactive reading design | x
-| 15 | API_DOCUMENTATION.md | ⬜ | 6-8 | Supabase query patterns | x
-| 16 | CODE_STYLE_GUIDE.md | ⬜ | 5-7 | React patterns, naming | x
-| 17 | STATE_MANAGEMENT.md | ⬜ | 4-6 | Context, hooks, state patterns | x
+| 04 | LEARNING_ALGORITHM.md | ✅ | 12-15 | Spaced repetition, health, mastery |
+| 05 | READING_EXPERIENCE.md | ✅ | 8-10 | Interactive reading design |
+| 15 | API_DOCUMENTATION.md | ✅ | 6-8 | Supabase query patterns |
+| 16 | CODE_STYLE_GUIDE.md | ✅ | 5-7 | React patterns, naming |
+| 17 | STATE_MANAGEMENT.md | ✅ | 4-6 | Context, hooks, state patterns |
 
 **Total Tier 2:** 5 documents (~35-46 pages)
 
@@ -68,10 +68,10 @@ These guide visual design and user interaction.
 
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
-| 06 | UI_DESIGN_SYSTEM.md | ⬜ | 10-12 | Colors, fonts, components | x
-| 18 | COMPONENT_LIBRARY.md | ⬜ | 8-10 | Reusable components catalog | x
-| 13 | ACCESSIBILITY.md | ⬜ | 5-7 | WCAG, keyboard nav, screen readers | x
-| 12 | PERFORMANCE.md | ⬜ | 6-8 | Load times, optimization | x
+| 06 | UI_DESIGN_SYSTEM.md | ✅ | 10-12 | Colors, fonts, components |
+| 18 | COMPONENT_LIBRARY.md | ✅ | 8-10 | Reusable components catalog |
+| 13 | ACCESSIBILITY.md | ✅ | 5-7 | WCAG, keyboard nav, screen readers |
+| 12 | PERFORMANCE.md | ✅ | 6-8 | Load times, optimization |
 
 **Total Tier 3:** 4 documents (~29-37 pages)
 
@@ -82,11 +82,11 @@ These enable deployment, monitoring, and maintenance.
 
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
-| 08 | DEPLOYMENT.md | ⬜ | 5-7 | Netlify, Supabase, env vars | x
-| 09 | SECURITY_AUTH.md | ⬜ | 6-8 | RLS policies, auth flow | x
-| 11 | ERROR_HANDLING.md | ⬜ | 5-7 | Error boundaries, logging | x
-| 19 | TESTING_STRATEGY.md | ⬜ | 6-8 | Manual checklist, automation | x
-| 24 | TROUBLESHOOTING.md | ⬜ | 4-6 | Common issues, solutions | x
+| 08 | DEPLOYMENT.md | ✅ | 5-7 | Netlify, Supabase, env vars |
+| 09 | SECURITY_AUTH.md | ✅ | 6-8 | RLS policies, auth flow |
+| 11 | ERROR_HANDLING.md | ✅ | 5-7 | Error boundaries, logging |
+| 19 | TESTING_STRATEGY.md | ✅ | 6-8 | Manual checklist, automation |
+| 24 | TROUBLESHOOTING.md | ✅ | 4-6 | Common issues, solutions |
 
 **Total Tier 4:** 5 documents (~26-36 pages)
 
@@ -97,9 +97,9 @@ These support scaling and future expansion.
 
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
-| 10 | ANALYTICS_METRICS.md | ⬜ | 5-7 | What we track, privacy | x
-| 14 | SEO_MARKETING.md | ⬜ | 6-8 | Meta tags, launch plan | x
-| 20 | CONTENT_ROADMAP.md | ⬜ | 7-9 | Which books to add; Which languages to expand to; Content selection criteria; Book evaluation process | x
+| 10 | ANALYTICS_METRICS.md | ✅ | 5-7 | What we track, privacy |
+| 14 | SEO_MARKETING.md | ✅ | 6-8 | Meta tags, launch plan |
+| 20 | CONTENT_ROADMAP.md | ✅ | 7-9 | Which books to add; languages; criteria |
 | 26 | ONBOARDING.md | ⬜ | 4-6 | New contributor setup |
 
 **Total Tier 5:** 4 documents (~22-30 pages)
@@ -111,7 +111,11 @@ These support scaling and future expansion.
 | # | Document Name | Status | Pages | Purpose |
 |---|--------------|--------|-------|---------|
 | 25 | TECHNICAL_DEBT.md | ⬜ | Growing | TODOs, shortcuts, refactoring |
+| 27 | FEATURE_PRIORITIZATION.md | ✅ | 6-8 | Feature backlog and priorities |
+| 29 | FAQ.md | ✅ | 8-10 | Frequently asked questions |
 | 30 | CHAPTER_IMPORT_CHECKLIST.md | ✅ | 10-12 | Step-by-step import process |
+| 30 | FSRS_ARCHITECTURE.md | ✅ | 8-10 | FSRS algorithm details |
+| 31 | SENTENCE_COMPREHENSION.md | ✅ | 10-12 | Reading mode spec |
 | 99 | LIVING_CHANGELOG.md | ✅ | Growing | Claude Code updates log |
 
 ---
@@ -425,23 +429,27 @@ These support scaling and future expansion.
 
 ## CURRENT STATUS
 
-**Completed:** 5/29 documents (17%)
-- 02_DATABASE_SCHEMA.md ✅
-- 03_CONTENT_PIPELINE.md ✅
-- 30_CHAPTER_IMPORT_CHECKLIST.md ✅
-- 99_LIVING_CHANGELOG.md ✅
+**Completed:** 28/30 documents (93%)
 
-**In Progress:** Tier 1 Foundation docs
-**Next Up:** 00_PROJECT_OVERVIEW.md
+**All Tiers Complete:**
+- Tier 1: 8/8 ✅
+- Tier 2: 5/5 ✅
+- Tier 3: 4/4 ✅
+- Tier 4: 5/5 ✅
+- Tier 5: 3/4 ✅ (missing ONBOARDING.md)
+- Living Docs: 6/7 ✅ (missing TECHNICAL_DEBT.md)
 
-**Last Updated:** December 6, 2025
-**Next Review:** After completing Tier 1 documents
+**Remaining:**
+- 25_TECHNICAL_DEBT.md
+- 26_ONBOARDING.md
 
-### Major Milestone: El Principito Content Pipeline Complete
-- All 27 chapters imported
-- 1,658 unique lemmas (after AI validation cleanup)
-- 844 phrases detected
-- AI dictionary form validation process documented
+**Last Updated:** December 25, 2025
+
+### Major Milestones
+- **Dec 2025:** Admin Suite Phase 2 Complete (Lemmas, Phrases, Sentences management)
+- **Dec 2025:** FSRS algorithm implemented for spaced repetition
+- **Dec 2025:** Sentence comprehension (Reading Mode) implemented
+- **Nov 2025:** El Principito content pipeline complete (27 chapters, 1,658 lemmas)
 
 ---
 

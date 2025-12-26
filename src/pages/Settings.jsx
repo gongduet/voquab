@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 export default function Settings() {
   const [dailyGoalWords, setDailyGoalWords] = useState(100)
   const [cardsPerSession, setCardsPerSession] = useState(25)
+  const [allowExplicitContent, setAllowExplicitContent] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
@@ -28,7 +29,7 @@ export default function Settings() {
 
       const { data, error: fetchError } = await supabase
         .from('user_settings')
-        .select('daily_goal_words, cards_per_session')
+        .select('daily_goal_words, cards_per_session, allow_explicit_content')
         .eq('user_id', user.id)
         .maybeSingle()
 
@@ -41,11 +42,13 @@ export default function Settings() {
         console.log('Loaded settings:', data)
         setDailyGoalWords(data.daily_goal_words || 100)
         setCardsPerSession(data.cards_per_session || 25)
+        setAllowExplicitContent(data.allow_explicit_content || false)
       } else {
         console.log('No settings found, using defaults')
         // No settings yet, use defaults
         setDailyGoalWords(100)
         setCardsPerSession(25)
+        setAllowExplicitContent(false)
       }
 
       setLoading(false)
@@ -66,7 +69,8 @@ export default function Settings() {
 
       console.log('Saving settings:', {
         daily_goal_words: dailyGoalWords,
-        cards_per_session: cardsPerSession
+        cards_per_session: cardsPerSession,
+        allow_explicit_content: allowExplicitContent
       })
 
       // Check if settings already exist
@@ -83,6 +87,7 @@ export default function Settings() {
           .update({
             daily_goal_words: dailyGoalWords,
             cards_per_session: cardsPerSession,
+            allow_explicit_content: allowExplicitContent,
           })
           .eq('user_id', user.id)
 
@@ -95,6 +100,7 @@ export default function Settings() {
             user_id: user.id,
             daily_goal_words: dailyGoalWords,
             cards_per_session: cardsPerSession,
+            allow_explicit_content: allowExplicitContent,
           }])
 
         if (insertError) throw insertError
@@ -229,6 +235,47 @@ export default function Settings() {
                 <p className="text-sm text-gray-600 font-serif mt-3">
                   How many cards to show in each review session. Recommended: 15-30 cards.
                 </p>
+              </div>
+            </div>
+
+            {/* Content Settings Section */}
+            <div>
+              <h3 className="text-xl font-serif font-bold text-amber-700 mb-4 flex items-center gap-2">
+                <span>🎵</span>
+                <span>Content Settings</span>
+              </h3>
+
+              <div className="bg-purple-50 rounded-xl p-6 border-2 border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-serif font-semibold text-gray-700 block mb-1">
+                      Allow Explicit Content
+                    </span>
+                    <p className="text-sm text-gray-600 font-serif">
+                      Show vulgar slang terms when learning from songs. Disabled by default.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAllowExplicitContent(!allowExplicitContent)}
+                    className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                      allowExplicitContent ? 'bg-purple-600' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform ${
+                        allowExplicitContent ? 'translate-x-7' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {allowExplicitContent && (
+                  <div className="mt-4 p-3 bg-purple-100 rounded-lg border border-purple-300">
+                    <p className="text-sm text-purple-800 font-serif">
+                      Vulgar slang terms will be included in song vocabulary. These may include profanity and adult language.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,0 +1,85 @@
+Good debugging. The errors are clear now:
+
+Root Causes Identified
+IssueErrorFixLibrary Bookscolumn books.difficulty_level does not existColumn is probably difficulty not difficulty_levelLibrary Songscolumn songs.region does not existColumn is dialect not regionSlang FlashcardsDifferent UI than standard flashcardsShould reuse existing Flashcards component
+
+Prompt for Claude Code
+
+Continue Voquab Restructure - Fix Library + Unify Flashcards
+
+IMMEDIATE FIXES (Before continuing roadmap)
+Fix 1: Library.jsx Column Names
+The console shows these errors:
+
+column books.difficulty_level does not exist
+column songs.region does not exist
+
+In Library.jsx, fix the Supabase queries:
+For books query, check 02_DATABASE_SCHEMA.md for actual column names. The books table likely has:
+
+difficulty not difficulty_level
+is_published not is_available
+
+For songs query:
+
+dialect not region
+
+Update the select statements to match actual schema. Reference the songs table definition in 32_LYRICS_DATABASE_SPEC.md.
+Fix 2: Unify Song Flashcard Experience
+The current SlangFlashcards.jsx has a completely different UI than the standard Flashcards.jsx. This is wrong.
+Requirements:
+
+Song vocabulary learning should use the SAME flashcard component/experience as book vocabulary
+When learning from a song, the session should include:
+
+Standard lemmas (from song_lemmas)
+Phrases (from song_phrases)
+Slang terms (from song_slang, respecting explicit content setting)
+
+
+All three types should be mixed together in one session, just like books mix lemmas and phrases
+
+Options:
+
+Option A: Extend existing Flashcards.jsx to accept a songId parameter and build sessions from song content
+Option B: Create a wrapper that feeds song content into the existing flashcard system
+
+The card display, flip animation, rating buttons (Again/Hard/Good), and progress tracking should be IDENTICAL to the book flashcard experience.
+
+THEN CONTINUE ROADMAP
+After fixing the above, continue with:
+Phase B: Dashboard Cleanup
+
+Remove "Songs" button, "Reading" button, "Learn New" button from main dashboard
+Keep only ONE "Review" button (pulls from all content, excludes slang)
+Fix Active Content Cards progress calculation
+
+Phase C: Song Dashboard Parity
+
+Redesign to match Book Dashboard layout
+Three stat boxes: Vocabulary, Phrases, Slang
+Three action buttons: Learn Vocab, Learn Slang, Review
+Fix themes display (add separators)
+Section grid like chapter grid
+
+Phase D: Study Lyrics = Reading Mode
+
+Refactor to match ReadingPage experience
+Flowing text, tap-to-translate, blur-to-focus
+
+Phase E: Polish
+
+ARCHITECTURE REMINDER
+Song Learning Session should include:
+song_lemmas → lemmas → user_lemma_progress (standard vocab)
+song_phrases → phrases → user_phrase_progress (phrases)
+song_slang → slang_terms → user_slang_progress (slang, filtered by explicit setting)
+All three use the same flashcard UI. The only difference is:
+
+Lemmas show: word → definition + example sentence
+Phrases show: phrase → definition + example
+Slang shows: term → definition + cultural note + region
+
+The rating system (Again/Hard/Good) and FSRS scheduling work the same for all three.
+
+Start with the immediate fixes, then report status before continuing to Phase B.

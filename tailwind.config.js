@@ -7,68 +7,82 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Little Prince Blue
+        // Notion-like primary (blue, used sparingly)
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#f8fafc',
+          100: '#eff6ff',
+          200: '#dbeafe',
+          300: '#bfdbfe',
+          400: '#60a5fa',
+          500: '#2563eb',  // Main accent
+          600: '#1d4ed8',
+          700: '#1e40af',
+          800: '#1e3a8a',
+          900: '#1e3a8a',
         },
-        // Star Gold
-        secondary: {
-          50: '#fffbeb',
-          100: '#fef3c7',
-          200: '#fde68a',
-          300: '#fcd34d',
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-          800: '#92400e',
-          900: '#78350f',
+        // Muted amber for books (less saturated)
+        amber: {
+          50: '#fefdfb',
+          100: '#fdf8f0',
+          200: '#faecd8',
+          300: '#f5dbb5',
+          400: '#e5bc7a',
+          500: '#d4a24e',  // Muted gold
+          600: '#b8862f',
+          700: '#956b25',
+          800: '#7a5820',
+          900: '#63481c',
         },
-        // Warm Grays
+        // Muted purple for songs (less saturated)
+        purple: {
+          50: '#faf9fb',
+          100: '#f4f2f7',
+          200: '#e9e5ef',
+          300: '#d9d2e3',
+          400: '#b5a8c7',
+          500: '#8b7aa3',  // Muted purple
+          600: '#6f5d8a',
+          700: '#594a70',
+          800: '#483c5b',
+          900: '#3b314a',
+        },
+        // Notion-like neutrals
         neutral: {
-          50: '#fafaf9',
-          100: '#f5f5f4',
-          200: '#e7e5e4',
-          300: '#d6d3d1',
-          400: '#a8a29e',
-          500: '#78716c',
-          600: '#57534e',
-          700: '#44403c',
-          800: '#292524',
+          50: '#fafafa',   // Page background
+          100: '#f5f5f5',
+          200: '#e5e5e5',  // Borders
+          300: '#d4d4d4',
+          400: '#a3a3a3',
+          500: '#6b7280',  // Secondary text
+          600: '#525252',
+          700: '#404040',
+          800: '#37352f',  // Primary text (Notion brown-black)
           900: '#1c1917',
         },
-        // Semantic colors
+        // Semantic colors (muted versions)
         success: {
-          50: '#f0fdf4',
+          50: '#f7fdf9',
           100: '#dcfce7',
-          500: '#22c55e',
+          500: '#4ade80',
+          600: '#22c55e',
           700: '#15803d',
         },
         error: {
-          50: '#fef2f2',
+          50: '#fef7f7',
           100: '#fee2e2',
-          500: '#ef4444',
+          500: '#f87171',
           700: '#b91c1c',
         },
         warning: {
-          50: '#fff7ed',
+          50: '#fffbf5',
           100: '#ffedd5',
-          500: '#f97316',
+          500: '#fb923c',
           700: '#c2410c',
         },
         info: {
-          50: '#eff6ff',
+          50: '#f8fafc',
           100: '#dbeafe',
-          500: '#3b82f6',
+          500: '#60a5fa',
           700: '#1d4ed8',
         },
       },

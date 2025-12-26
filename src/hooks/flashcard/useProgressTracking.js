@@ -18,8 +18,14 @@ export default function useProgressTracking(userId) {
 
   /**
    * Log a review event to user_review_history for activity tracking
+   * Note: Slang reviews are not logged to review_history (only lemmas and phrases)
    */
   async function logReviewEvent(card, difficulty) {
+    // Skip logging for slang cards (review_history doesn't have slang_id column)
+    if (card.card_type === 'slang' || card.slang_id) {
+      return
+    }
+
     // Use same robust detection as updateProgress
     const isPhrase = card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id)
 
@@ -43,7 +49,7 @@ export default function useProgressTracking(userId) {
 
   /**
    * Update progress for a card after user response
-   * Supports both lemmas and phrases
+   * Supports lemmas, phrases, and slang
    *
    * @param {Object} card - Card that was reviewed
    * @param {string} difficulty - 'again' | 'hard' | 'got-it' (or legacy 'dont-know' | 'easy')
@@ -54,12 +60,24 @@ export default function useProgressTracking(userId) {
     if (!userId || !card) return { success: false }
 
     try {
-      // Determine if this is a phrase or lemma card
-      // Check both card_type AND presence of phrase_id (for robustness)
-      const isPhrase = card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id)
-      const tableName = isPhrase ? 'user_phrase_progress' : 'user_lemma_progress'
-      const idField = isPhrase ? 'phrase_id' : 'lemma_id'
-      const cardId = isPhrase ? card.phrase_id : (card.lemma_id || card.vocab_id)
+      // Determine card type: slang, phrase, or lemma
+      const isSlang = card.card_type === 'slang' || (card.slang_id && !card.lemma_id && !card.phrase_id)
+      const isPhrase = !isSlang && (card.card_type === 'phrase' || (card.phrase_id && !card.lemma_id))
+
+      let tableName, idField, cardId
+      if (isSlang) {
+        tableName = 'user_slang_progress'
+        idField = 'slang_id'
+        cardId = card.slang_id
+      } else if (isPhrase) {
+        tableName = 'user_phrase_progress'
+        idField = 'phrase_id'
+        cardId = card.phrase_id
+      } else {
+        tableName = 'user_lemma_progress'
+        idField = 'lemma_id'
+        cardId = card.lemma_id || card.vocab_id
+      }
 
       // Validate we have a valid cardId
       if (!cardId) {
@@ -101,24 +119,35 @@ export default function useProgressTracking(userId) {
       const scheduledCard = scheduleCard(card, difficulty)
 
       // Build progress update with FSRS fields
-      // Note: user_phrase_progress has fewer columns than user_lemma_progress
+      // Note: different tables have different column schemas
       const progressUpdate = {
-        // FSRS fields (required for both tables)
+        // FSRS fields (common to all tables)
         stability: scheduledCard.stability,
         difficulty: scheduledCard.difficulty,
         due_date: scheduledCard.due_date,
         fsrs_state: scheduledCard.fsrs_state,
         reps: scheduledCard.reps,
-        lapses: scheduledCard.lapses,
-        last_seen_at: scheduledCard.last_seen_at,
-
-        // Legacy fields that exist in both tables
-        mastery_level: stabilityToMastery(scheduledCard.stability),
-        health: calculateRetrievability(scheduledCard)
+        lapses: scheduledCard.lapses
       }
 
-      // These columns only exist in user_lemma_progress, not user_phrase_progress
-      if (!isPhrase) {
+      // Handle different column names for last seen timestamp
+      if (isSlang) {
+        // user_slang_progress uses last_review_at
+        progressUpdate.last_review_at = scheduledCard.last_seen_at
+        progressUpdate.updated_at = new Date().toISOString()
+      } else {
+        // lemma and phrase tables use last_seen_at
+        progressUpdate.last_seen_at = scheduledCard.last_seen_at
+      }
+
+      // Legacy fields that exist in lemma and phrase tables (not slang)
+      if (!isSlang) {
+        progressUpdate.mastery_level = stabilityToMastery(scheduledCard.stability)
+        progressUpdate.health = calculateRetrievability(scheduledCard)
+      }
+
+      // These columns only exist in user_lemma_progress
+      if (!isPhrase && !isSlang) {
         progressUpdate.total_reviews = scheduledCard.total_reviews
         progressUpdate.last_reviewed_at = scheduledCard.last_reviewed_at
         progressUpdate.updated_at = new Date().toISOString()

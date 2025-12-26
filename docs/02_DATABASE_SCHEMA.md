@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 24, 2025
+**Last Updated:** December 25, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -15,10 +15,11 @@
 6. [Validation Tables](#validation-tables)
 7. [User Progress Tables](#user-progress-tables)
 8. [User Management Tables](#user-management-tables)
-9. [Complete SQL Definitions](#complete-sql-definitions)
-10. [Indexes & Performance](#indexes--performance)
-11. [Design Rationale](#design-rationale)
-12. [Quick Reference](#quick-reference)
+9. [Lyrics Tables (POC)](#lyrics-tables-poc)
+10. [Complete SQL Definitions](#complete-sql-definitions)
+11. [Indexes & Performance](#indexes--performance)
+12. [Design Rationale](#design-rationale)
+13. [Quick Reference](#quick-reference)
 
 ---
 
@@ -751,24 +752,258 @@ Daily activity tracking.
 CREATE TABLE user_daily_stats (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   review_date DATE NOT NULL,
-  
+
   -- Activity counts
   words_reviewed INTEGER DEFAULT 0,
   new_words_learned INTEGER DEFAULT 0,
   time_spent_minutes INTEGER DEFAULT 0,
   sentences_read INTEGER DEFAULT 0,
-  
+
   -- Streak tracking
   current_streak INTEGER DEFAULT 0,
   longest_streak INTEGER DEFAULT 0,
   longest_streak_start DATE,
   longest_streak_end DATE,
   total_active_days INTEGER DEFAULT 0,
-  
+
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   PRIMARY KEY (user_id, review_date)
 );
+```
+
+---
+
+## LYRICS TABLES (POC)
+
+These tables support lyrics-based vocabulary learning. See **32_LYRICS_DATABASE_SPEC.md** for full specification.
+
+### songs
+
+Primary content container for a song.
+
+```sql
+CREATE TABLE songs (
+  song_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  artist TEXT NOT NULL,
+  album TEXT,
+  release_year INTEGER,
+  difficulty TEXT NOT NULL DEFAULT 'intermediate',  -- 'beginner', 'intermediate', 'advanced'
+  dialect TEXT,                                      -- "Puerto Rican Spanish"
+  themes TEXT[],                                     -- ARRAY['nostalgia', 'memory', 'home']
+  total_sections INTEGER DEFAULT 0,
+  total_lines INTEGER DEFAULT 0,
+  unique_lemmas INTEGER DEFAULT 0,
+  unique_slang_terms INTEGER DEFAULT 0,
+  is_published BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### song_sections
+
+Structural divisions within a song (verse, chorus, bridge, etc.).
+
+```sql
+CREATE TABLE song_sections (
+  section_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  section_type TEXT NOT NULL,             -- 'intro', 'verse', 'chorus', 'bridge', 'outro'
+  section_order INTEGER NOT NULL,
+  section_label TEXT,
+  is_skippable BOOLEAN DEFAULT FALSE,
+  repeat_of_section_id UUID REFERENCES song_sections(section_id),
+  total_lines INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(song_id, section_order)
+);
+```
+
+### song_lines
+
+Individual lines of lyrics with translations.
+
+```sql
+CREATE TABLE song_lines (
+  line_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  section_id UUID NOT NULL REFERENCES song_sections(section_id) ON DELETE CASCADE,
+  line_order INTEGER NOT NULL,
+  line_text TEXT NOT NULL,
+  translation TEXT NOT NULL,
+  grammar_note TEXT,
+  cultural_note TEXT,
+  is_skippable BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(section_id, line_order)
+);
+```
+
+### slang_terms
+
+Non-standard vocabulary with cultural context (parallel to lemmas table).
+
+```sql
+CREATE TABLE slang_terms (
+  slang_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  term TEXT NOT NULL,
+  definition TEXT NOT NULL,
+  standard_equivalent TEXT,
+  region TEXT,
+  part_of_speech TEXT,
+  cultural_note TEXT,
+  usage_note TEXT,
+  formality TEXT DEFAULT 'informal',      -- 'informal', 'vulgar', 'neutral'
+  example_spanish TEXT,
+  example_english TEXT,
+  is_approved BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(term, region)
+);
+```
+
+### song_slang
+
+Junction table linking slang terms to songs.
+
+```sql
+CREATE TABLE song_slang (
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  slang_id UUID NOT NULL REFERENCES slang_terms(slang_id) ON DELETE CASCADE,
+  first_line_id UUID REFERENCES song_lines(line_id),
+  occurrence_count INTEGER DEFAULT 1,
+  PRIMARY KEY (song_id, slang_id)
+);
+```
+
+### song_lemmas
+
+Junction table linking standard lemmas to songs.
+
+```sql
+CREATE TABLE song_lemmas (
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  lemma_id UUID NOT NULL REFERENCES lemmas(lemma_id) ON DELETE CASCADE,
+  first_line_id UUID REFERENCES song_lines(line_id),
+  occurrence_count INTEGER DEFAULT 1,
+  PRIMARY KEY (song_id, lemma_id)
+);
+```
+
+### song_phrases
+
+Junction table linking standard phrases to songs. Enables unified vocabulary tracking - if a phrase appears in both books and songs, user learns it once.
+
+```sql
+CREATE TABLE song_phrases (
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  phrase_id UUID NOT NULL REFERENCES phrases(phrase_id) ON DELETE CASCADE,
+  first_line_id UUID REFERENCES song_lines(line_id),
+  occurrence_count INTEGER DEFAULT 1,
+  PRIMARY KEY (song_id, phrase_id)
+);
+```
+
+### user_slang_progress
+
+FSRS-scheduled progress on slang vocabulary.
+
+```sql
+CREATE TABLE user_slang_progress (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  slang_id UUID NOT NULL REFERENCES slang_terms(slang_id) ON DELETE CASCADE,
+  stability REAL,
+  difficulty REAL,
+  due_date TIMESTAMPTZ,
+  fsrs_state SMALLINT DEFAULT 0,
+  reps INTEGER DEFAULT 0,
+  lapses INTEGER DEFAULT 0,
+  last_review_at TIMESTAMPTZ,
+  is_introduced BOOLEAN DEFAULT FALSE,
+  introduced_at TIMESTAMPTZ,
+  first_seen_song_id UUID REFERENCES songs(song_id),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, slang_id)
+);
+```
+
+### user_line_progress
+
+FSRS-scheduled progress on line comprehension.
+
+```sql
+CREATE TABLE user_line_progress (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  line_id UUID NOT NULL REFERENCES song_lines(line_id) ON DELETE CASCADE,
+  stability REAL,
+  difficulty REAL,
+  due_date TIMESTAMPTZ,
+  fsrs_state SMALLINT DEFAULT 0,
+  reps INTEGER DEFAULT 0,
+  lapses INTEGER DEFAULT 0,
+  last_seen_at TIMESTAMPTZ,
+  last_score REAL,
+  best_score REAL,
+  times_completed INTEGER DEFAULT 0,
+  first_seen_in TEXT DEFAULT 'study',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, line_id)
+);
+```
+
+### user_song_progress
+
+Overall song learning progress.
+
+```sql
+CREATE TABLE user_song_progress (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  current_section_order INTEGER DEFAULT 1,
+  current_line_order INTEGER DEFAULT 1,
+  furthest_line_reached INTEGER DEFAULT 1,
+  vocab_complete BOOLEAN DEFAULT FALSE,
+  study_complete BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+  total_lines INTEGER,
+  lines_completed INTEGER DEFAULT 0,
+  slang_introduced INTEGER DEFAULT 0,
+  slang_total INTEGER,
+  lemmas_introduced INTEGER DEFAULT 0,
+  lemmas_total INTEGER,
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  last_activity_at TIMESTAMPTZ DEFAULT NOW(),
+  PRIMARY KEY (user_id, song_id)
+);
+```
+
+### Lyrics Indexes
+
+```sql
+-- Song content queries
+CREATE INDEX idx_song_sections_song ON song_sections(song_id, section_order);
+CREATE INDEX idx_song_lines_section ON song_lines(section_id, line_order);
+
+-- Slang lookups
+CREATE INDEX idx_slang_terms_term ON slang_terms(term);
+CREATE INDEX idx_slang_terms_region ON slang_terms(region);
+CREATE INDEX idx_song_slang_song ON song_slang(song_id);
+
+-- Song vocabulary
+CREATE INDEX idx_song_lemmas_song ON song_lemmas(song_id);
+CREATE INDEX idx_song_phrases_song ON song_phrases(song_id);
+
+-- User progress
+CREATE INDEX idx_slang_progress_due ON user_slang_progress(user_id, due_date);
+CREATE INDEX idx_slang_progress_state ON user_slang_progress(user_id, fsrs_state);
+CREATE INDEX idx_line_progress_due ON user_line_progress(user_id, due_date);
+CREATE INDEX idx_line_progress_state ON user_line_progress(user_id, fsrs_state);
 ```
 
 ---
@@ -1086,6 +1321,17 @@ ORDER BY ulp.health ASC;
 | user_lemma_progress | Mastery tracking | mastery_level, health |
 | user_word_encounters | Form exposure | times_encountered, last_encountered_sentence_id |
 | user_chapter_progress | Chapter unlocks | encounter_percentage, is_unlocked |
+| **Lyrics Tables** | | |
+| songs | Song metadata | title, artist, dialect, themes |
+| song_sections | Verse/chorus/bridge | section_type, section_order |
+| song_lines | Lyric lines + translations | line_text, translation |
+| slang_terms | Non-standard vocabulary | term, definition, region |
+| song_slang | Slang ↔ song links | song_id, slang_id |
+| song_lemmas | Standard vocab ↔ song links | song_id, lemma_id |
+| song_phrases | Standard phrases ↔ song links | song_id, phrase_id |
+| user_slang_progress | FSRS slang progress | stability, due_date, fsrs_state |
+| user_line_progress | FSRS line progress | stability, due_date, last_score |
+| user_song_progress | Song learning progress | vocab_complete, study_complete |
 
 ### Common Queries
 
@@ -1213,6 +1459,7 @@ ALTER TABLE user_phrase_progress
 
 ## REVISION HISTORY
 
+- 2025-12-25: **Lyrics Database POC** - Added 10 new tables for lyrics-based learning: songs, song_sections, song_lines, slang_terms, song_slang, song_lemmas, song_phrases, user_slang_progress, user_line_progress, user_song_progress (Claude)
 - 2025-12-24: **Admin Suite Phase 2** - Added is_reviewed/reviewed_at to lemmas, sentences, phrases; made words.lemma_id nullable for orphaned words; added RLS policies section; added CASCADE delete constraints
 - 2025-12-13: **Major update** - Added FSRS columns to user_lemma_progress and user_phrase_progress, marked old mastery/health columns as deprecated (Claude)
 - 2025-12-12: Updated validation_reports schema to match actual columns (Claude)

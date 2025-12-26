@@ -1,20 +1,16 @@
 import { useNavigate } from 'react-router-dom'
-import { RotateCcw, Sparkles, BookOpen } from 'lucide-react'
+import { RotateCcw } from 'lucide-react'
 
 /**
- * QuickActions - Review Due / Learn New / Continue Reading buttons
- * Uses inline styles as fallback to ensure visibility
+ * QuickActions - Single prominent Review button
+ * Other actions (Learn New, Reading, Songs) are accessible via Active Content Cards
  *
  * @param {Object} props
  * @param {number} props.dueCount - Number of cards due for review
- * @param {number} props.newAvailable - Number of new words available to learn
- * @param {boolean} props.hasReadingProgress - Whether user has reading progress
  * @param {boolean} props.loading - Loading state
  */
 export default function QuickActions({
   dueCount = 0,
-  newAvailable = 0,
-  hasReadingProgress = false,
   loading = false
 }) {
   const navigate = useNavigate()
@@ -23,86 +19,40 @@ export default function QuickActions({
     navigate('/flashcards?mode=review')
   }
 
-  const handleLearnNew = () => {
-    navigate('/flashcards?mode=learn')
-  }
-
-  const handleContinueReading = () => {
-    navigate('/read')
-  }
-
   if (loading) {
     return (
-      <div className="space-y-3 px-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
-          <div className="h-28 bg-neutral-200 rounded-2xl animate-pulse" />
-        </div>
-        <div className="h-14 bg-neutral-200 rounded-2xl animate-pulse" />
+      <div className="px-4">
+        <div className="h-20 bg-neutral-200 rounded-2xl animate-pulse" />
       </div>
     )
   }
 
+  const hasCards = dueCount > 0
+
   return (
-    <div className="space-y-3 px-4">
-      <div className="grid grid-cols-2 gap-4">
-      {/* Review Due Button - using inline styles for guaranteed visibility */}
+    <div className="px-4">
+      {/* Single prominent Review button - full width */}
       <button
         onClick={handleReview}
-        disabled={dueCount === 0}
+        disabled={!hasCards}
         style={{
-          backgroundColor: dueCount > 0 ? '#0ea5e9' : '#e7e5e4',
-          color: dueCount > 0 ? 'white' : '#78716c',
-          height: '7rem',
-          borderRadius: '1rem',
-          boxShadow: dueCount > 0 ? '0 4px 6px -1px rgb(0 0 0 / 0.1)' : 'none'
+          backgroundColor: hasCards ? '#2563eb' : '#f5f5f5',
+          color: hasCards ? 'white' : '#6b7280',
+          height: '5rem',
+          borderRadius: '0.75rem',
+          border: hasCards ? 'none' : '1px solid #e5e5e5',
+          boxShadow: hasCards ? '0 1px 3px 0 rgb(0 0 0 / 0.1)' : 'none',
+          width: '100%'
         }}
-        className="flex flex-col items-center justify-center p-4 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2"
+        className="flex items-center justify-center gap-4 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2"
       >
-        <RotateCcw className="w-8 h-8 mb-2" strokeWidth={2.5} />
-        <span className="text-lg font-bold">Review</span>
-        <span style={{ opacity: 0.8 }} className="text-sm font-medium">
-          {dueCount} due
-        </span>
-      </button>
-
-      {/* Learn New Button - using inline styles for guaranteed visibility */}
-      <button
-        onClick={handleLearnNew}
-        disabled={newAvailable === 0}
-        style={{
-          backgroundColor: newAvailable > 0 ? '#f59e0b' : '#e7e5e4',
-          color: newAvailable > 0 ? 'white' : '#78716c',
-          height: '7rem',
-          borderRadius: '1rem',
-          boxShadow: newAvailable > 0 ? '0 4px 6px -1px rgb(0 0 0 / 0.1)' : 'none'
-        }}
-        className="flex flex-col items-center justify-center p-4 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2"
-      >
-        <Sparkles className="w-8 h-8 mb-2" strokeWidth={2.5} />
-        <span className="text-lg font-bold">Learn New</span>
-        <span style={{ opacity: 0.8 }} className="text-sm font-medium">
-          {newAvailable} available
-        </span>
-      </button>
-      </div>
-
-      {/* Continue Reading Button - full width below */}
-      <button
-        onClick={handleContinueReading}
-        style={{
-          backgroundColor: '#6d6875',
-          color: 'white',
-          height: '3.5rem',
-          borderRadius: '1rem',
-          boxShadow: '0 2px 4px -1px rgb(0 0 0 / 0.1)'
-        }}
-        className="w-full flex items-center justify-center gap-3 transition-all duration-150 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
-      >
-        <BookOpen className="w-5 h-5" strokeWidth={2} />
-        <span className="text-base font-semibold">
-          {hasReadingProgress ? 'Continue Reading' : 'Start Reading'}
-        </span>
+        <RotateCcw className="w-8 h-8" strokeWidth={2.5} />
+        <div className="flex flex-col items-start">
+          <span className="text-xl font-bold">Review</span>
+          <span style={{ opacity: 0.8 }} className="text-sm font-medium">
+            {dueCount} {dueCount === 1 ? 'card' : 'cards'} due
+          </span>
+        </div>
       </button>
     </div>
   )

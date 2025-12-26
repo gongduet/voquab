@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Flame, User } from 'lucide-react'
+import ContentSwitcher from './ContentSwitcher'
 
 /**
- * DashboardHeader - Logo, animated streak pill, settings, avatar
+ * DashboardHeader - Logo, content switcher, animated streak pill, settings, avatar
  */
 export default function DashboardHeader({
   streak = 0,
@@ -45,12 +46,13 @@ export default function DashboardHeader({
   return (
     <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-neutral-100">
       {/* Logo / Title */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <span className="text-xl font-bold text-primary-600">Voquab</span>
       </div>
 
-      {/* Right side: streak, settings, avatar */}
+      {/* Right side: content switcher, streak, settings, avatar */}
       <div className="flex items-center gap-3">
+        <ContentSwitcher />
         {/* Animated Streak Pill */}
         {loading ? (
           <div className="w-12 h-7 bg-neutral-200 rounded-full animate-pulse" />

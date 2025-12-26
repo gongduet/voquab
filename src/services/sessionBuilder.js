@@ -21,7 +21,8 @@ import {
 export const SessionMode = {
   REVIEW: 'review',
   LEARN: 'learn',
-  CHAPTER: 'chapter'
+  CHAPTER: 'chapter',
+  SONG: 'song'          // Song vocabulary session (lemmas + phrases + slang)
 }
 
 /**
@@ -65,6 +66,12 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
         throw new Error('Chapter number required for chapter focus mode')
       }
       return buildChapterFocusSession(userId, options.chapterNumber, sessionSize)
+
+    case SessionMode.SONG:
+      if (!options.songId) {
+        throw new Error('Song ID required for song mode')
+      }
+      return buildSongSession(userId, options.songId, sessionSize, options)
 
     default:
       return buildReviewSession(userId, sessionSize)
@@ -958,6 +965,349 @@ export async function buildChapterFocusSession(userId, chapterNumber, sessionSiz
 }
 
 /**
+ * Build a song vocabulary session
+ * Includes: lemmas (from song_lemmas), phrases (from song_phrases), slang (from song_slang)
+ * All three types mixed together, using the same card UI
+ *
+ * @param {string} userId - User ID
+ * @param {string} songId - Song ID to learn from
+ * @param {number} sessionSize - Max cards in session
+ * @param {Object} options - { allowExplicit: boolean, learnOnly: boolean }
+ * @returns {Object} - { cards, stats, mode, songInfo }
+ */
+export async function buildSongSession(userId, songId, sessionSize = DEFAULT_SESSION_SIZE, options = {}) {
+  const { allowExplicit = true, learnOnly = false } = options
+
+  // Fetch song info
+  const { data: song, error: songError } = await supabase
+    .from('songs')
+    .select('song_id, title, artist, dialect')
+    .eq('song_id', songId)
+    .single()
+
+  if (songError || !song) {
+    console.error('Song not found:', songError)
+    return {
+      cards: [],
+      stats: {},
+      mode: SessionMode.SONG,
+      error: 'Song not found'
+    }
+  }
+
+  // Check user's explicit content setting if not overridden
+  let filterVulgar = !allowExplicit
+  if (allowExplicit) {
+    const { data: userSettings } = await supabase
+      .from('user_settings')
+      .select('allow_explicit_content')
+      .eq('user_id', userId)
+      .maybeSingle()
+    filterVulgar = userSettings?.allow_explicit_content === false
+  }
+
+  // Fetch song lemmas with user progress
+  const { data: songLemmasData } = await supabase
+    .from('song_lemmas')
+    .select(`
+      lemma_id,
+      first_line_id,
+      lemmas!inner (
+        lemma_id,
+        lemma_text,
+        definitions,
+        part_of_speech,
+        is_stop_word
+      )
+    `)
+    .eq('song_id', songId)
+    .eq('lemmas.is_stop_word', false)
+
+  // Get user progress for these lemmas
+  const lemmaIds = (songLemmasData || []).map(sl => sl.lemma_id)
+  const { data: userLemmaProgress } = await supabase
+    .from('user_lemma_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .in('lemma_id', lemmaIds)
+
+  const lemmaProgressMap = {}
+  for (const p of userLemmaProgress || []) {
+    lemmaProgressMap[p.lemma_id] = p
+  }
+
+  // Fetch song phrases with user progress
+  const { data: songPhrasesData } = await supabase
+    .from('song_phrases')
+    .select(`
+      phrase_id,
+      first_line_id,
+      phrases!inner (
+        phrase_id,
+        phrase_text,
+        definitions
+      )
+    `)
+    .eq('song_id', songId)
+
+  const phraseIds = (songPhrasesData || []).map(sp => sp.phrase_id)
+  const { data: userPhraseProgress } = await supabase
+    .from('user_phrase_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .in('phrase_id', phraseIds)
+
+  const phraseProgressMap = {}
+  for (const p of userPhraseProgress || []) {
+    phraseProgressMap[p.phrase_id] = p
+  }
+
+  // Fetch song slang with user progress (filter vulgar if needed)
+  let slangQuery = supabase
+    .from('song_slang')
+    .select(`
+      slang_id,
+      first_line_id,
+      slang_terms!inner (
+        slang_id,
+        term,
+        definition,
+        region,
+        cultural_note,
+        formality,
+        example_spanish,
+        example_english
+      )
+    `)
+    .eq('song_id', songId)
+
+  if (filterVulgar) {
+    slangQuery = slangQuery.neq('slang_terms.formality', 'vulgar')
+  }
+
+  const { data: songSlangData } = await slangQuery
+
+  const slangIds = (songSlangData || []).map(ss => ss.slang_id)
+  const { data: userSlangProgress } = await supabase
+    .from('user_slang_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .in('slang_id', slangIds)
+
+  const slangProgressMap = {}
+  for (const p of userSlangProgress || []) {
+    slangProgressMap[p.slang_id] = p
+  }
+
+  // Build card arrays
+  const newCards = []
+  const dueCards = []
+
+  // Process lemmas
+  for (const sl of songLemmasData || []) {
+    const lemma = sl.lemmas
+    const progress = lemmaProgressMap[sl.lemma_id]
+    const isIntroduced = progress?.reps >= 1
+
+    const card = {
+      lemma_id: lemma.lemma_id,
+      lemma: lemma.lemma_text,
+      english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
+      part_of_speech: lemma.part_of_speech,
+      card_type: 'lemma',
+      // FSRS fields from progress
+      stability: progress?.stability,
+      difficulty: progress?.difficulty,
+      due_date: progress?.due_date,
+      fsrs_state: progress?.fsrs_state || FSRSState.NEW,
+      reps: progress?.reps || 0,
+      lapses: progress?.lapses || 0,
+      last_seen_at: progress?.last_seen_at
+    }
+
+    if (!isIntroduced) {
+      newCards.push({ ...card, isNew: true, isExposure: false })
+    } else if (!learnOnly && isCardDue(card)) {
+      dueCards.push({ ...card, isNew: false, isExposure: false })
+    }
+  }
+
+  // Process phrases
+  for (const sp of songPhrasesData || []) {
+    const phrase = sp.phrases
+    const progress = phraseProgressMap[sp.phrase_id]
+    const isIntroduced = progress?.reps >= 1
+
+    const card = {
+      phrase_id: phrase.phrase_id,
+      lemma: phrase.phrase_text,
+      english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
+      part_of_speech: 'PHRASE',
+      word_in_sentence: phrase.phrase_text,
+      card_type: 'phrase',
+      stability: progress?.stability,
+      difficulty: progress?.difficulty,
+      due_date: progress?.due_date,
+      fsrs_state: progress?.fsrs_state || FSRSState.NEW,
+      reps: progress?.reps || 0,
+      lapses: progress?.lapses || 0,
+      last_seen_at: progress?.last_seen_at
+    }
+
+    if (!isIntroduced) {
+      newCards.push({ ...card, isNew: true, isExposure: false })
+    } else if (!learnOnly && isCardDue(card)) {
+      dueCards.push({ ...card, isNew: false, isExposure: false })
+    }
+  }
+
+  // Process slang
+  for (const ss of songSlangData || []) {
+    const slang = ss.slang_terms
+    const progress = slangProgressMap[ss.slang_id]
+    const isIntroduced = progress?.reps >= 1
+
+    const card = {
+      slang_id: slang.slang_id,
+      lemma: slang.term,
+      english_definition: slang.definition,
+      part_of_speech: 'SLANG',
+      card_type: 'slang',
+      // Slang-specific fields
+      cultural_note: slang.cultural_note,
+      region: slang.region,
+      formality: slang.formality,
+      example_sentence: slang.example_spanish,
+      example_sentence_translation: slang.example_english,
+      // FSRS fields
+      stability: progress?.stability,
+      difficulty: progress?.difficulty,
+      due_date: progress?.due_date,
+      fsrs_state: progress?.fsrs_state || FSRSState.NEW,
+      reps: progress?.reps || 0,
+      lapses: progress?.lapses || 0,
+      last_seen_at: progress?.last_seen_at
+    }
+
+    if (!isIntroduced) {
+      newCards.push({ ...card, isNew: true, isExposure: false })
+    } else if (!learnOnly && isCardDue(card)) {
+      dueCards.push({ ...card, isNew: false, isExposure: false })
+    }
+  }
+
+  // Proportionally select cards
+  const totalPool = newCards.length + dueCards.length
+  if (totalPool === 0) {
+    return {
+      cards: [],
+      stats: { message: 'All vocabulary mastered!' },
+      mode: SessionMode.SONG,
+      songInfo: song
+    }
+  }
+
+  // If learn only, just take new cards
+  let selectedCards = []
+  if (learnOnly) {
+    selectedCards = shuffleArray(newCards).slice(0, sessionSize)
+  } else {
+    // Mix due cards first, then fill with new
+    const selectedDue = dueCards.slice(0, sessionSize)
+    const remaining = sessionSize - selectedDue.length
+    const selectedNew = shuffleArray(newCards).slice(0, remaining)
+    selectedCards = shuffleArray([...selectedDue, ...selectedNew])
+  }
+
+  // Add sentences to lemma cards (slang already has examples)
+  const lemmaCards = selectedCards.filter(c => c.card_type === 'lemma')
+  const otherCards = selectedCards.filter(c => c.card_type !== 'lemma')
+  const lemmaCardsWithSentences = await addSongSentencesToCards(lemmaCards, songId)
+
+  const finalCards = shuffleArray([...lemmaCardsWithSentences, ...otherCards])
+
+  // Count by type
+  const lemmaCount = finalCards.filter(c => c.card_type === 'lemma').length
+  const phraseCount = finalCards.filter(c => c.card_type === 'phrase').length
+  const slangCount = finalCards.filter(c => c.card_type === 'slang').length
+
+  const stats = {
+    totalAvailable: totalPool,
+    selected: finalCards.length,
+    lemmaCount,
+    phraseCount,
+    slangCount,
+    newRemaining: Math.max(0, newCards.length - finalCards.filter(c => c.isNew).length),
+    dueRemaining: Math.max(0, dueCards.length - finalCards.filter(c => !c.isNew).length)
+  }
+
+  console.log('🎵 Song session built:', stats)
+
+  return {
+    cards: finalCards,
+    stats,
+    mode: SessionMode.SONG,
+    songInfo: song
+  }
+}
+
+/**
+ * Add example sentences from song lines to lemma cards
+ *
+ * @param {Array} cards - Array of lemma card objects
+ * @param {string} songId - Song ID to get lines from
+ * @returns {Array} - Cards with example_sentence and example_sentence_translation
+ */
+async function addSongSentencesToCards(cards, songId) {
+  if (cards.length === 0) return cards
+
+  const lemmaIds = cards.map(c => c.lemma_id)
+
+  // Get first_line_id for each lemma from song_lemmas
+  const { data: songLemmas } = await supabase
+    .from('song_lemmas')
+    .select('lemma_id, first_line_id')
+    .eq('song_id', songId)
+    .in('lemma_id', lemmaIds)
+
+  const lineIds = (songLemmas || []).filter(sl => sl.first_line_id).map(sl => sl.first_line_id)
+
+  if (lineIds.length === 0) return cards
+
+  // Get line text
+  const { data: lines } = await supabase
+    .from('song_lines')
+    .select('line_id, line_text, translation')
+    .in('line_id', lineIds)
+
+  const lineMap = {}
+  for (const line of lines || []) {
+    lineMap[line.line_id] = {
+      sentence_text: line.line_text,
+      sentence_translation: line.translation
+    }
+  }
+
+  // Map lemma_id -> first_line_id
+  const lemmaLineMap = {}
+  for (const sl of songLemmas || []) {
+    if (sl.first_line_id) {
+      lemmaLineMap[sl.lemma_id] = sl.first_line_id
+    }
+  }
+
+  return cards.map(card => {
+    const lineId = lemmaLineMap[card.lemma_id]
+    const line = lineId ? lineMap[lineId] : null
+    return {
+      ...card,
+      example_sentence: line?.sentence_text || card.example_sentence,
+      example_sentence_translation: line?.sentence_translation || card.example_sentence_translation
+    }
+  })
+}
+
+/**
  * Get unlocked chapters for a user
  * A chapter is unlocked when 95% of the previous chapter's words are introduced
  *
@@ -1130,6 +1480,7 @@ export default {
   buildReviewSession,
   buildLearnSession,
   buildChapterFocusSession,
+  buildSongSession,
   getUnlockedChapters,
   SessionMode
 }

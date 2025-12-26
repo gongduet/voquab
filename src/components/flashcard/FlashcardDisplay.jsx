@@ -27,12 +27,14 @@ export default function FlashcardDisplay({
       'ADP': 'preposition',
       'CONJ': 'conjunction',
       'NUM': 'number',
-      'PHRASE': 'phrase'
+      'PHRASE': 'phrase',
+      'SLANG': 'slang'
     }
     return posMap[pos] || (pos ? pos.toLowerCase() : '')
   }
 
   const displayPOS = formatPartOfSpeech(card.part_of_speech)
+  const isSlang = card.card_type === 'slang'
 
   // Debug logging
   console.log('🎴 Card data:', {
@@ -122,7 +124,7 @@ export default function FlashcardDisplay({
                   color: '#15803d'
                 }}
               >
-                {card.card_type === 'phrase' ? 'New Phrase' : 'New Word'}
+                {card.card_type === 'slang' ? 'New Slang' : card.card_type === 'phrase' ? 'New Phrase' : 'New Word'}
               </span>
             )}
             {card.isExposure && (
@@ -152,6 +154,20 @@ export default function FlashcardDisplay({
                 Phrase
               </span>
             )}
+            {/* Slang badge - left side */}
+            {card.card_type === 'slang' && !card.isNew && (
+              <span
+                className="absolute top-3 left-4"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  fontFamily: 'Inter, sans-serif',
+                  color: '#dc2626'
+                }}
+              >
+                Slang
+              </span>
+            )}
 
             <div className="flex-1 flex flex-col items-center justify-center text-center">
               <div className="mb-auto"></div>
@@ -162,7 +178,18 @@ export default function FlashcardDisplay({
                 >
                   {displayLemma}
                 </h1>
-                {/* Part of speech moved to English side */}
+                {/* Region for slang cards */}
+                {isSlang && card.region && (
+                  <p style={{
+                    color: '#94a3b8',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    fontFamily: 'Inter, sans-serif',
+                    marginTop: '4px'
+                  }}>
+                    {card.region}
+                  </p>
+                )}
               </div>
               <div className="mb-auto"></div>
             </div>
@@ -208,9 +235,21 @@ export default function FlashcardDisplay({
               <div className="mb-auto"></div>
             </div>
 
+            {/* Cultural note for slang cards */}
+            {isSlang && card.cultural_note && (
+              <div className="mt-4 p-4 bg-purple-50 rounded-lg text-left">
+                <p
+                  className="text-purple-700 text-sm"
+                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.5' }}
+                >
+                  {card.cultural_note}
+                </p>
+              </div>
+            )}
+
             {/* English sentence at bottom - only show if exists */}
             {card.example_sentence_translation && (
-              <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+              <div className={`pt-6 border-t border-slate-200 text-center ${isSlang && card.cultural_note ? 'mt-4' : 'mt-6'}`}>
                 <p
                   className="text-slate-500 text-lg leading-relaxed italic"
                   style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
