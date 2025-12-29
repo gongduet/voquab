@@ -86,50 +86,61 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
  * @returns {Object} - { cards, stats, mode }
  */
 export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_SIZE) {
-  // Get user activity level for exposure settings
-  const { data: dailyStats } = await supabase
-    .from('user_daily_stats')
-    .select('review_date, words_reviewed')
-    .eq('user_id', userId)
-    .order('review_date', { ascending: false })
-    .limit(7)
+  // Run ALL independent queries in parallel
+  const [
+    { data: userSettings },
+    { data: dailyStats },
+    { data: lemmaProgressData, error: lemmaProgressError },
+    { data: phraseProgressData, error: phraseProgressError }
+  ] = await Promise.all([
+    supabase
+      .from('user_settings')
+      .select('cards_per_session')
+      .eq('user_id', userId)
+      .single(),
+    supabase
+      .from('user_daily_stats')
+      .select('review_date, words_reviewed')
+      .eq('user_id', userId)
+      .order('review_date', { ascending: false })
+      .limit(7),
+    supabase
+      .from('user_lemma_progress')
+      .select(`
+        *,
+        lemmas!inner (
+          lemma_id,
+          lemma_text,
+          definitions,
+          part_of_speech,
+          is_stop_word
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('lemmas.is_stop_word', false),
+    supabase
+      .from('user_phrase_progress')
+      .select(`
+        *,
+        phrases!inner (
+          phrase_id,
+          phrase_text,
+          definitions,
+          phrase_type
+        )
+      `)
+      .eq('user_id', userId)
+  ])
+
+  // Use userSettings for session size if available
+  const finalSessionSize = userSettings?.cards_per_session || sessionSize
 
   const activityLevel = getUserActivityLevel(dailyStats)
-
-  // Fetch all lemma cards with progress
-  const { data: lemmaProgressData, error: lemmaProgressError } = await supabase
-    .from('user_lemma_progress')
-    .select(`
-      *,
-      lemmas!inner (
-        lemma_id,
-        lemma_text,
-        definitions,
-        part_of_speech,
-        is_stop_word
-      )
-    `)
-    .eq('user_id', userId)
-    .eq('lemmas.is_stop_word', false)
 
   if (lemmaProgressError) {
     console.error('Error fetching lemma progress:', lemmaProgressError)
     return { cards: [], stats: {}, mode: SessionMode.REVIEW, error: lemmaProgressError.message }
   }
-
-  // Fetch all phrase cards with progress
-  const { data: phraseProgressData, error: phraseProgressError } = await supabase
-    .from('user_phrase_progress')
-    .select(`
-      *,
-      phrases!inner (
-        phrase_id,
-        phrase_text,
-        definitions,
-        phrase_type
-      )
-    `)
-    .eq('user_id', userId)
 
   if (phraseProgressError) {
     console.error('Error fetching phrase progress:', phraseProgressError)
@@ -164,8 +175,8 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
   }
 
   // Select cards: due cards first, then exposure
-  const selectedDue = dueCards.slice(0, sessionSize)
-  const remainingSlots = sessionSize - selectedDue.length
+  const selectedDue = dueCards.slice(0, finalSessionSize)
+  const remainingSlots = finalSessionSize - selectedDue.length
   const exposureCount = Math.min(remainingSlots, activityLevel.exposureCards)
 
   // Randomly select exposure cards

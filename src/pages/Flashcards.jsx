@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -46,6 +46,9 @@ export default function Flashcards() {
   // Key: lemmaId or phraseId, Value: card review data
   const [reviewedCards, setReviewedCards] = useState(new Map())
 
+  // Prevent duplicate loadSession calls from StrictMode
+  const loadingRef = useRef(false)
+
   // Session management - pass cards to hook
   const {
     currentCard,
@@ -71,6 +74,9 @@ export default function Flashcards() {
   }, [user?.id, mode, urlChapter, urlSongId])
 
   async function loadSession() {
+    if (loadingRef.current) return  // Prevent duplicate calls from StrictMode
+    loadingRef.current = true
+
     setReviewedCards(new Map())  // Reset reviewed cards for new session
     setLoading(true)
     setError(null)
@@ -119,6 +125,7 @@ export default function Flashcards() {
       setError(err.message)
     } finally {
       setLoading(false)
+      loadingRef.current = false
     }
   }
 

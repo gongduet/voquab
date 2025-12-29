@@ -52,8 +52,9 @@ export default function ChapterCarousel({
     setIsExpanded(!isExpanded)
   }
 
-  // Determine which chapters to show
-  const visibleChapters = isExpanded ? chapters : chapters.slice(0, 4)
+  // Determine which chapters to show (centered around current: 1 before, current, 2 after)
+  const startIdx = Math.max(0, currentChapterIndex - 1)
+  const visibleChapters = isExpanded ? chapters : chapters.slice(startIdx, startIdx + 4)
 
   return (
     <div className="px-4">
@@ -84,9 +85,11 @@ export default function ChapterCarousel({
       <div className="grid grid-cols-2 gap-3">
         {visibleChapters.map((chapter, index) => {
           const progress = chapter.total_lemmas > 0 ? (chapter.introduced / chapter.total_lemmas) : 0
-          const isCurrent = index === currentChapterIndex && !isExpanded ||
-                           (isExpanded && chapter.isUnlocked && progress < 1.0 &&
-                            chapters.findIndex(c => c.isUnlocked && (c.introduced / c.total_lemmas) < 1.0) === index)
+          // Calculate actual index in full chapters array
+          const actualIndex = isExpanded ? index : startIdx + index
+          const isCurrent = actualIndex === currentChapterIndex ||
+                           (chapter.isUnlocked && progress < 0.95 &&
+                            chapters.findIndex(c => c.isUnlocked && (c.introduced / c.total_lemmas) < 0.95) === actualIndex)
           const isCompleted = chapter.isUnlocked && progress >= 0.95
 
           return (
@@ -256,10 +259,18 @@ function StackedProgressBar({ mastered, familiar, learning, notSeen, total, isLo
     notSeen: '#d6d3d1'
   }
 
-  // If locked, show all gray
+  // If locked, show gray bar with darker gray for words already seen
   if (isLocked) {
+    const seenPct = total > 0 ? ((mastered + familiar + learning) / total) * 100 : 0
     return (
-      <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: colors.notSeen }} />
+      <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: '#e5e5e5' }}>
+        {seenPct > 0 && (
+          <div
+            className="h-full transition-all duration-300"
+            style={{ width: `${seenPct}%`, backgroundColor: '#a3a3a3' }}
+          />
+        )}
+      </div>
     )
   }
 

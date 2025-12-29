@@ -34,7 +34,10 @@ export default function Dashboard() {
     categories: {},
     // Header
     streak: 0,
-    username: ''
+    username: '',
+    // ActiveContentCards
+    activeBookId: null,
+    activeSongId: null
   })
 
   useEffect(() => {
@@ -82,7 +85,9 @@ export default function Dashboard() {
         forecastData,
         categories: categoryData,
         streak: currentStreak,  // Use same value for header
-        username: profileData.username
+        username: profileData.username,
+        activeBookId: userSettings.activeBookId,
+        activeSongId: userSettings.activeSongId
       })
     } catch (error) {
       console.error('Error loading dashboard data:', error)
@@ -124,7 +129,11 @@ export default function Dashboard() {
 
         {/* Active Content Cards */}
         <section className="mb-8">
-          <ActiveContentCards loading={loading} />
+          <ActiveContentCards
+            loading={loading}
+            activeBookId={dashboardData.activeBookId}
+            activeSongId={dashboardData.activeSongId}
+          />
         </section>
 
         {/* Category Pills - Words by Type */}
@@ -238,11 +247,12 @@ function categorizeByLevel(progressRecords) {
 async function fetchQuickActionStats(userId) {
   const now = new Date().toISOString()
 
-  // Lemmas due now
+  // Lemmas due now (excluding stop words)
   const { count: lemmasDue } = await supabase
     .from('user_lemma_progress')
-    .select('*', { count: 'exact', head: true })
+    .select('*, lemmas!inner(is_stop_word)', { count: 'exact', head: true })
     .eq('user_id', userId)
+    .eq('lemmas.is_stop_word', false)
     .lte('due_date', now)
 
   // Phrases due now
@@ -252,14 +262,7 @@ async function fetchQuickActionStats(userId) {
     .eq('user_id', userId)
     .lte('due_date', now)
 
-  // Slang due now
-  const { count: slangDue } = await supabase
-    .from('user_slang_progress')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .lte('due_date', now)
-
-  const dueCount = (lemmasDue || 0) + (phrasesDue || 0) + (slangDue || 0)
+  const dueCount = (lemmasDue || 0) + (phrasesDue || 0)
 
   return { dueCount }
 }
@@ -427,12 +430,29 @@ function calculateStreaks(activityByDate) {
  * Uses LOCAL time for day boundaries to match user perception
  */
 async function fetchForecastData(userId) {
-  const days = []
-  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const [lemmaResult, phraseResult] = await Promise.all([
+    supabase
+      .from('user_lemma_progress')
+      .select('due_date')
+      .eq('user_id', userId)
+      .not('due_date', 'is', null),
+    supabase
+      .from('user_phrase_progress')
+      .select('due_date')
+      .eq('user_id', userId)
+      .not('due_date', 'is', null)
+  ])
 
-  // Use local time for day boundaries
+  const allDueDates = [
+    ...(lemmaResult.data || []).map(r => r.due_date),
+    ...(phraseResult.data || []).map(r => r.due_date)
+  ]
+
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const now = new Date()
   const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+  const days = []
 
   for (let i = 0; i < 7; i++) {
     const dayStart = new Date(todayLocal)
@@ -441,70 +461,20 @@ async function fetchForecastData(userId) {
     const dayEnd = new Date(dayStart)
     dayEnd.setDate(dayStart.getDate() + 1)
 
-    // Format for display
-    const dateStr = formatLocalDate(dayStart)
-
-    // Query uses ISO strings
-    const startISO = dayStart.toISOString()
-    const endISO = dayEnd.toISOString()
-
-    let lemmaCount, phraseCount
-
+    let count
     if (i === 0) {
-      // TODAY: Include all overdue cards (no lower bound)
-      const { count: lc, error: lemmaError } = await supabase
-        .from('user_lemma_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .lte('due_date', endISO)  // Everything due up to end of today
-
-      if (lemmaError) {
-        console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
-      }
-      lemmaCount = lc || 0
-
-      const { count: pc, error: phraseError } = await supabase
-        .from('user_phrase_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .lte('due_date', endISO)  // Everything due up to end of today
-
-      if (phraseError) {
-        console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
-      }
-      phraseCount = pc || 0
-
+      count = allDueDates.filter(d => new Date(d) < dayEnd).length
     } else {
-      // FUTURE DAYS: Only cards due within that specific day
-      const { count: lc, error: lemmaError } = await supabase
-        .from('user_lemma_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('due_date', startISO)
-        .lt('due_date', endISO)
-
-      if (lemmaError && i === 1) {
-        console.error('❌ [fetchForecastData] lemma due query failed:', lemmaError)
-      }
-      lemmaCount = lc || 0
-
-      const { count: pc, error: phraseError } = await supabase
-        .from('user_phrase_progress')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('due_date', startISO)
-        .lt('due_date', endISO)
-
-      if (phraseError && i === 1) {
-        console.error('❌ [fetchForecastData] phrase due query failed:', phraseError)
-      }
-      phraseCount = pc || 0
+      count = allDueDates.filter(d => {
+        const dueDate = new Date(d)
+        return dueDate >= dayStart && dueDate < dayEnd
+      }).length
     }
 
     days.push({
-      date: dateStr,
+      date: formatLocalDate(dayStart),
       label: i === 0 ? 'Today' : dayLabels[dayStart.getDay()],
-      count: lemmaCount + phraseCount
+      count
     })
   }
 
@@ -647,21 +617,23 @@ async function fetchProfileData(userId) {
 }
 
 /**
- * Fetch user settings (daily goal)
+ * Fetch user settings (daily goal, active content)
  */
 async function fetchUserSettings(userId) {
   const { data, error } = await supabase
     .from('user_settings')
-    .select('daily_goal_words')
+    .select('daily_goal_words, active_book_id, active_song_id')
     .eq('user_id', userId)
     .single()
 
   if (error) {
     console.error('❌ [fetchUserSettings] failed:', error)
-    return { dailyTarget: 50 }  // Default fallback
+    return { dailyTarget: 50, activeBookId: null, activeSongId: null }
   }
 
   return {
-    dailyTarget: data?.daily_goal_words || 50
+    dailyTarget: data?.daily_goal_words || 50,
+    activeBookId: data?.active_book_id || null,
+    activeSongId: data?.active_song_id || null
   }
 }
