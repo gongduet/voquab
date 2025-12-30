@@ -1363,6 +1363,91 @@ WHERE ucp.user_id = :user_id AND ucp.chapter_id = :chapter_id;
 
 ---
 
+## RPC FUNCTIONS (Progress Service)
+
+Server-side PostgreSQL functions for efficient progress queries. These solve 431 Request Header Fields Too Large errors caused by large `.in()` clauses.
+
+### get_book_progress(p_user_id UUID, p_book_id UUID)
+
+Returns comprehensive progress stats for a book. Used by BookDashboard and ActiveContentCards.
+
+```sql
+-- Returns: TABLE (
+--   due_count INTEGER,
+--   new_count INTEGER,
+--   mastered INTEGER,
+--   familiar INTEGER,
+--   learning INTEGER,
+--   not_seen INTEGER,
+--   total_vocab INTEGER,
+--   unlocked_chapters INTEGER[],
+--   current_chapter INTEGER,
+--   total_chapters INTEGER
+-- )
+
+-- FSRS-based mastery thresholds:
+-- Mastered: fsrs_state = 2 AND stability >= 21
+-- Familiar: fsrs_state = 2 AND stability >= 7 AND stability < 21
+-- Learning: reps >= 1 AND NOT (fsrs_state = 2 AND stability >= 7)
+-- Not Seen: reps = 0 OR no progress record
+```
+
+Migration: `supabase/migrations/20251228_progress_rpc_functions.sql`
+
+### get_song_progress(p_user_id UUID, p_song_id UUID)
+
+Returns progress stats for a song's vocabulary. Used by SongDashboard and ActiveContentCards.
+
+```sql
+-- Returns: TABLE (
+--   due_count INTEGER,
+--   new_count INTEGER,
+--   mastered INTEGER,
+--   familiar INTEGER,
+--   learning INTEGER,
+--   not_seen INTEGER,
+--   total_vocab INTEGER,
+--   sections INTEGER
+-- )
+```
+
+Migration: `supabase/migrations/20251228_progress_rpc_functions.sql`
+
+### get_book_chapters_progress(p_user_id UUID, p_book_id UUID)
+
+Returns per-chapter progress for BookDashboard's ChapterCarousel.
+
+```sql
+-- Returns: TABLE (
+--   chapter_number INTEGER,
+--   title TEXT,
+--   total_vocab INTEGER,      -- Lemmas + phrases combined
+--   mastered INTEGER,
+--   familiar INTEGER,
+--   learning INTEGER,
+--   not_seen INTEGER,
+--   is_unlocked BOOLEAN       -- Based on 95% introduction threshold
+-- )
+```
+
+Migration: `supabase/migrations/20251229_book_chapters_progress.sql`
+
+### Usage from JavaScript
+
+```javascript
+import { supabase } from '../lib/supabase'
+
+// Call RPC function
+const { data, error } = await supabase.rpc('get_book_progress', {
+  p_user_id: userId,
+  p_book_id: bookId
+})
+
+// Returns: { due_count, new_count, mastered, familiar, learning, not_seen, ... }
+```
+
+---
+
 ## RLS POLICIES (Admin Suite)
 
 The following Row Level Security policies enable admin CRUD operations:
@@ -1459,6 +1544,7 @@ ALTER TABLE user_phrase_progress
 
 ## REVISION HISTORY
 
+- 2025-12-29: **RPC Functions** - Added section documenting get_book_progress, get_song_progress, get_book_chapters_progress server-side functions for efficient progress queries (Claude)
 - 2025-12-25: **Lyrics Database POC** - Added 10 new tables for lyrics-based learning: songs, song_sections, song_lines, slang_terms, song_slang, song_lemmas, song_phrases, user_slang_progress, user_line_progress, user_song_progress (Claude)
 - 2025-12-24: **Admin Suite Phase 2** - Added is_reviewed/reviewed_at to lemmas, sentences, phrases; made words.lemma_id nullable for orphaned words; added RLS policies section; added CASCADE delete constraints
 - 2025-12-13: **Major update** - Added FSRS columns to user_lemma_progress and user_phrase_progress, marked old mastery/health columns as deprecated (Claude)

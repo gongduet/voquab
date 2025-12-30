@@ -1,8 +1,10 @@
 # 30_FSRS_ARCHITECTURE.md
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 29, 2025
 **Status:** Active
 **Owner:** Claude + Peter
+
+> **MVP Note (Dec 29, 2025):** Exposure oversampling is temporarily disabled for MVP. Review sessions only include due cards. Exposure logic is commented out in `sessionBuilder.js` with TODO for post-MVP reintroduction.
 
 ---
 
@@ -305,9 +307,23 @@ export async function buildLearnSession(userId, sessionSize = 25) {
 
 ### Review Session Composition
 
+> **MVP Status:** Exposure oversampling is disabled. Review sessions contain only due cards.
+
 ```
 ┌─────────────────────────────────────────────┐
-│              REVIEW SESSION                  │
+│        REVIEW SESSION (MVP - Current)        │
+├─────────────────────────────────────────────┤
+│                                             │
+│   Due Cards (FSRS scheduled)                │
+│   ├── Lemmas (due_date <= now)              │
+│   └── Phrases (due_date <= now)             │
+│                                             │
+│   = Shuffled session (up to sessionSize)    │
+│                                             │
+└─────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────┐
+│        REVIEW SESSION (Post-MVP)             │
 ├─────────────────────────────────────────────┤
 │                                             │
 │   Due Cards (FSRS scheduled)                │
@@ -348,7 +364,8 @@ export async function buildLearnSession(userId, sessionSize = 25) {
 ### Exposure Insurance Logic
 
 ```javascript
-// Exposure eligibility criteria
+// DISABLED FOR MVP - Exposure eligibility criteria
+// Uncomment in sessionBuilder.js post-MVP
 function isEligibleForExposure(card, daysBetween) {
   return (
     card.stability > 30 &&           // Well-learned
@@ -357,7 +374,7 @@ function isEligibleForExposure(card, daysBetween) {
   )
 }
 
-// Activity-based exposure settings
+// DISABLED FOR MVP - Activity-based exposure settings
 const EXPOSURE_SETTINGS = {
   high:   { reviews: 100, daysBetween: 7,  cards: 10 },
   medium: { reviews: 50,  daysBetween: 14, cards: 5 },

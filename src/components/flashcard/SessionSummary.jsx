@@ -9,7 +9,7 @@ import { CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
  */
 export default function SessionSummary({
   totalCards = 0,
-  ratings = { again: 0, hard: 0, gotIt: 0 },
+  ratings = { again: 0, hard: 0, gotIt: 0, easy: 0 },
   reviewedCards = [],
   dueCount = 0,
   newAvailable = 0,
@@ -19,14 +19,15 @@ export default function SessionSummary({
   const navigate = useNavigate()
   const [showAllCards, setShowAllCards] = useState(false)
 
-  // Calculate success rate: (gotIt + hard) / total
+  // Calculate success rate: (gotIt + easy) / total
+  // Note: Hard is not counted as success since it means the user struggled
   const successRate = totalCards > 0
-    ? Math.round(((ratings.gotIt + ratings.hard) / totalCards) * 100)
+    ? Math.round(((ratings.gotIt + ratings.easy) / totalCards) * 100)
     : 0
 
-  // Filter and sort cards
+  // Filter and sort cards - include "again" OR "hard" ratings
   const needsFocusCards = reviewedCards
-    .filter(card => card.wasMarkedAgain)
+    .filter(card => card.wasMarkedAgain || card.finalRating === 'hard')
     .sort(sortCards)
 
   const allCardsSorted = [...reviewedCards].sort(sortCards)
@@ -139,7 +140,7 @@ export default function SessionSummary({
           </h2>
           <div className="flex justify-around">
             <div className="flex flex-col items-center">
-              <span className="text-xl font-bold" style={{ color: '#6d6875' }}>
+              <span className="text-xl font-bold" style={{ color: '#d4806a' }}>
                 {ratings.again}
               </span>
               <span className="text-xs mt-1" style={{ color: '#737373' }}>Again</span>
@@ -151,15 +152,21 @@ export default function SessionSummary({
               <span className="text-xs mt-1" style={{ color: '#737373' }}>Hard</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-xl font-bold" style={{ color: '#98c1a3' }}>
+              <span className="text-xl font-bold" style={{ color: '#5aada4' }}>
                 {ratings.gotIt}
               </span>
               <span className="text-xs mt-1" style={{ color: '#737373' }}>Got It</span>
             </div>
+            <div className="flex flex-col items-center">
+              <span className="text-xl font-bold" style={{ color: '#006d77' }}>
+                {ratings.easy}
+              </span>
+              <span className="text-xs mt-1" style={{ color: '#737373' }}>Easy</span>
+            </div>
           </div>
         </section>
 
-        {/* Needs Focus OR Perfect Session */}
+        {/* Needs Attention OR Perfect Session */}
         {hasTroubleWords ? (
           <section className="mb-6">
             <div
@@ -167,7 +174,7 @@ export default function SessionSummary({
               style={{ borderBottom: '1px solid #e7e5e4' }}
             >
               <h2 className="text-sm font-semibold" style={{ color: '#171717' }}>
-                Needs Focus
+                Needs Attention
               </h2>
               <span
                 className="text-xs font-bold px-2 py-0.5 rounded-full"
@@ -312,12 +319,14 @@ function CardRow({ card }) {
 function getDotColor(rating) {
   switch (rating) {
     case 'again':
-      return '#6d6875'  // Mauve
+      return '#d4806a'  // Coral
     case 'hard':
       return '#e5989b'  // Dusty rose
+    case 'easy':
+      return '#006d77'  // Dark teal
     case 'gotIt':
     default:
-      return '#98c1a3'  // Sage green
+      return '#5aada4'  // Teal
   }
 }
 

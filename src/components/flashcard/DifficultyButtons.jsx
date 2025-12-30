@@ -1,4 +1,4 @@
-import { RotateCcw, AlertCircle, CheckCircle } from 'lucide-react'
+import { RotateCcw, AlertCircle, Check, Sparkles } from 'lucide-react'
 
 export default function DifficultyButtons({
   onDifficulty,
@@ -22,8 +22,8 @@ export default function DifficultyButtons({
         }
       `}</style>
 
-      {/* Icon Buttons - 3 buttons with muted earthy colors */}
-      <div className="grid grid-cols-3 gap-8 px-2">
+      {/* Icon Buttons - 4 buttons with new color scheme */}
+      <div className="grid grid-cols-4 gap-4 px-2">
         {/* Again Button */}
         <button
           onClick={(e) => { e.stopPropagation(); onDifficulty('again', e); }}
@@ -34,12 +34,12 @@ export default function DifficultyButtons({
           <RotateCcw
             size={36}
             strokeWidth={2.5}
-            style={{ color: '#6d6875' }}
+            style={{ color: '#d4806a' }}
             className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
           />
           <span
             className="text-sm font-semibold transition-all duration-150"
-            style={{ color: '#6d6875' }}
+            style={{ color: '#d4806a' }}
           >
             Again
           </span>
@@ -73,17 +73,38 @@ export default function DifficultyButtons({
           className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          <CheckCircle
+          <Check
             size={36}
             strokeWidth={2.5}
-            style={{ color: '#ffcdb2' }}
+            style={{ color: '#5aada4' }}
             className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
           />
           <span
             className="text-sm font-semibold transition-all duration-150"
-            style={{ color: '#ffcdb2' }}
+            style={{ color: '#5aada4' }}
           >
             Got It
+          </span>
+        </button>
+
+        {/* Easy Button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onDifficulty('easy', e); }}
+          disabled={disabled}
+          className="py-3 button-hover flex flex-col items-center justify-center gap-2 group disabled:opacity-30"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          <Sparkles
+            size={36}
+            strokeWidth={2.5}
+            style={{ color: '#006d77' }}
+            className="group-hover:opacity-100 opacity-60 transition-opacity duration-150"
+          />
+          <span
+            className="text-sm font-semibold transition-all duration-150"
+            style={{ color: '#006d77' }}
+          >
+            Easy
           </span>
         </button>
       </div>

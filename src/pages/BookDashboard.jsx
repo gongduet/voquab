@@ -84,6 +84,7 @@ export default function BookDashboard() {
   const [bookProgress, setBookProgress] = useState(null)
   const [chapters, setChapters] = useState([])
   const [streak, setStreak] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     if (!user?.id || !bookId) return
@@ -91,8 +92,8 @@ export default function BookDashboard() {
     async function fetchData() {
       setLoading(true)
 
-      // Parallel fetch: book metadata, progress, chapters, streak
-      const [metaResult, progress, chaptersData, streakValue] = await Promise.all([
+      // Parallel fetch: book metadata, progress, chapters, streak, admin status
+      const [metaResult, progress, chaptersData, streakValue, settingsResult] = await Promise.all([
         supabase
           .from('books')
           .select('title, author, total_chapters')
@@ -100,13 +101,19 @@ export default function BookDashboard() {
           .single(),
         getBookProgress(user.id, bookId),
         getBookChaptersProgress(user.id, bookId),
-        calculateStreak(user.id)
+        calculateStreak(user.id),
+        supabase
+          .from('user_settings')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .single()
       ])
 
       setBookMeta(metaResult.data)
       setBookProgress(progress)
       setChapters(chaptersData)
       setStreak(streakValue)
+      setIsAdmin(settingsResult.data?.is_admin || false)
       setLoading(false)
     }
 
@@ -156,6 +163,7 @@ export default function BookDashboard() {
         streak={streak}
         username={user?.email?.split('@')[0] || ''}
         loading={loading}
+        isAdmin={isAdmin}
       />
 
       <main className="max-w-4xl mx-auto pb-8">

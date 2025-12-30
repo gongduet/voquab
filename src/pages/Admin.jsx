@@ -146,12 +146,20 @@ export default function Admin() {
                 </>
               )}
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded transition-colors"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/"
+                className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded transition-colors"
+              >
+                ← Dashboard
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 rounded transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
 
           {/* Title */}

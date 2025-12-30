@@ -7,9 +7,9 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [sessionRatings, setSessionRatings] = useState({
-    'dont-know': 0,
+    'again': 0,
     'hard': 0,
-    'medium': 0,
+    'got-it': 0,
     'easy': 0
   })
   const [reviewedCardIds, setReviewedCardIds] = useState(new Set())
@@ -33,6 +33,7 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
       if (e.key === '1') handleDifficulty('again')
       else if (e.key === '2') handleDifficulty('hard')
       else if (e.key === '3') handleDifficulty('got-it')
+      else if (e.key === '4') handleDifficulty('easy')
     }
 
     window.addEventListener('keydown', handleKeyPress)
@@ -88,10 +89,8 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
   function handleDifficulty(difficulty) {
     console.log('🎴 Session handleDifficulty:', { difficulty, isFlipped, currentIndex })
 
-    // Map new button values to session tracking
-    const trackingKey = difficulty === 'again' ? 'dont-know' :
-                        difficulty === 'got-it' ? 'easy' :
-                        difficulty // 'hard' stays 'hard'
+    // Use difficulty directly as tracking key
+    const trackingKey = difficulty
 
     // Update session ratings
     setSessionRatings(prev => ({
@@ -138,9 +137,9 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
     setCurrentIndex(0)
     setIsFlipped(false)
     setSessionRatings({
-      'dont-know': 0,
+      'again': 0,
       'hard': 0,
-      'medium': 0,
+      'got-it': 0,
       'easy': 0
     })
     setReviewedCardIds(new Set())

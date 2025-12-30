@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Flame, User } from 'lucide-react'
+import { Settings, Flame, User, Shield } from 'lucide-react'
 import ContentSwitcher from './ContentSwitcher'
 
 /**
@@ -9,7 +9,8 @@ import ContentSwitcher from './ContentSwitcher'
 export default function DashboardHeader({
   streak = 0,
   username = '',
-  loading = false
+  loading = false,
+  isAdmin = false
 }) {
   const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -97,6 +98,18 @@ export default function DashboardHeader({
                 streak
               )}
             </span>
+          </button>
+        )}
+
+        {/* Admin button - only for admins */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/admin')}
+            className="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+            aria-label="Admin"
+            title="Admin Dashboard"
+          >
+            <Shield className="w-5 h-5" />
           </button>
         )}
 

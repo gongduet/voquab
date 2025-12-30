@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
  *
  * Displays a message like "+5 days" that floats upward from the clicked button
  */
-export default function FloatingFeedback({ message, visible, position }) {
+export default function FloatingFeedback({ message, visible, position, color = '#5aada4' }) {
   if (!message) return null
 
   // Use position if provided, otherwise fall back to center
@@ -28,7 +28,7 @@ export default function FloatingFeedback({ message, visible, position }) {
             fontSize: '24px',
             fontWeight: '700',
             fontFamily: 'Inter, sans-serif',
-            color: '#b5838d',  // Muted mauve from design system
+            color: color,
             pointerEvents: 'none',
             zIndex: 1000,
             textShadow: '0 2px 4px rgba(0,0,0,0.1)'

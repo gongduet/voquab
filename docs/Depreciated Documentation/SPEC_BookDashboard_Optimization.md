@@ -1,5 +1,12 @@
 # BookDashboard Optimization Spec
 
+**Status:** ✅ IMPLEMENTED (December 29, 2025)
+
+> All tasks completed. RPC functions deployed, progressService created, BookDashboard rewritten.
+> See `docs/99_LIVING_CHANGELOG.md` for full details.
+
+---
+
 ## Problem
 
 `BookDashboard.jsx` throws **431 Request Header Fields Too Large** because it queries `user_lemma_progress` with 1600+ lemma UUIDs in an `.in()` clause, exceeding HTTP header limits.
@@ -304,16 +311,16 @@ return (
 
 ## Testing Checklist
 
-1. [ ] No 431 errors in console
-2. [ ] HeroStats shows book-level mastery (not global)
-3. [ ] ChapterCarousel shows 4 chapters initially
-4. [ ] Expand/collapse shows all 27 chapters
-5. [ ] Locked chapters appear muted gray
-6. [ ] Current chapter has ring highlight
-7. [ ] Completed chapters show checkmark
-8. [ ] Chapter tiles navigate correctly on click
-9. [ ] Header streak matches main dashboard
-10. [ ] Mobile responsive (2-column grid works)
+1. [x] No 431 errors in console
+2. [x] HeroStats shows book-level mastery (not global)
+3. [x] ChapterCarousel shows 4 chapters initially (centered around current)
+4. [x] Expand/collapse shows all 27 chapters
+5. [x] Locked chapters appear muted gray
+6. [x] Current chapter has ring highlight
+7. [x] Completed chapters show checkmark
+8. [x] Chapter tiles navigate correctly on click
+9. [x] Header streak matches main dashboard
+10. [ ] Mobile responsive (2-column grid works) - needs manual verification
 
 ---
 

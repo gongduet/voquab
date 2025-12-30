@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 25, 2025
+**Last Updated:** December 29, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,100 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2025-12-29 - Performance Optimization & Progress Service Architecture
+
+### Added
+
+#### Supabase RPC Functions (Database)
+Created server-side RPC functions for efficient progress queries, solving 431 Request Header Fields Too Large errors caused by large `.in()` clauses:
+
+- **`get_book_progress(p_user_id, p_book_id)`** - Comprehensive book stats
+  - Returns: due_count, new_count, mastered, familiar, learning, not_seen, total_vocab
+  - Also returns: unlocked_chapters[], current_chapter, total_chapters
+  - Uses FSRS thresholds: mastered (stability≥21, fsrs_state=2), familiar (7≤stability<21, fsrs_state=2)
+  - Migration: `supabase/migrations/20251228_progress_rpc_functions.sql`
+
+- **`get_song_progress(p_user_id, p_song_id)`** - Song vocabulary stats
+  - Returns: due_count, new_count, mastered, familiar, learning, not_seen, total_vocab, sections
+  - Same FSRS thresholds as book progress
+  - Migration: `supabase/migrations/20251228_progress_rpc_functions.sql`
+
+- **`get_book_chapters_progress(p_user_id, p_book_id)`** - Per-chapter progress
+  - Returns: chapter_number, title, total_vocab, mastered, familiar, learning, not_seen, is_unlocked
+  - Combines lemmas and phrases in all counts
+  - Uses 95% introduction threshold for chapter unlocking
+  - Migration: `supabase/migrations/20251229_book_chapters_progress.sql`
+
+#### Progress Service (`src/services/progressService.js`)
+Single source of truth for progress data across the app:
+
+- `getBookProgress(userId, bookId)` - Calls `get_book_progress` RPC
+- `getSongProgress(userId, songId)` - Calls `get_song_progress` RPC
+- `getBookChaptersProgress(userId, bookId)` - Calls `get_book_chapters_progress` RPC
+- `getGlobalDueCount(userId)` - Counts due items across lemmas and phrases
+
+### Changed
+
+#### Dashboard Query Optimizations
+- **`Dashboard.jsx` fetchForecastData**: Reduced from 14 separate COUNT queries to 2 parallel queries that fetch all due_dates and group client-side
+- **`Dashboard.jsx`**: Removed all slang-related queries (slang removed from MVP scope)
+- **`Dashboard.jsx`**: Now passes `user_settings` (with `active_book_id`, `active_song_id`) as props to `ActiveContentCards` instead of duplicate fetch
+
+#### BookDashboard Rewrite (`src/pages/BookDashboard.jsx`)
+Complete rewrite using RPC functions:
+- Uses `getBookProgress` and `getBookChaptersProgress` from progressService
+- Uses shared dashboard components (`DashboardHeader`, `HeroStats`, `ChapterCarousel`)
+- Added back button to navigate to Dashboard
+- Added quick action buttons: Review (blue), Learn New (amber), Continue Reading (outline)
+- Streak calculation from `user_review_history` (counts consecutive days with activity)
+
+#### ChapterCarousel Improvements (`src/components/dashboard/ChapterCarousel.jsx`)
+- Fixed chapter display to center around current chapter (1 before, current, 2 after)
+- Fixed `isNextToUnlock` logic to require 95% completion of previous chapter
+- Updated `StackedProgressBar` to show gray progress on locked chapters
+
+#### Session Builder Optimizations (`src/services/sessionBuilder.js`)
+- **`buildReviewSession()`**: Parallelized all independent queries with `Promise.all`
+  - Now fetches: userSettings, lemmaProgress, phraseProgress in parallel
+- **`buildReviewSession()`**: Disabled exposure oversampling for MVP
+  - Commented out exposure logic with TODO for post-MVP reintroduction
+  - Stats hardcoded to `exposureAvailable: 0`, `selectedExposure: 0`
+
+#### Flashcards Fix (`src/pages/Flashcards.jsx`)
+- Added `loadingRef` to prevent duplicate `loadSession()` calls from React StrictMode
+- Guard clause at start of function, reset in finally block
+
+### Fixed
+
+- **ActiveContentCards.jsx**: Fixed `.toLocaleString()` error on undefined by adding `|| 0` fallback
+- **get_book_chapters_progress RPC**: Fixed to include phrases in counts (was only counting lemmas)
+- **BookDashboard.jsx**: Fixed `totalLemmas` → `totalVocab` mapping for phrase-inclusive counts
+
+### Technical Details
+
+#### FSRS-Based Mastery Thresholds (used in all RPCs)
+```
+Mastered: fsrs_state = 2 AND stability >= 21 (3+ weeks)
+Familiar: fsrs_state = 2 AND stability >= 7 AND stability < 21 (1-3 weeks)
+Learning: reps >= 1 AND NOT (fsrs_state = 2 AND stability >= 7)
+Not Seen: reps = 0 OR no progress record
+```
+
+#### Files Created
+- `supabase/migrations/20251228_progress_rpc_functions.sql`
+- `supabase/migrations/20251229_book_chapters_progress.sql`
+- `src/services/progressService.js`
+
+#### Files Modified
+- `src/pages/Dashboard.jsx` - Query optimizations
+- `src/pages/BookDashboard.jsx` - Complete rewrite
+- `src/pages/Flashcards.jsx` - StrictMode fix
+- `src/services/sessionBuilder.js` - Parallelization & exposure disabled
+- `src/components/dashboard/ActiveContentCards.jsx` - Uses progressService
+- `src/components/dashboard/ChapterCarousel.jsx` - Chapter display fixes
 
 ---
 

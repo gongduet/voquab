@@ -18,7 +18,10 @@ import {
   ExternalLink,
   CheckCircle,
   Circle,
-  Plus
+  Plus,
+  Copy,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import CreatePhraseModal from '../components/admin/CreatePhraseModal'
 
@@ -38,9 +41,20 @@ export default function AdminPhrases() {
   const [phrases, setPhrases] = useState([])
   const [chapters, setChapters] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchInput, setSearchInput] = useState(searchTerm)
   const [error, setError] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+
+  // Inline editing
+  const [editingPhraseId, setEditingPhraseId] = useState(null)
+  const [editValue, setEditValue] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Pagination
+  const [page, setPage] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+  const pageSize = 50
 
   // Stats
   const [stats, setStats] = useState({
@@ -72,54 +86,36 @@ export default function AdminPhrases() {
     setError(null)
 
     try {
-      // Fetch all phrases
-      const { data: phraseData, error: phraseError } = await supabase
-        .from('phrases')
-        .select('*')
-        .range(0, 9999)
-        .order('phrase_text')
-
-      if (phraseError) throw phraseError
-
-      // Fetch occurrence counts
-      const { data: occurrenceData, error: occError } = await supabase
-        .from('phrase_occurrences')
-        .select('phrase_id, sentence_id, sentences(chapter_id)')
-        .range(0, 99999)
-
-      if (occError) console.error('Error fetching occurrences:', occError)
-
-      // Count occurrences and chapters per phrase
-      const occurrenceMap = {}
-      const chapterMap = {}
-      occurrenceData?.forEach(occ => {
-        if (occ.phrase_id) {
-          occurrenceMap[occ.phrase_id] = (occurrenceMap[occ.phrase_id] || 0) + 1
-          if (occ.sentences?.chapter_id) {
-            if (!chapterMap[occ.phrase_id]) {
-              chapterMap[occ.phrase_id] = new Set()
-            }
-            chapterMap[occ.phrase_id].add(occ.sentences.chapter_id)
-          }
-        }
+      // Use RPC for server-side filtering, sorting, and pagination
+      const { data, error: rpcError } = await supabase.rpc('search_phrases', {
+        p_search: searchTerm,
+        p_type: filterType,
+        p_reviewed: filterReviewed,
+        p_chapter_id: filterChapter !== 'all' ? filterChapter : null,
+        p_sort_by: sortBy,
+        p_sort_order: sortOrder,
+        p_page: page,
+        p_page_size: pageSize
       })
 
-      // Merge data
-      const phrasesWithCounts = phraseData.map(p => ({
-        ...p,
-        occurrence_count: occurrenceMap[p.phrase_id] || 0,
-        chapter_ids: chapterMap[p.phrase_id] ? Array.from(chapterMap[p.phrase_id]) : []
-      }))
+      if (rpcError) throw rpcError
 
-      setPhrases(phrasesWithCounts)
+      setPhrases(data || [])
+      if (data?.length > 0) {
+        setTotalCount(data[0].total_count)
+      } else {
+        setTotalCount(0)
+      }
 
-      // Fetch chapters for filter
-      const { data: chaptersData } = await supabase
-        .from('chapters')
-        .select('chapter_id, chapter_number, title')
-        .order('chapter_number')
+      // Fetch chapters for filter dropdown (only once)
+      if (chapters.length === 0) {
+        const { data: chaptersData } = await supabase
+          .from('chapters')
+          .select('chapter_id, chapter_number, title')
+          .order('chapter_number')
 
-      setChapters(chaptersData || [])
+        setChapters(chaptersData || [])
+      }
 
     } catch (err) {
       console.error('Error fetching phrases:', err)
@@ -127,17 +123,37 @@ export default function AdminPhrases() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [searchTerm, filterType, filterReviewed, filterChapter, sortBy, sortOrder, page, pageSize, chapters.length])
 
   useEffect(() => {
     fetchPhrases()
   }, [fetchPhrases])
 
   useEffect(() => {
-    const total = phrases.length
     const reviewed = phrases.filter(p => p.is_reviewed).length
-    setStats({ total, reviewed, unreviewed: total - reviewed })
-  }, [phrases])
+    setStats({ total: totalCount, reviewed, unreviewed: phrases.length - reviewed })
+  }, [phrases, totalCount])
+
+  // Debounce search input - wait 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== searchTerm) {
+        updateFilter('search', searchInput)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Sync searchInput when URL changes (e.g., clear filters button)
+  useEffect(() => {
+    setSearchInput(searchTerm)
+  }, [searchTerm])
+
+  // Reset to page 0 when filters change
+  useEffect(() => {
+    setPage(0)
+  }, [searchTerm, filterType, filterReviewed, filterChapter, sortBy, sortOrder])
 
   const toggleReviewed = useCallback(async (phrase) => {
     const newValue = !phrase.is_reviewed
@@ -158,46 +174,79 @@ export default function AdminPhrases() {
     }
   }, [])
 
-  // Filter phrases
-  const filteredPhrases = phrases.filter(phrase => {
-    // Search
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase()
-      const matchesText = phrase.phrase_text?.toLowerCase().includes(search)
-      const matchesDef = phrase.definitions?.some(d =>
-        d.toLowerCase().includes(search)
-      )
-      if (!matchesText && !matchesDef) return false
+  const handleCopyPhrase = useCallback((phrase) => {
+    navigator.clipboard.writeText(phrase.phrase_text)
+  }, [])
+
+  const handleStartEdit = useCallback((phrase, e) => {
+    e.stopPropagation()
+    setEditingPhraseId(phrase.phrase_id)
+    // Convert definitions array to comma-separated string for editing
+    const defs = phrase.definitions
+    if (Array.isArray(defs)) {
+      setEditValue(defs.join(', '))
+    } else if (typeof defs === 'string') {
+      try {
+        const parsed = JSON.parse(defs)
+        setEditValue(Array.isArray(parsed) ? parsed.join(', ') : defs)
+      } catch {
+        setEditValue(defs || '')
+      }
+    } else {
+      setEditValue('')
     }
+  }, [])
 
-    // Type filter
-    if (filterType !== 'all' && phrase.phrase_type !== filterType) return false
+  const handleCancelEdit = useCallback(() => {
+    setEditingPhraseId(null)
+    setEditValue('')
+  }, [])
 
-    // Review status
-    if (filterReviewed === 'reviewed' && !phrase.is_reviewed) return false
-    if (filterReviewed === 'unreviewed' && phrase.is_reviewed) return false
+  const handleSaveEdit = useCallback(async (phraseId) => {
+    if (isSaving) return
 
-    // Chapter filter
-    if (filterChapter !== 'all' && !phrase.chapter_ids?.includes(filterChapter)) return false
+    setIsSaving(true)
+    try {
+      // Convert comma-separated string back to array
+      const definitionsArray = editValue
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d.length > 0)
 
-    return true
-  })
+      const { error } = await supabase
+        .from('phrases')
+        .update({ definitions: definitionsArray })
+        .eq('phrase_id', phraseId)
 
-  // Sort phrases
-  const sortedPhrases = [...filteredPhrases].sort((a, b) => {
-    let comparison = 0
-    switch (sortBy) {
-      case 'alphabetical':
-        comparison = (a.phrase_text || '').localeCompare(b.phrase_text || '')
-        break
-      case 'occurrences':
-        comparison = (b.occurrence_count || 0) - (a.occurrence_count || 0)
-        break
-      default:
-        comparison = 0
+      if (error) throw error
+
+      // Update local state
+      setPhrases(prev => prev.map(p =>
+        p.phrase_id === phraseId
+          ? { ...p, definitions: definitionsArray }
+          : p
+      ))
+
+      setEditingPhraseId(null)
+      setEditValue('')
+    } catch (err) {
+      console.error('Error saving definition:', err)
+      alert(`Error saving: ${err.message}`)
+    } finally {
+      setIsSaving(false)
     }
-    return sortOrder === 'asc' ? comparison : -comparison
-  })
+  }, [editValue, isSaving])
+
+  const handleEditKeyDown = useCallback((e, phraseId) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSaveEdit(phraseId)
+    } else if (e.key === 'Escape') {
+      handleCancelEdit()
+    }
+  }, [handleSaveEdit, handleCancelEdit])
+
+  // Server-side filtering/sorting via RPC - no client-side needed
 
   const handlePhraseCreated = (newPhrase) => {
     setPhrases(prev => [{
@@ -212,21 +261,21 @@ export default function AdminPhrases() {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
-      const currentIndex = sortedPhrases.findIndex(p => p.phrase_id === selectedId)
+      const currentIndex = phrases.findIndex(p => p.phrase_id === selectedId)
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          if (currentIndex < sortedPhrases.length - 1) {
-            setSelectedId(sortedPhrases[currentIndex + 1].phrase_id)
-          } else if (currentIndex === -1 && sortedPhrases.length > 0) {
-            setSelectedId(sortedPhrases[0].phrase_id)
+          if (currentIndex < phrases.length - 1) {
+            setSelectedId(phrases[currentIndex + 1].phrase_id)
+          } else if (currentIndex === -1 && phrases.length > 0) {
+            setSelectedId(phrases[0].phrase_id)
           }
           break
         case 'ArrowUp':
           e.preventDefault()
           if (currentIndex > 0) {
-            setSelectedId(sortedPhrases[currentIndex - 1].phrase_id)
+            setSelectedId(phrases[currentIndex - 1].phrase_id)
           }
           break
         case 'Enter':
@@ -240,7 +289,7 @@ export default function AdminPhrases() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sortedPhrases, selectedId, navigate])
+  }, [phrases, selectedId, navigate])
 
   if (loading) {
     return (
@@ -283,8 +332,8 @@ export default function AdminPhrases() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search phrases..."
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -375,15 +424,41 @@ export default function AdminPhrases() {
         </button>
       </div>
 
-      {/* Count */}
-      <div className="text-sm text-neutral-500">
-        {sortedPhrases.length} phrases
+      {/* Count + Pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-neutral-500">
+          {totalCount > 0
+            ? `Showing ${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount.toLocaleString()} phrases`
+            : '0 phrases'}
+        </div>
+        {totalCount > pageSize && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm text-neutral-600">
+              Page {page + 1} of {Math.ceil(totalCount / pageSize)}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * pageSize >= totalCount}
+              className="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Keyboard hints */}
       <div className="text-xs text-gray-400 flex gap-4">
         <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">↑/↓</kbd> Navigate</span>
-        <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Enter</kbd> Open details</span>
+        <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Enter</kbd> Open details / Save edit</span>
+        <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Esc</kbd> Cancel edit</span>
       </div>
 
       {/* Phrases Table */}
@@ -413,7 +488,7 @@ export default function AdminPhrases() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sortedPhrases.map((phrase) => (
+              {phrases.map((phrase) => (
                 <tr
                   key={phrase.phrase_id}
                   onClick={() => setSelectedId(phrase.phrase_id)}
@@ -427,7 +502,29 @@ export default function AdminPhrases() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-neutral-600">
-                    {phrase.definitions?.join(', ') || '—'}
+                    {editingPhraseId === phrase.phrase_id ? (
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={() => handleSaveEdit(phrase.phrase_id)}
+                        onKeyDown={(e) => handleEditKeyDown(e, phrase.phrase_id)}
+                        className="w-full px-2 py-1 text-sm border border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autoFocus
+                        disabled={isSaving}
+                        placeholder="Enter definitions separated by commas"
+                      />
+                    ) : (
+                      <span
+                        onClick={(e) => handleStartEdit(phrase, e)}
+                        className="cursor-pointer hover:bg-blue-50 hover:text-blue-700 px-2 py-1 rounded -mx-2 block"
+                        title="Click to edit"
+                      >
+                        {Array.isArray(phrase.definitions) && phrase.definitions.length > 0
+                          ? phrase.definitions.join(', ')
+                          : <span className="text-neutral-300 italic">Click to add...</span>}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {phrase.phrase_type && (
@@ -465,16 +562,28 @@ export default function AdminPhrases() {
                     </button>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        navigate(`/admin/phrases/${phrase.phrase_id}`)
-                      }}
-                      className="p-1.5 rounded text-neutral-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                      title="View phrase details"
-                    >
-                      <ExternalLink size={14} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCopyPhrase(phrase)
+                        }}
+                        className="p-1.5 rounded text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+                        title="Copy phrase"
+                      >
+                        <Copy size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/admin/phrases/${phrase.phrase_id}`)
+                        }}
+                        className="p-1.5 rounded text-neutral-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="View phrase details"
+                      >
+                        <ExternalLink size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -482,7 +591,7 @@ export default function AdminPhrases() {
           </table>
         </div>
 
-        {sortedPhrases.length === 0 && (
+        {phrases.length === 0 && (
           <div className="px-6 py-12 text-center">
             <p className="text-neutral-500 text-sm">No phrases match your filters</p>
           </div>

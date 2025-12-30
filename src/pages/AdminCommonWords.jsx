@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Search, ChevronDown, RefreshCw, ExternalLink, CheckCircle, Circle, Plus, AlertTriangle } from 'lucide-react'
+import { Search, ChevronDown, ChevronLeft, ChevronRight, RefreshCw, ExternalLink, CheckCircle, Circle, Plus, AlertTriangle, Copy, BookOpen } from 'lucide-react'
 import CreateLemmaModal from '../components/admin/CreateLemmaModal'
 
 /**
@@ -29,6 +29,8 @@ export default function AdminCommonWords() {
   const filterDefinition = searchParams.get('definition') || 'all'
   const sortBy = searchParams.get('sortBy') || 'frequency'
   const sortOrder = searchParams.get('sortOrder') || 'desc'
+  const currentPage = parseInt(searchParams.get('page') || '0', 10)
+  const pageSize = 50
 
   // Helper to update URL params
   const updateFilter = useCallback((key, value) => {
@@ -42,41 +44,54 @@ export default function AdminCommonWords() {
       reviewed: 'all',
       definition: 'all',
       sortBy: 'frequency',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      page: '0'
     }
-    if (value === defaults[key]) {
+    if (value === defaults[key] || (key === 'page' && value === 0)) {
       newParams.delete(key)
     } else {
       newParams.set(key, value)
+    }
+    // Reset to page 0 when changing filters (except when changing page itself)
+    if (key !== 'page') {
+      newParams.delete('page')
     }
     setSearchParams(newParams, { replace: true })
   }, [searchParams, setSearchParams])
 
   const [words, setWords] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchInput, setSearchInput] = useState(searchTerm)
   const [error, setError] = useState(null)
   const [chapters, setChapters] = useState([])
   const [processing, setProcessing] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const [showBulkMenu, setShowBulkMenu] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [editingLemmaId, setEditingLemmaId] = useState(null)
+  const [editValue, setEditValue] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
   const bulkMenuRef = useRef(null)
 
-  // Stats
+  // Stats (fetched separately since we're paginating)
   const [stats, setStats] = useState({
     total: 0,
     stopWords: 0,
     activeWords: 0
   })
 
+  // Fetch chapters on mount
   useEffect(() => {
-    fetchWords()
+    fetchChapters()
+    fetchStats()
   }, [])
 
+  // Fetch words when filters/pagination change
   useEffect(() => {
-    calculateStats()
-  }, [words])
+    fetchWords()
+  }, [searchTerm, filterStopWords, filterPOS, filterChapter, filterReviewed, filterDefinition, sortBy, sortOrder, currentPage])
 
   // Close bulk menu on outside click
   useEffect(() => {
@@ -89,92 +104,89 @@ export default function AdminCommonWords() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Debounce search input - wait 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== searchTerm) {
+        updateFilter('search', searchInput)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  // Sync searchInput when URL changes (e.g., clear filters button)
+  useEffect(() => {
+    setSearchInput(searchTerm)
+  }, [searchTerm])
+
+  async function fetchChapters() {
+    const { data } = await supabase
+      .from('chapters')
+      .select('chapter_id, chapter_number, title')
+      .order('chapter_number')
+    setChapters(data || [])
+  }
+
+  async function fetchStats() {
+    // Get total counts for stats cards
+    const { count: total } = await supabase
+      .from('lemmas')
+      .select('*', { count: 'exact', head: true })
+      .eq('language_code', 'es')
+
+    const { count: stopWords } = await supabase
+      .from('lemmas')
+      .select('*', { count: 'exact', head: true })
+      .eq('language_code', 'es')
+      .eq('is_stop_word', true)
+
+    setStats({
+      total: total || 0,
+      stopWords: stopWords || 0,
+      activeWords: (total || 0) - (stopWords || 0)
+    })
+  }
+
   async function fetchWords() {
     try {
       setLoading(true)
       setError(null)
 
-      // Fetch all lemmas - override default 1000 limit
-      const { data: lemmaData, error: lemmaError, count } = await supabase
-        .from('lemmas')
-        .select('lemma_id, lemma_text, definitions, part_of_speech, is_stop_word, is_reviewed, gender', { count: 'exact' })
-        .eq('language_code', 'es')
-        .range(0, 19999)
-        .order('lemma_text')
+      // Map sortBy to RPC parameter format
+      const rpcSortBy = sortBy === 'alphabetical' ? 'alpha' : 'frequency'
 
-      if (lemmaError) throw lemmaError
+      const { data, error: rpcError } = await supabase.rpc('search_lemmas', {
+        p_search: searchTerm,
+        p_pos: filterPOS,
+        p_stop_words: filterStopWords,
+        p_reviewed: filterReviewed,
+        p_definition: filterDefinition,
+        p_chapter_id: filterChapter !== 'all' ? filterChapter : null,
+        p_sort_by: rpcSortBy,
+        p_sort_order: sortOrder,
+        p_page: currentPage,
+        p_page_size: pageSize
+      })
 
-      console.log(`Fetched ${lemmaData.length} lemmas (total: ${count})`)
+      if (rpcError) throw rpcError
 
-      // Fetch chapters for filter dropdown
-      const { data: chaptersData } = await supabase
-        .from('chapters')
-        .select('chapter_id, chapter_number, title')
-        .order('chapter_number')
-
-      setChapters(chaptersData || [])
-
-      // Fetch word counts per lemma with chapter info
-      const { data: allWords, error: wordsError } = await supabase
-        .from('words')
-        .select(`
-          lemma_id,
-          sentences!inner (
-            chapter_id
-          )
-        `)
-        .range(0, 99999)
-
-      if (wordsError) {
-        console.error('Error fetching word counts:', wordsError)
-      }
-
-      // Count occurrences per lemma and track chapter associations
-      const countMap = {}
-      const lemmaChaptersMap = {}
-      if (allWords) {
-        allWords.forEach(w => {
-          if (w.lemma_id) {
-            countMap[w.lemma_id] = (countMap[w.lemma_id] || 0) + 1
-
-            // Track chapter associations
-            if (w.sentences?.chapter_id) {
-              if (!lemmaChaptersMap[w.lemma_id]) {
-                lemmaChaptersMap[w.lemma_id] = new Set()
-              }
-              lemmaChaptersMap[w.lemma_id].add(w.sentences.chapter_id)
-            }
-          }
-        })
-      }
-
-      console.log(`Word count map has ${Object.keys(countMap).length} entries`)
-
-      // Merge counts into lemma data
-      const wordsWithCounts = lemmaData.map(l => ({
+      // Transform data for component use
+      const transformedWords = (data || []).map(l => ({
         ...l,
         vocab_id: l.lemma_id,
         lemma: l.lemma_text,
-        english_definition: Array.isArray(l.definitions) ? l.definitions.join(', ') : l.definitions,
-        word_count: countMap[l.lemma_id] || 0,
-        chapter_ids: lemmaChaptersMap[l.lemma_id] ? Array.from(lemmaChaptersMap[l.lemma_id]) : []
+        english_definition: Array.isArray(l.definitions) ? l.definitions.join(', ') : l.definitions
       }))
 
-      setWords(wordsWithCounts)
+      setWords(transformedWords)
+      setTotalCount(data?.[0]?.total_count || 0)
       setLoading(false)
     } catch (err) {
       console.error('Error fetching words:', err)
       setError(err.message)
       setLoading(false)
     }
-  }
-
-  function calculateStats() {
-    const total = words.length
-    const stopWords = words.filter(w => w.is_stop_word).length
-    const activeWords = total - stopWords
-
-    setStats({ total, stopWords, activeWords })
   }
 
   const toggleStopWord = useCallback(async (word) => {
@@ -193,6 +205,13 @@ export default function AdminCommonWords() {
           ? { ...w, is_stop_word: newStatus }
           : w
       ))
+
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        stopWords: prev.stopWords + (newStatus ? 1 : -1),
+        activeWords: prev.activeWords + (newStatus ? -1 : 1)
+      }))
     } catch (err) {
       console.error('Error toggling stop word:', err)
       alert(`Error: ${err.message}`)
@@ -219,6 +238,102 @@ export default function AdminCommonWords() {
       console.error('Error toggling reviewed:', error)
     }
   }, [])
+
+  // Strip Spanish articles for dictionary lookup
+  function stripArticle(lemma) {
+    if (!lemma) return ''
+    const articles = ['el ', 'la ', 'los ', 'las ', 'un ', 'una ', 'unos ', 'unas ']
+    const lower = lemma.toLowerCase()
+    for (const article of articles) {
+      if (lower.startsWith(article)) {
+        return lemma.slice(article.length)
+      }
+    }
+    return lemma
+  }
+
+  const handleCopyLemma = useCallback(async (lemma, e) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(lemma)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }, [])
+
+  const handleOpenCollins = useCallback((lemma, e) => {
+    e.stopPropagation()
+    const word = stripArticle(lemma)
+    window.open(`https://www.collinsdictionary.com/dictionary/spanish-english/${encodeURIComponent(word)}`, '_blank')
+  }, [])
+
+  const handleStartEdit = useCallback((word, e) => {
+    e.stopPropagation()
+    setEditingLemmaId(word.lemma_id || word.vocab_id)
+    // Convert definitions array to comma-separated string for editing
+    const defs = word.definitions
+    if (Array.isArray(defs)) {
+      setEditValue(defs.join(', '))
+    } else if (typeof defs === 'string') {
+      try {
+        const parsed = JSON.parse(defs)
+        setEditValue(Array.isArray(parsed) ? parsed.join(', ') : defs)
+      } catch {
+        setEditValue(defs || '')
+      }
+    } else {
+      setEditValue('')
+    }
+  }, [])
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingLemmaId(null)
+    setEditValue('')
+  }, [])
+
+  const handleSaveEdit = useCallback(async (lemmaId) => {
+    if (isSaving) return
+
+    setIsSaving(true)
+    try {
+      // Convert comma-separated string back to array
+      const definitionsArray = editValue
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d.length > 0)
+
+      const { error } = await supabase
+        .from('lemmas')
+        .update({ definitions: definitionsArray })
+        .eq('lemma_id', lemmaId)
+
+      if (error) throw error
+
+      // Update local state
+      setWords(prev => prev.map(w =>
+        (w.lemma_id || w.vocab_id) === lemmaId
+          ? { ...w, definitions: definitionsArray, english_definition: definitionsArray.join(', ') }
+          : w
+      ))
+
+      setEditingLemmaId(null)
+      setEditValue('')
+    } catch (err) {
+      console.error('Error saving definition:', err)
+      alert(`Error saving: ${err.message}`)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [editValue, isSaving])
+
+  const handleEditKeyDown = useCallback((e, lemmaId) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSaveEdit(lemmaId)
+    } else if (e.key === 'Escape') {
+      handleCancelEdit()
+    }
+  }, [handleSaveEdit, handleCancelEdit])
 
   async function bulkMarkStopWords(topN) {
     if (!confirm(`Mark top ${topN} words by frequency as stop words?`)) {
@@ -255,6 +370,13 @@ export default function AdminCommonWords() {
           : w
       ))
 
+      // Update stats
+      setStats(prev => ({
+        ...prev,
+        stopWords: prev.stopWords + topLemmas.length,
+        activeWords: prev.activeWords - topLemmas.length
+      }))
+
       alert(`Successfully marked ${topLemmas.length} words as stop words`)
       setProcessing(false)
     } catch (err) {
@@ -276,81 +398,29 @@ export default function AdminCommonWords() {
     }, ...prev])
   }
 
-  // Filter words based on search and filters
-  const filteredWords = words.filter(word => {
-    // Search filter
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase()
-      if (!word.lemma?.toLowerCase().includes(search) &&
-          !word.english_definition?.toLowerCase().includes(search)) {
-        return false
-      }
-    }
-
-    // Stop word filter
-    if (filterStopWords === 'stop' && !word.is_stop_word) return false
-    if (filterStopWords === 'active' && word.is_stop_word) return false
-
-    // POS filter
-    if (filterPOS !== 'all' && word.part_of_speech !== filterPOS) return false
-
-    // Chapter filter
-    if (filterChapter !== 'all' && !word.chapter_ids?.includes(filterChapter)) return false
-
-    // Review status filter
-    if (filterReviewed === 'reviewed' && !word.is_reviewed) return false
-    if (filterReviewed === 'unreviewed' && word.is_reviewed) return false
-
-    // Definition filter
-    const hasDefinition = word.definitions &&
-      (Array.isArray(word.definitions) ? word.definitions.length > 0 : !!word.definitions)
-    if (filterDefinition === 'has' && !hasDefinition) return false
-    if (filterDefinition === 'missing' && hasDefinition) return false
-
-    return true
-  })
-
-  // Sort filtered words
-  const sortedWords = [...filteredWords].sort((a, b) => {
-    let comparison = 0
-
-    switch (sortBy) {
-      case 'frequency':
-        comparison = (b.word_count || 0) - (a.word_count || 0)
-        break
-      case 'alphabetical':
-        comparison = (a.lemma || '').localeCompare(b.lemma || '')
-        break
-      default:
-        comparison = 0
-    }
-
-    return sortOrder === 'asc' ? -comparison : comparison
-  })
-
-  // Keyboard navigation
+  // Keyboard navigation (using server-filtered words directly)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return
       }
 
-      const currentIndex = sortedWords.findIndex(w => w.vocab_id === selectedId)
+      const currentIndex = words.findIndex(w => w.vocab_id === selectedId)
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          if (currentIndex < sortedWords.length - 1) {
-            setSelectedId(sortedWords[currentIndex + 1].vocab_id)
-          } else if (currentIndex === -1 && sortedWords.length > 0) {
-            setSelectedId(sortedWords[0].vocab_id)
+          if (currentIndex < words.length - 1) {
+            setSelectedId(words[currentIndex + 1].vocab_id)
+          } else if (currentIndex === -1 && words.length > 0) {
+            setSelectedId(words[0].vocab_id)
           }
           break
 
         case 'ArrowUp':
           e.preventDefault()
           if (currentIndex > 0) {
-            setSelectedId(sortedWords[currentIndex - 1].vocab_id)
+            setSelectedId(words[currentIndex - 1].vocab_id)
           }
           break
 
@@ -358,7 +428,7 @@ export default function AdminCommonWords() {
         case 'S':
           e.preventDefault()
           if (selectedId) {
-            const word = sortedWords.find(w => w.vocab_id === selectedId)
+            const word = words.find(w => w.vocab_id === selectedId)
             if (word) {
               toggleStopWord(word)
             }
@@ -369,7 +439,12 @@ export default function AdminCommonWords() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sortedWords, selectedId, toggleStopWord])
+  }, [words, selectedId, toggleStopWord])
+
+  // Pagination helpers
+  const totalPages = Math.ceil(totalCount / pageSize)
+  const canGoPrev = currentPage > 0
+  const canGoNext = currentPage < totalPages - 1
 
   if (loading) {
     return (
@@ -412,8 +487,8 @@ export default function AdminCommonWords() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search words..."
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -578,14 +653,44 @@ export default function AdminCommonWords() {
 
         {/* Count */}
         <div className="text-sm text-neutral-500">
-          {sortedWords.length} words
+          {totalCount.toLocaleString()} words
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-neutral-500">
+            Showing {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, totalCount)} of {totalCount.toLocaleString()}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => updateFilter('page', currentPage - 1)}
+              disabled={!canGoPrev}
+              className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="text-sm text-neutral-600 min-w-[80px] text-center">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() => updateFilter('page', currentPage + 1)}
+              disabled={!canGoNext}
+              className="p-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Keyboard hints */}
       <div className="text-xs text-gray-400 flex gap-4">
         <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">↑/↓</kbd> Navigate</span>
         <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">S</kbd> Toggle stop word</span>
+        <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Enter</kbd> Save edit</span>
+        <span><kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">Esc</kbd> Cancel edit</span>
       </div>
 
       {/* Words Table */}
@@ -633,7 +738,7 @@ export default function AdminCommonWords() {
               </tr>
             </thead>
             <tbody>
-              {sortedWords.map((word) => (
+              {words.map((word) => (
                 <tr
                   key={word.vocab_id}
                   onClick={() => setSelectedId(word.vocab_id)}
@@ -642,7 +747,29 @@ export default function AdminCommonWords() {
                   }`}
                 >
                   <td className="font-medium text-neutral-800">{word.lemma}</td>
-                  <td className="text-neutral-600 text-sm">{word.english_definition || '—'}</td>
+                  <td className="text-neutral-600 text-sm">
+                    {editingLemmaId === (word.lemma_id || word.vocab_id) ? (
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onBlur={() => handleSaveEdit(word.lemma_id || word.vocab_id)}
+                        onKeyDown={(e) => handleEditKeyDown(e, word.lemma_id || word.vocab_id)}
+                        className="w-full px-2 py-1 text-sm border border-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        autoFocus
+                        disabled={isSaving}
+                        placeholder="Enter definitions separated by commas"
+                      />
+                    ) : (
+                      <span
+                        onClick={(e) => handleStartEdit(word, e)}
+                        className="cursor-pointer hover:bg-blue-50 hover:text-blue-700 px-2 py-1 rounded -mx-2 block"
+                        title="Click to edit"
+                      >
+                        {word.english_definition || <span className="text-neutral-300 italic">Click to add...</span>}
+                      </span>
+                    )}
+                  </td>
                   <td className="text-neutral-500 text-sm">{word.part_of_speech || '—'}</td>
                   <td className="text-right">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
@@ -684,6 +811,25 @@ export default function AdminCommonWords() {
                   </td>
                   <td>
                     <div className="flex items-center gap-1">
+                      {/* Copy lemma */}
+                      <button
+                        onClick={(e) => handleCopyLemma(word.lemma, e)}
+                        className="p-1.5 rounded text-neutral-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Copy lemma"
+                      >
+                        <Copy size={14} />
+                      </button>
+
+                      {/* Collins Dictionary */}
+                      <button
+                        onClick={(e) => handleOpenCollins(word.lemma, e)}
+                        className="p-1.5 rounded text-neutral-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                        title="Open in Collins Dictionary"
+                      >
+                        <BookOpen size={14} />
+                      </button>
+
+                      {/* Stop word toggle */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -697,6 +843,8 @@ export default function AdminCommonWords() {
                       >
                         {word.is_stop_word ? 'Unmark' : 'Stop'}
                       </button>
+
+                      {/* View details */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -715,7 +863,7 @@ export default function AdminCommonWords() {
           </table>
         </div>
 
-        {sortedWords.length === 0 && (
+        {words.length === 0 && !loading && (
           <div className="px-6 py-12 text-center">
             <p className="text-neutral-500 text-sm">No words match your filters</p>
           </div>

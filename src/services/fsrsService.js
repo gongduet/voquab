@@ -12,10 +12,13 @@
  */
 
 import { createEmptyCard, fsrs, generatorParameters, Rating, State } from 'ts-fsrs'
+import { FSRS_CONFIG } from '../config/fsrsConfig'
 
-// Initialize FSRS with default parameters
-// These can be tuned later based on user performance data
-const params = generatorParameters({ enable_fuzz: true })
+// Initialize FSRS with tuned parameters from config
+const params = generatorParameters({
+  request_retention: FSRS_CONFIG.REQUEST_RETENTION,
+  enable_fuzz: FSRS_CONFIG.ENABLE_FUZZ
+})
 const f = fsrs(params)
 
 /**
@@ -29,23 +32,23 @@ export const FSRSState = {
 }
 
 /**
- * Map our 3-button UI to FSRS ratings
- * Again = 1, Hard = 2, Good = 3 (we don't use Easy = 4)
+ * Map UI buttons to FSRS ratings (4-rating system)
+ * Again = 1, Hard = 2, Good = 3, Easy = 4
  */
 export const ButtonToRating = {
-  'again': Rating.Again,      // 1
+  'again': Rating.Again,      // 1 - Complete failure, reset to learning
   'dont-know': Rating.Again,  // 1 (legacy mapping)
-  'hard': Rating.Hard,        // 2
-  'got-it': Rating.Good,      // 3
-  'good': Rating.Good,        // 3
-  'easy': Rating.Good         // 3 (map easy to good since we use 3-button UI)
+  'hard': Rating.Hard,        // 2 - Recalled with difficulty
+  'got-it': Rating.Good,      // 3 - Recalled correctly
+  'good': Rating.Good,        // 3 - Recalled correctly
+  'easy': Rating.Easy         // 4 - Recalled effortlessly, boost interval
 }
 
 /**
  * Schedule a card based on user response
  *
  * @param {Object} card - Card with FSRS state (stability, difficulty, due_date, etc.)
- * @param {string|number} rating - User rating: 'again'|'hard'|'got-it' or 1|2|3
+ * @param {string|number} rating - User rating: 'again'|'hard'|'got-it'|'easy' or 1|2|3|4
  * @returns {Object} - Updated card state with new stability, difficulty, due_date, etc.
  */
 export function scheduleCard(card, rating) {
@@ -69,12 +72,21 @@ export function scheduleCard(card, rating) {
     return card
   }
 
+  // Apply Hard interval cap (training wheels for new learners)
+  let dueDate = result.card.due
+  if (fsrsRating === Rating.Hard && FSRS_CONFIG.HARD_INTERVAL_CAP_DAYS) {
+    const maxDue = new Date(now.getTime() + FSRS_CONFIG.HARD_INTERVAL_CAP_DAYS * 24 * 60 * 60 * 1000)
+    if (dueDate > maxDue) {
+      dueDate = maxDue
+    }
+  }
+
   // Convert back to our database format
   return {
     ...card,
     stability: result.card.stability,
     difficulty: result.card.difficulty,
-    due_date: result.card.due.toISOString(),
+    due_date: dueDate.toISOString(),
     fsrs_state: result.card.state,
     reps: result.card.reps,
     lapses: result.card.lapses,

@@ -37,7 +37,9 @@ export default function Dashboard() {
     username: '',
     // ActiveContentCards
     activeBookId: null,
-    activeSongId: null
+    activeSongId: null,
+    // Admin
+    isAdmin: false
   })
 
   useEffect(() => {
@@ -87,7 +89,8 @@ export default function Dashboard() {
         streak: currentStreak,  // Use same value for header
         username: profileData.username,
         activeBookId: userSettings.activeBookId,
-        activeSongId: userSettings.activeSongId
+        activeSongId: userSettings.activeSongId,
+        isAdmin: userSettings.isAdmin
       })
     } catch (error) {
       console.error('Error loading dashboard data:', error)
@@ -103,6 +106,7 @@ export default function Dashboard() {
         streak={dashboardData.streak}
         username={dashboardData.username}
         loading={loading}
+        isAdmin={dashboardData.isAdmin}
       />
 
       {/* Main content - max width container for desktop */}
@@ -272,15 +276,15 @@ async function fetchQuickActionStats(userId) {
  * Counts UNIQUE cards reviewed per day (not total reviews)
  */
 async function fetchActivityData(userId) {
-  // Get reviews from last 35 days
-  const thirtyFiveDaysAgo = new Date()
-  thirtyFiveDaysAgo.setDate(thirtyFiveDaysAgo.getDate() - 35)
+  // Get reviews from last 70 days (enough for 60-day streak calculation)
+  const seventyDaysAgo = new Date()
+  seventyDaysAgo.setDate(seventyDaysAgo.getDate() - 70)
 
   const { data: reviews, error } = await supabase
     .from('user_review_history')
     .select('reviewed_at, lemma_id, phrase_id')
     .eq('user_id', userId)
-    .gte('reviewed_at', thirtyFiveDaysAgo.toISOString())
+    .gte('reviewed_at', seventyDaysAgo.toISOString())
     .order('reviewed_at', { ascending: false })
 
   if (error) {
@@ -326,11 +330,17 @@ async function fetchActivityData(userId) {
 
   console.log('[fetchActivityData] Unique cards per day:', activityData.slice(0, 5))
 
-  // Calculate streak from activity data
+  // Calculate streak - don't break if today has no activity yet
   let calculatedStreak = 0
   const today = new Date()
+  const todayStr = formatLocalDate(today)
+  const hasTodayActivity = activityMap.has(todayStr) && activityMap.get(todayStr) > 0
 
-  for (let i = 0; i < 60; i++) {
+  // If today has activity, include it and count backwards
+  // If today has no activity, start from yesterday
+  const startOffset = hasTodayActivity ? 0 : 1
+
+  for (let i = startOffset; i < 60; i++) {
     const checkDate = new Date(today)
     checkDate.setDate(today.getDate() - i)
     const checkDateStr = formatLocalDate(checkDate)
@@ -617,23 +627,24 @@ async function fetchProfileData(userId) {
 }
 
 /**
- * Fetch user settings (daily goal, active content)
+ * Fetch user settings (daily goal, active content, admin status)
  */
 async function fetchUserSettings(userId) {
   const { data, error } = await supabase
     .from('user_settings')
-    .select('daily_goal_words, active_book_id, active_song_id')
+    .select('daily_goal_words, active_book_id, active_song_id, is_admin')
     .eq('user_id', userId)
     .single()
 
   if (error) {
     console.error('❌ [fetchUserSettings] failed:', error)
-    return { dailyTarget: 50, activeBookId: null, activeSongId: null }
+    return { dailyTarget: 50, activeBookId: null, activeSongId: null, isAdmin: false }
   }
 
   return {
     dailyTarget: data?.daily_goal_words || 50,
     activeBookId: data?.active_book_id || null,
-    activeSongId: data?.active_song_id || null
+    activeSongId: data?.active_song_id || null,
+    isAdmin: data?.is_admin || false
   }
 }

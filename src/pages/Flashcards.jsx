@@ -22,11 +22,19 @@ export default function Flashcards() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Get mode, chapter, and song from URL params
+  // Get mode, chapter, song, and book from URL params
   const urlMode = searchParams.get('mode') || SessionMode.REVIEW
   const urlChapter = searchParams.get('chapter') ? parseInt(searchParams.get('chapter')) : null
   const urlSongId = searchParams.get('songId') || null
+  const urlBookId = searchParams.get('bookId') || searchParams.get('book') || null
   const urlLearnOnly = searchParams.get('learnOnly') === 'true'
+
+  // Helper: Return to correct dashboard based on where user came from
+  const getReturnPath = () => {
+    if (urlBookId) return `/book/${urlBookId}`
+    if (urlSongId) return `/song/${urlSongId}`
+    return '/'
+  }
 
   // Local state
   const [mode, setMode] = useState(urlMode)
@@ -41,6 +49,7 @@ export default function Flashcards() {
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const [showFeedback, setShowFeedback] = useState(false)
   const [feedbackPosition, setFeedbackPosition] = useState({ x: 0, y: 0 })
+  const [feedbackColor, setFeedbackColor] = useState('#5aada4')
 
   // Track all reviewed cards with their ratings and due dates
   // Key: lemmaId or phraseId, Value: card review data
@@ -138,8 +147,8 @@ export default function Flashcards() {
     }
   }
 
-  // Handle difficulty rating
-  async function handleDifficulty(difficulty, event) {
+  // Handle difficulty rating - uses optimistic updates for instant card transitions
+  function handleDifficulty(difficulty, event) {
     console.log('🎯 Button clicked:', {
       difficulty,
       lemma: currentCard?.lemma,
@@ -165,48 +174,62 @@ export default function Flashcards() {
                            difficulty === 'got-it' ? 'got-it' :
                            difficulty // 'hard' stays 'hard'
 
+    // Capture current card reference before advancing (currentCard will change)
+    const cardToUpdate = currentCard
+    const isAgain = difficulty === 'again' || difficulty === 'dont-know'
+
+    // 1. ADVANCE CARD IMMEDIATELY (optimistic UI)
+    handleDifficultySession(difficulty)
+
+    // 2. Fire database update in background (no await)
     console.log('📤 Calling updateProgress with:', fsrsDifficulty)
 
-    // Update progress in database (handles exposure cards differently)
-    const result = await updateProgress(currentCard, fsrsDifficulty, currentCard.isExposure)
+    updateProgress(cardToUpdate, fsrsDifficulty, cardToUpdate.isExposure)
+      .then(result => {
+        console.log('📥 FSRS result:', result)
 
-    console.log('📥 FSRS result:', result)
+        // Track reviewed card for session summary
+        if (result?.success) {
+          const cardId = cardToUpdate.slang_id || cardToUpdate.phrase_id || cardToUpdate.lemma_id
 
-    // Track all reviewed cards for session summary
-    if (result?.success) {
-      const cardId = currentCard.slang_id || currentCard.phrase_id || currentCard.lemma_id
-      const isAgain = difficulty === 'again' || difficulty === 'dont-know'
+          setReviewedCards(prev => {
+            const updated = new Map(prev)
+            const existing = updated.get(cardId)
 
-      setReviewedCards(prev => {
-        const updated = new Map(prev)
-        const existing = updated.get(cardId)
+            updated.set(cardId, {
+              lemma: cardToUpdate.lemma,
+              cardId: cardId,
+              cardType: cardToUpdate.card_type || 'lemma',
+              partOfSpeech: cardToUpdate.part_of_speech || null,
+              // Sticky flag: once marked "again", stays true even if later got it right
+              wasMarkedAgain: existing?.wasMarkedAgain || isAgain,
+              // Always update to latest rating
+              finalRating: isAgain ? 'again' : difficulty === 'hard' ? 'hard' : 'gotIt',
+              dueFormatted: result.dueFormatted || 'Now',
+              dueTimestamp: result.dueDate ? new Date(result.dueDate).getTime() : Date.now()
+            })
 
-        updated.set(cardId, {
-          lemma: currentCard.lemma,
-          cardId: cardId,
-          cardType: currentCard.card_type || 'lemma',
-          partOfSpeech: currentCard.part_of_speech || null,
-          // Sticky flag: once marked "again", stays true even if later got it right
-          wasMarkedAgain: existing?.wasMarkedAgain || isAgain,
-          // Always update to latest rating
-          finalRating: isAgain ? 'again' : difficulty === 'hard' ? 'hard' : 'gotIt',
-          dueFormatted: result.dueFormatted || 'Now',
-          dueTimestamp: result.dueDate ? new Date(result.dueDate).getTime() : Date.now()
-        })
+            return updated
+          })
 
-        return updated
+          // Show floating feedback animation (skip for "again" - card requeued immediately)
+          if (result?.dueFormatted && !result.isExposure && !isAgain) {
+            const feedbackColors = {
+              'hard': '#e5989b',
+              'got-it': '#5aada4',
+              'easy': '#006d77'
+            }
+            setFeedbackColor(feedbackColors[fsrsDifficulty] || '#5aada4')
+            setFeedbackMessage(`+${result.dueFormatted}`)
+            setShowFeedback(true)
+            setTimeout(() => setShowFeedback(false), 1500)
+          }
+        }
       })
-    }
-
-    // Show floating feedback animation (replaces old yellow notification)
-    if (result?.dueFormatted && !result.isExposure) {
-      setFeedbackMessage(`+${result.dueFormatted}`)
-      setShowFeedback(true)
-      setTimeout(() => setShowFeedback(false), 1500)
-    }
-
-    // Update local session
-    handleDifficultySession(difficulty)
+      .catch(err => {
+        console.error('❌ Progress update failed:', err)
+        // Card stays due for next session - no user action needed
+      })
   }
 
   // Loading state
@@ -223,7 +246,7 @@ export default function Flashcards() {
           <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Flashcards</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(getReturnPath())}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Return Home
@@ -296,15 +319,16 @@ export default function Flashcards() {
       <SessionSummary
         totalCards={totalCards}
         ratings={{
-          again: sessionRatings['dont-know'] || 0,
+          again: sessionRatings['again'] || 0,
           hard: sessionRatings['hard'] || 0,
-          gotIt: sessionRatings['easy'] || 0
+          gotIt: sessionRatings['got-it'] || 0,
+          easy: sessionRatings['easy'] || 0
         }}
         reviewedCards={Array.from(reviewedCards.values())}
         dueCount={sessionStats?.dueRemaining || 0}
         newAvailable={sessionStats?.newRemaining || 0}
         onNewSession={() => window.location.reload()}
-        onDashboard={() => navigate('/')}
+        onDashboard={() => navigate(getReturnPath())}
       />
     )
   }
@@ -318,7 +342,7 @@ export default function Flashcards() {
           {/* Top row: Exit and progress */}
           <div className="flex justify-between items-center mb-3">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate(getReturnPath())}
               className="text-slate-700 hover:text-slate-900 flex items-center gap-2"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
@@ -372,7 +396,7 @@ export default function Flashcards() {
         />
 
         {/* Floating feedback animation - shows "+5 days" etc */}
-        <FloatingFeedback message={feedbackMessage} visible={showFeedback} position={feedbackPosition} />
+        <FloatingFeedback message={feedbackMessage} visible={showFeedback} position={feedbackPosition} color={feedbackColor} />
 
         {/* Hint text below buttons */}
         {!isFlipped && (

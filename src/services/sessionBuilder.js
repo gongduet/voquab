@@ -86,10 +86,9 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
  * @returns {Object} - { cards, stats, mode }
  */
 export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_SIZE) {
-  // Run ALL independent queries in parallel
+  // Run independent queries in parallel
   const [
     { data: userSettings },
-    { data: dailyStats },
     { data: lemmaProgressData, error: lemmaProgressError },
     { data: phraseProgressData, error: phraseProgressError }
   ] = await Promise.all([
@@ -98,12 +97,6 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
       .select('cards_per_session')
       .eq('user_id', userId)
       .single(),
-    supabase
-      .from('user_daily_stats')
-      .select('review_date, words_reviewed')
-      .eq('user_id', userId)
-      .order('review_date', { ascending: false })
-      .limit(7),
     supabase
       .from('user_lemma_progress')
       .select(`
@@ -135,8 +128,6 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
   // Use userSettings for session size if available
   const finalSessionSize = userSettings?.cards_per_session || sessionSize
 
-  const activityLevel = getUserActivityLevel(dailyStats)
-
   if (lemmaProgressError) {
     console.error('Error fetching lemma progress:', lemmaProgressError)
     return { cards: [], stats: {}, mode: SessionMode.REVIEW, error: lemmaProgressError.message }
@@ -147,9 +138,14 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
     // Continue without phrases rather than failing
   }
 
-  // Separate due cards and exposure candidates for lemmas
+  // TODO: Reintroduce exposure oversampling post-MVP
+  // Exposure logic commented out - just fetch due cards for now
+  // const { data: dailyStats } = await supabase.from('user_daily_stats')...
+  // const activityLevel = getUserActivityLevel(dailyStats)
+  // const exposureCandidates = []
+
+  // Collect due cards only (no exposure for MVP)
   const dueCards = []
-  const exposureCandidates = []
 
   for (const card of lemmaProgressData || []) {
     const enrichedCard = enrichCardWithLemma(card)
@@ -157,9 +153,11 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
 
     if (isCardDue(enrichedCard)) {
       dueCards.push({ ...enrichedCard, isExposure: false })
-    } else if (shouldIncludeForExposure(enrichedCard, activityLevel.daysBetween)) {
-      exposureCandidates.push({ ...enrichedCard, isExposure: true })
     }
+    // Exposure disabled for MVP:
+    // else if (shouldIncludeForExposure(enrichedCard, activityLevel.daysBetween)) {
+    //   exposureCandidates.push({ ...enrichedCard, isExposure: true })
+    // }
   }
 
   // Process phrase cards
@@ -169,22 +167,23 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
 
     if (isCardDue(enrichedCard)) {
       dueCards.push({ ...enrichedCard, isExposure: false })
-    } else if (shouldIncludeForExposure(enrichedCard, activityLevel.daysBetween)) {
-      exposureCandidates.push({ ...enrichedCard, isExposure: true })
     }
+    // Exposure disabled for MVP:
+    // else if (shouldIncludeForExposure(enrichedCard, activityLevel.daysBetween)) {
+    //   exposureCandidates.push({ ...enrichedCard, isExposure: true })
+    // }
   }
 
-  // Select cards: due cards first, then exposure
+  // Select due cards only (no exposure for MVP)
   const selectedDue = dueCards.slice(0, finalSessionSize)
-  const remainingSlots = finalSessionSize - selectedDue.length
-  const exposureCount = Math.min(remainingSlots, activityLevel.exposureCards)
+  // Exposure disabled for MVP:
+  // const remainingSlots = finalSessionSize - selectedDue.length
+  // const exposureCount = Math.min(remainingSlots, activityLevel.exposureCards)
+  // const shuffledExposure = shuffleArray(exposureCandidates)
+  // const selectedExposure = shuffledExposure.slice(0, exposureCount)
 
-  // Randomly select exposure cards
-  const shuffledExposure = shuffleArray(exposureCandidates)
-  const selectedExposure = shuffledExposure.slice(0, exposureCount)
-
-  // Combine and shuffle
-  const allCards = shuffleArray([...selectedDue, ...selectedExposure])
+  // Shuffle selected due cards (no exposure cards for MVP)
+  const allCards = shuffleArray(selectedDue)
 
   // Fetch sentences for lemma cards only (phrases already have sentences)
   const lemmaCards = allCards.filter(c => c.card_type === 'lemma')
@@ -198,9 +197,9 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
   const stats = {
     totalDue: dueCards.length,
     selectedDue: selectedDue.length,
-    exposureAvailable: exposureCandidates.length,
-    selectedExposure: selectedExposure.length,
-    activityLevel: activityLevel.level,
+    exposureAvailable: 0,  // Exposure disabled for MVP
+    selectedExposure: 0,   // Exposure disabled for MVP
+    // activityLevel: activityLevel.level,  // Exposure disabled for MVP
     lemmaCount: lemmaCardsWithSentences.length,
     phraseCount: phraseCardsWithSentences.length,
     dueRemaining: Math.max(0, dueCards.length - selectedDue.length),
@@ -224,11 +223,15 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
  */
 function enrichCardWithPhrase(card) {
   const phrase = card.phrases || {}
+  // Parse definitions (may be JSON string or array)
+  const defs = typeof phrase.definitions === 'string'
+    ? JSON.parse(phrase.definitions)
+    : phrase.definitions
   return {
     ...card,
     phrase_id: card.phrase_id,
     lemma: phrase.phrase_text,  // Use lemma field for display consistency
-    english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
+    english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
     part_of_speech: 'PHRASE',
     word_in_sentence: phrase.phrase_text  // Phrase appears as-is in sentence
   }
@@ -554,11 +557,12 @@ async function getUnexposedLemmas(userId, chapterIds) {
 
     seen.add(lemmaId)
     const lemma = word.lemmas
+    const defs = typeof lemma.definitions === 'string' ? JSON.parse(lemma.definitions) : lemma.definitions
 
     unexposedLemmas.push({
       lemma_id: lemma.lemma_id,
       lemma: lemma.lemma_text,
-      english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
+      english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
       part_of_speech: lemma.part_of_speech,
       // Track sentence order for sorting
       chapter_number: chapterNumbers[sentenceInfo[word.sentence_id]?.chapter_id] || 0,
@@ -667,11 +671,12 @@ async function getUnexposedPhrases(userId, chapterIds) {
     seen.add(phraseId)
     const phrase = occ.phrases
     const sentInfo = sentenceInfo[occ.sentence_id] || {}
+    const defs = typeof phrase.definitions === 'string' ? JSON.parse(phrase.definitions) : phrase.definitions
 
     unexposedPhrases.push({
       phrase_id: phrase.phrase_id,
       lemma: phrase.phrase_text,  // Use lemma field for display consistency
-      english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
+      english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
       part_of_speech: 'PHRASE',
       word_in_sentence: phrase.phrase_text,
       // Sentence info for display
@@ -821,26 +826,29 @@ async function getUnintroducedPhrases(userId, chapterNumbers, limit) {
     .in('phrase_id', unintroducedPhraseIds.slice(0, limit))
 
   // Transform to card format
-  return (phrases || []).map(phrase => ({
-    phrase_id: phrase.phrase_id,
-    lemma: phrase.phrase_text,  // Use lemma field for display consistency
-    english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
-    part_of_speech: 'PHRASE',
-    word_in_sentence: phrase.phrase_text,  // Phrase appears as-is in sentence
-    example_sentence: phrase.phrase_occurrences?.[0]?.sentences?.sentence_text,
-    example_sentence_translation: phrase.phrase_occurrences?.[0]?.sentences?.sentence_translation,
-    // New card defaults
-    stability: null,
-    difficulty: null,
-    due_date: null,
-    fsrs_state: FSRSState.NEW,
-    reps: 0,
-    lapses: 0,
-    last_seen_at: null,
-    isExposure: false,
-    isNew: true,
-    card_type: 'phrase'
-  }))
+  return (phrases || []).map(phrase => {
+    const defs = typeof phrase.definitions === 'string' ? JSON.parse(phrase.definitions) : phrase.definitions
+    return {
+      phrase_id: phrase.phrase_id,
+      lemma: phrase.phrase_text,  // Use lemma field for display consistency
+      english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
+      part_of_speech: 'PHRASE',
+      word_in_sentence: phrase.phrase_text,  // Phrase appears as-is in sentence
+      example_sentence: phrase.phrase_occurrences?.[0]?.sentences?.sentence_text,
+      example_sentence_translation: phrase.phrase_occurrences?.[0]?.sentences?.sentence_translation,
+      // New card defaults
+      stability: null,
+      difficulty: null,
+      due_date: null,
+      fsrs_state: FSRSState.NEW,
+      reps: 0,
+      lapses: 0,
+      last_seen_at: null,
+      isExposure: false,
+      isNew: true,
+      card_type: 'phrase'
+    }
+  })
 }
 
 /**
@@ -1119,11 +1127,12 @@ export async function buildSongSession(userId, songId, sessionSize = DEFAULT_SES
     const lemma = sl.lemmas
     const progress = lemmaProgressMap[sl.lemma_id]
     const isIntroduced = progress?.reps >= 1
+    const defs = typeof lemma.definitions === 'string' ? JSON.parse(lemma.definitions) : lemma.definitions
 
     const card = {
       lemma_id: lemma.lemma_id,
       lemma: lemma.lemma_text,
-      english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
+      english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
       part_of_speech: lemma.part_of_speech,
       card_type: 'lemma',
       // FSRS fields from progress
@@ -1148,11 +1157,12 @@ export async function buildSongSession(userId, songId, sessionSize = DEFAULT_SES
     const phrase = sp.phrases
     const progress = phraseProgressMap[sp.phrase_id]
     const isIntroduced = progress?.reps >= 1
+    const defs = typeof phrase.definitions === 'string' ? JSON.parse(phrase.definitions) : phrase.definitions
 
     const card = {
       phrase_id: phrase.phrase_id,
       lemma: phrase.phrase_text,
-      english_definition: Array.isArray(phrase.definitions) ? phrase.definitions[0] : phrase.definitions,
+      english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
       part_of_speech: 'PHRASE',
       word_in_sentence: phrase.phrase_text,
       card_type: 'phrase',
@@ -1415,11 +1425,15 @@ export async function getUnlockedChapters(userId) {
  */
 function enrichCardWithLemma(card) {
   const lemma = card.lemmas || {}
+  // Parse definitions (may be JSON string or array)
+  const defs = typeof lemma.definitions === 'string'
+    ? JSON.parse(lemma.definitions)
+    : lemma.definitions
   return {
     ...card,
     lemma_id: card.lemma_id,
     lemma: lemma.lemma_text,
-    english_definition: Array.isArray(lemma.definitions) ? lemma.definitions[0] : lemma.definitions,
+    english_definition: Array.isArray(defs) ? defs.join(', ') : defs,
     part_of_speech: lemma.part_of_speech
   }
 }
