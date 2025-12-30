@@ -416,6 +416,7 @@ export default function SentenceDeepDive() {
         phraseOccurrences={phraseOccurrences}
         words={words}
         sentenceId={sentenceId}
+        chapterId={sentence?.chapter_id}
         onUpdate={fetchSentenceData}
       />
 

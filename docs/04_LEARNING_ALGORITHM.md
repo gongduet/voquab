@@ -1,6 +1,6 @@
 # 04_LEARNING_ALGORITHM.md
 
-**Last Updated:** December 15, 2025
+**Last Updated:** December 30, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -306,6 +306,28 @@ Periodically show stable cards as "exposure checks" to verify memory is intact.
 ### Default Session Size
 
 **Setting:** `user_settings.cards_per_session` (default: 25)
+
+### Session Loading with Progress (Added Dec 30, 2025)
+
+Sessions support progress callbacks and background sentence loading:
+
+```javascript
+const result = await buildSession(userId, mode, {
+  onProgress: setLoadingProgress,  // Progress callback
+  skipSentences: true              // Start immediately, load sentences in background
+})
+
+// Progress stages reported:
+// Stage 1: "Loading your progress..."
+// Stage 2: "Finding due cards..."
+// Stage 3: "Loading sentences..." (skipped if skipSentences: true)
+// Stage 4: "Starting session..."
+
+// Background sentence loading after session starts
+if (result.cards?.length > 0) {
+  loadSentencesInBackground(result.cards)
+}
+```
 
 ### Review Mode Composition
 

@@ -1153,6 +1153,9 @@ def process_chapter(chapter_number: int, chapter_text: str, clear_existing: bool
     print(f"  Unique lemmas: {len(unique_lemmas)}")
     print(f"  Lemmas translated: {translated}")
 
+    # Refresh vocabulary stats for this chapter
+    refresh_chapter_stats(chapter_id)
+
     return chapter_id
 
 
@@ -1889,7 +1892,7 @@ def insert_phrase(phrase_data: Dict, language_code: str = 'es') -> str:
     return new_phrase.data[0]['phrase_id']
 
 
-def insert_phrase_occurrence(phrase_id: str, sentence_id: str, start_pos: int, end_pos: int):
+def insert_phrase_occurrence(phrase_id: str, sentence_id: str, chapter_id: str, start_pos: int, end_pos: int):
     """
     Link a phrase occurrence to a sentence.
     """
@@ -1907,11 +1910,22 @@ def insert_phrase_occurrence(phrase_id: str, sentence_id: str, start_pos: int, e
     new_occurrence = db.table('phrase_occurrences').insert({
         'phrase_id': phrase_id,
         'sentence_id': sentence_id,
+        'chapter_id': chapter_id,
         'start_position': start_pos,  # Schema uses 'start_position' not 'start_word_position'
         'end_position': end_pos       # Schema uses 'end_position' not 'end_word_position'
     }).execute()
 
     return new_occurrence.data[0]['occurrence_id']
+
+
+def refresh_chapter_stats(chapter_id: str):
+    """Refresh vocabulary stats for a chapter after import."""
+    db = get_supabase()
+    try:
+        db.rpc('refresh_chapter_vocabulary_stats', {'p_chapter_id': chapter_id}).execute()
+        print(f"  ✓ Refreshed vocabulary stats for chapter")
+    except Exception as e:
+        print(f"  ⚠ Could not refresh vocabulary stats: {e}")
 
 
 def detect_phrases_for_chapter(chapter_number: int, delay: float = 0.5) -> Dict:
@@ -1996,7 +2010,7 @@ def detect_phrases_for_chapter(chapter_number: int, delay: float = 0.5) -> Dict:
                 phrase_id = insert_phrase(phrase)
 
                 # Insert occurrence
-                insert_phrase_occurrence(phrase_id, sentence['sentence_id'], start_pos, end_pos)
+                insert_phrase_occurrence(phrase_id, sentence['sentence_id'], chapter_id, start_pos, end_pos)
 
                 # Update stats
                 stats['total_phrases'] += 1
@@ -2028,6 +2042,9 @@ def detect_phrases_for_chapter(chapter_number: int, delay: float = 0.5) -> Dict:
         print(f"\n  Phrases by type:")
         for ptype, count in sorted(stats['phrases_by_type'].items()):
             print(f"    * {ptype}: {count}")
+
+    # Refresh vocabulary stats for this chapter
+    refresh_chapter_stats(chapter_id)
 
     return stats
 

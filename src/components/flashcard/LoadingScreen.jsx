@@ -9,11 +9,13 @@ import { useState, useEffect } from 'react'
  * - "Reverse dissolve" text animation
  * - Clean, sophisticated aesthetic matching dashboard/session summary
  */
-export default function LoadingScreen({ mode = 'review' }) {
-  // Dynamic title based on mode
-  const titleWords = mode === 'learn'
-    ? ["Curating", "new", "words..."]
-    : ["Preparing", "your", "session..."]
+export default function LoadingScreen({ mode = 'review', progress = null }) {
+  // Dynamic title based on mode and progress
+  const titleWords = progress?.message
+    ? progress.message.split(' ')
+    : mode === 'learn'
+      ? ["Curating", "new", "words..."]
+      : ["Preparing", "your", "session..."]
 
   return (
     <div className="min-h-screen bg-[#fafaf9] flex flex-col items-center justify-center p-6 font-sans">
@@ -119,6 +121,24 @@ export default function LoadingScreen({ mode = 'review' }) {
             </span>
           ))}
         </h2>
+
+        {/* Progress indicator */}
+        {progress && (
+          <div className="mt-6 w-full">
+            {/* Progress bar */}
+            <div className="h-1.5 bg-[#e7e5e4] rounded-full overflow-hidden mb-3">
+              <div
+                className="h-full bg-[#0ea5e9] rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${(progress.stage / progress.totalStages) * 100}%` }}
+              />
+            </div>
+
+            {/* Stage message */}
+            <p className="text-[12px] text-[#a3a3a3] text-center">
+              {progress.message || `Step ${progress.stage} of ${progress.totalStages}`}
+            </p>
+          </div>
+        )}
 
       </div>
     </div>

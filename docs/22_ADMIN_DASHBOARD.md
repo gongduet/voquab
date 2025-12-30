@@ -1,14 +1,14 @@
 # 22_ADMIN_DASHBOARD.md
 
-**Last Updated:** December 24, 2025
-**Status:** Phase 1 + Phase 2 Complete
+**Last Updated:** December 30, 2025
+**Status:** Phase 1 + Phase 2 + Admin Optimizations Complete
 **Owner:** Claude + Peter
 
 ---
 
 ## IMPLEMENTATION STATUS
 
-### Completed (Phase 1 + Phase 2 Complete)
+### Completed (Phase 1 + Phase 2 + Optimizations)
 
 **Sentences Management:**
 - ✅ Sentence Management table (`/admin/sentences`)
@@ -31,12 +31,26 @@
 - ✅ Orphaned Words page (`/admin/lemmas/orphaned`)
 - ✅ Delete lemma with safeguards (orphan/reassign options)
 - ✅ Bulk word reassignment on lemma delete
+- ✅ **Copy button** - One-click copy lemma to clipboard
+- ✅ **Collins dictionary link** - Opens Spanish-English dictionary
+- ✅ **Server-side pagination** - 50 lemmas per page via `search_lemmas` RPC
+- ✅ **Debounced search** - 300ms delay for better performance
+- ✅ **Inline definition editing** - Click to edit, Enter to save, Esc to cancel
 
 **Phrases Management:**
 - ✅ Phrases List page (`/admin/phrases`)
 - ✅ Phrase Deep Dive page (`/admin/phrases/:id`)
 - ✅ Create Phrase modal
 - ✅ Phrases navigation tab
+- ✅ **Copy button** - One-click copy phrase to clipboard
+- ✅ **Server-side pagination** - 50 phrases per page via `search_phrases` RPC
+- ✅ **Debounced search** - 300ms delay for better performance
+- ✅ **Inline definition editing** - Click to edit, Enter to save, Esc to cancel
+
+**Admin Access Control:**
+- ✅ **is_admin flag** - Column in `user_settings` table
+- ✅ **Admin header link** - Amber shield icon in dashboard header (admins only)
+- ✅ **Dashboard link** - "← Dashboard" link in admin header
 
 **General:**
 - ✅ Keyboard navigation throughout

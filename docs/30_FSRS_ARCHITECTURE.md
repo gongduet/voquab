@@ -1,10 +1,12 @@
 # 30_FSRS_ARCHITECTURE.md
 
-**Last Updated:** December 29, 2025
+**Last Updated:** December 30, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
 > **MVP Note (Dec 29, 2025):** Exposure oversampling is temporarily disabled for MVP. Review sessions only include due cards. Exposure logic is commented out in `sessionBuilder.js` with TODO for post-MVP reintroduction.
+
+> **4-Button Update (Dec 30, 2025):** Rating system expanded from 3 buttons to 4 buttons (Again/Hard/Got It/Easy). New centralized config in `src/config/fsrsConfig.js`. Optimistic UI updates for instant card transitions.
 
 ---
 
@@ -110,9 +112,11 @@ Voquab uses FSRS (Free Spaced Repetition Scheduler) to optimize vocabulary revie
 
 ```
 src/
+├── config/
+│   └── fsrsConfig.js        # FSRS parameters (retention, caps, etc.)
 ├── services/
 │   ├── fsrsService.js       # FSRS scheduling logic
-│   └── sessionBuilder.js    # Session composition
+│   └── sessionBuilder.js    # Session composition (with progress callbacks)
 ├── hooks/
 │   └── flashcard/
 │       ├── useFlashcardSession.js   # Session state
@@ -120,20 +124,29 @@ src/
 ├── components/
 │   └── flashcard/
 │       ├── FlashcardDisplay.jsx     # Card UI
-│       ├── DifficultyButtons.jsx    # Button interface
-│       └── FloatingFeedback.jsx     # Animation
+│       ├── DifficultyButtons.jsx    # 4-button interface
+│       ├── FloatingFeedback.jsx     # +X days animation
+│       ├── LoadingScreen.jsx        # Loading with progress bar
+│       └── SessionSummary.jsx       # Session completion screen
 └── pages/
-    └── Flashcards.jsx               # Main page
+    └── Flashcards.jsx               # Main page (background sentence loading)
 ```
 
 ### Data Flow
 
-1. **Session Start**: `sessionBuilder.js` fetches cards from database
-2. **Card Display**: `FlashcardDisplay.jsx` renders current card
-3. **User Response**: `DifficultyButtons.jsx` captures button press
-4. **FSRS Calculation**: `fsrsService.js` computes new scheduling
-5. **Database Update**: `useProgressTracking.js` saves to Supabase
-6. **Queue Update**: `useFlashcardSession.js` advances to next card
+**Session Loading (with progress indicator):**
+1. **Progress Stage 1**: "Loading your progress..." - Fetch user progress data
+2. **Progress Stage 2**: "Finding due cards..." - Filter due cards
+3. **Progress Stage 3**: Skip if `skipSentences: true` (background loading)
+4. **Progress Stage 4**: "Starting session..." - Return cards immediately
+5. **Background Loading**: Sentences load async, cards update when ready
+
+**Card Review Flow:**
+1. **Card Display**: `FlashcardDisplay.jsx` renders current card
+2. **User Response**: `DifficultyButtons.jsx` captures button press
+3. **FSRS Calculation**: `fsrsService.js` computes new scheduling
+4. **Database Update**: `useProgressTracking.js` saves to Supabase
+5. **Queue Update**: `useFlashcardSession.js` advances to next card
 
 ---
 
@@ -177,6 +190,28 @@ CREATE INDEX idx_user_progress_exposure ON user_lemma_progress(
 
 ## SERVICE LAYER
 
+### fsrsConfig.js (NEW)
+
+**Purpose:** Centralized FSRS configuration
+
+```javascript
+// src/config/fsrsConfig.js
+export const FSRS_CONFIG = {
+  requestRetention: 0.94,  // 94% target retention (more conservative)
+  maximumInterval: 365,    // Maximum 1 year interval
+  hardIntervalCap: 5,      // Hard rating capped at 5 days
+  w: [/* FSRS-6 default parameters */]
+}
+
+// Button colors for UI consistency
+export const BUTTON_COLORS = {
+  again: '#d4806a',   // Coral/salmon
+  hard: '#e5989b',    // Dusty rose
+  gotIt: '#5aada4',   // Teal
+  easy: '#006d77'     // Dark teal
+}
+```
+
 ### fsrsService.js
 
 **Purpose:** Core FSRS scheduling calculations
@@ -187,15 +222,16 @@ CREATE INDEX idx_user_progress_exposure ON user_lemma_progress(
 /**
  * Schedule card based on user response
  * @param {Object} card - Card with FSRS fields
- * @param {string} difficulty - 'again' | 'hard' | 'got-it'
+ * @param {string} difficulty - 'again' | 'hard' | 'got-it' | 'easy'
  * @returns {Object} Updated card with new FSRS values
  */
 export function scheduleCard(card, difficulty) {
   // Map button to FSRS rating (1-4)
+  // again=1, hard=2, got-it=3, easy=4
   const rating = difficultyToRating(difficulty)
 
-  // Use ts-fsrs library for calculations
-  const fsrs = new FSRS()
+  // Use ts-fsrs library with custom config
+  const fsrs = new FSRS(FSRS_CONFIG)
   const now = new Date()
 
   if (card.fsrs_state === FSRSState.NEW) {
@@ -251,43 +287,47 @@ export function getUserActivityLevel(dailyStats) {
 
 ```javascript
 /**
- * Build review session (due cards + exposure)
+ * Build review session with progress reporting and optional deferred sentence loading
+ * @param {string} userId - User ID
+ * @param {number} sessionSize - Max cards in session
+ * @param {Function} onProgress - Progress callback ({ stage, totalStages, message })
+ * @param {Object} options - { skipSentences: boolean }
  */
-export async function buildReviewSession(userId, sessionSize = 25) {
-  // 1. Get due cards (lemmas and phrases)
-  const dueCards = await getDueCards(userId)
+export async function buildReviewSession(userId, sessionSize = 25, onProgress = null, options = {}) {
+  const { skipSentences = false } = options
 
-  // 2. Get exposure cards based on activity
-  const activityLevel = await getUserActivityLevel(userId)
-  const exposureCards = await getExposureCards(userId, activityLevel)
+  // Stage 1: Load progress data
+  onProgress?.({ stage: 1, totalStages: 4, message: "Loading your progress..." })
+  const [lemmaProgress, phraseProgress] = await Promise.all([...])
 
-  // 3. Combine and shuffle
-  const allCards = shuffle([...dueCards, ...exposureCards])
+  // Stage 2: Find due cards
+  onProgress?.({ stage: 2, totalStages: 4, message: "Finding due cards..." })
+  const dueCards = filterDueCards(lemmaProgress, phraseProgress)
 
-  // 4. Add sentences
-  const cardsWithSentences = await addSentencesToCards(allCards)
-
-  return {
-    cards: cardsWithSentences.slice(0, sessionSize),
-    stats: { dueCount: dueCards.length, exposureCount: exposureCards.length },
-    mode: 'review'
+  // Stage 3-4: Load sentences or skip for background loading
+  if (skipSentences) {
+    // Return cards immediately - sentences load in background
+    onProgress?.({ stage: 4, totalStages: 4, message: "Starting session..." })
+    return { cards: shuffle(dueCards), stats, mode: 'review' }
+  } else {
+    // Load sentences synchronously (original behavior)
+    onProgress?.({ stage: 3, totalStages: 4, message: "Loading sentences..." })
+    const cardsWithSentences = await addSentencesToCards(dueCards)
+    onProgress?.({ stage: 4, totalStages: 4, message: "Building session..." })
+    return { cards: cardsWithSentences, stats, mode: 'review' }
   }
 }
 
 /**
- * Build learn session (new lemmas + phrases)
+ * Build learn session with progress reporting
  */
-export async function buildLearnSession(userId, sessionSize = 25) {
+export async function buildLearnSession(userId, sessionSize = 25, onProgress = null) {
+  onProgress?.({ stage: 1, totalStages: 4, message: "Checking unlocked chapters..." })
   // 1. Get unlocked chapters
   const unlockedChapters = await getUnlockedChapters(userId)
 
-  // 2. Check if phrases are available (20% threshold)
-  const phraseChapters = await getChaptersReadyForPhrases(userId)
-
-  // 3. Calculate 80/20 split
-  const hasPhrases = phraseChapters.length > 0
-  const lemmaCount = hasPhrases ? Math.ceil(sessionSize * 0.8) : sessionSize
-  const phraseCount = hasPhrases ? Math.floor(sessionSize * 0.2) : 0
+  onProgress?.({ stage: 2, totalStages: 4, message: "Finding new words..." })
+  // 2. Get unexposed lemmas and phrases...
 
   // 4. Fetch cards
   const lemmaCards = await getUnintroducedLemmas(userId, lemmaCount)
@@ -436,23 +476,35 @@ async function updateProgress(card, difficulty, isExposure = false) {
 
 ## UI INTEGRATION
 
-### Button Mapping
+### 4-Button Rating System (Updated Dec 30, 2025)
 
 ```javascript
-// DifficultyButtons.jsx
+// DifficultyButtons.jsx - 4-button system
 const BUTTONS = [
-  { id: 'again',  label: 'Again',  icon: RotateCcw,   color: '#6d6875' },
+  { id: 'again',  label: 'Again',  icon: RotateCcw,   color: '#d4806a' },
   { id: 'hard',   label: 'Hard',   icon: AlertCircle, color: '#e5989b' },
-  { id: 'got-it', label: 'Got It', icon: CheckCircle, color: '#ffcdb2' }
+  { id: 'got-it', label: 'Got It', icon: Check,       color: '#5aada4' },
+  { id: 'easy',   label: 'Easy',   icon: Zap,         color: '#006d77' }
 ]
 
-// Map to FSRS ratings
+// Map to FSRS ratings (1-4 scale)
 const difficultyToRating = {
-  'again': 1,   // FSRS Rating.Again
-  'hard': 2,    // FSRS Rating.Hard
-  'got-it': 3   // FSRS Rating.Good
+  'again': 1,   // FSRS Rating.Again - Failed, requeue immediately
+  'hard': 2,    // FSRS Rating.Hard  - Struggled, short interval
+  'got-it': 3,  // FSRS Rating.Good  - Recalled correctly
+  'easy': 4     // FSRS Rating.Easy  - Effortless recall
 }
+
+// Keyboard shortcuts: 1=Again, 2=Hard, 3=Got It, 4=Easy
 ```
+
+### Optimistic UI Updates
+
+Card transitions are now instant (no waiting for DB):
+1. User clicks rating button
+2. UI immediately advances to next card
+3. DB update happens in background
+4. FloatingFeedback animation shows "+X days"
 
 ### Card Badges
 
@@ -467,11 +519,14 @@ const difficultyToRating = {
 
 ```javascript
 // FloatingFeedback.jsx - Shows "+X days" after response
+// Skipped for "Again" rating (card requeues immediately)
+// Color matches button pressed (uses BUTTON_COLORS from fsrsConfig)
 <motion.div
   initial={{ opacity: 0, y: 0 }}
   animate={{ opacity: 1, y: -80 }}
   exit={{ opacity: 0, y: -120 }}
   transition={{ duration: 1.5, ease: 'easeOut' }}
+  style={{ color: feedbackColor }}
 >
   {`+${dueFormatted}`}
 </motion.div>

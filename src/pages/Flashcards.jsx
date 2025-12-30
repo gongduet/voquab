@@ -15,7 +15,7 @@ import useFlashcardSession from '../hooks/flashcard/useFlashcardSession'
 import useProgressTracking from '../hooks/flashcard/useProgressTracking'
 
 // Services
-import { buildSession, SessionMode } from '../services/sessionBuilder'
+import { buildSession, SessionMode, addSentencesToCards, addSentencesToPhraseCards } from '../services/sessionBuilder'
 
 export default function Flashcards() {
   const { user } = useAuth()
@@ -40,6 +40,7 @@ export default function Flashcards() {
   const [mode, setMode] = useState(urlMode)
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState(null)
   const [error, setError] = useState(null)
   const [sessionStats, setSessionStats] = useState(null)
   const [chapterInfo, setChapterInfo] = useState(null)
@@ -88,6 +89,7 @@ export default function Flashcards() {
 
     setReviewedCards(new Map())  // Reset reviewed cards for new session
     setLoading(true)
+    setLoadingProgress(null)
     setError(null)
     setSongInfo(null)
 
@@ -96,7 +98,9 @@ export default function Flashcards() {
         // sessionSize is now fetched from user_settings in sessionBuilder
         chapterNumber: urlChapter || undefined,
         songId: urlSongId || undefined,
-        learnOnly: urlLearnOnly
+        learnOnly: urlLearnOnly,
+        onProgress: setLoadingProgress,
+        skipSentences: true  // Start session immediately, load sentences in background
       }
 
       // Determine effective mode
@@ -120,10 +124,16 @@ export default function Flashcards() {
       if (result.error) {
         setError(result.error)
       } else {
+        // Set cards immediately (without sentences)
         setCards(result.cards || [])
         setSessionStats(result.stats)
         setChapterInfo(result.chapterInfo || null)
         setSongInfo(result.songInfo || null)
+
+        // Load sentences in background (only for review mode with cards)
+        if (effectiveMode === SessionMode.REVIEW && result.cards?.length > 0) {
+          loadSentencesInBackground(result.cards)
+        }
 
         if (result.message) {
           console.log('ℹ️ Session message:', result.message)
@@ -135,6 +145,48 @@ export default function Flashcards() {
     } finally {
       setLoading(false)
       loadingRef.current = false
+    }
+  }
+
+  // Load sentences in background after session starts
+  async function loadSentencesInBackground(initialCards) {
+    console.log('🔄 Loading sentences in background...')
+
+    try {
+      const lemmaCards = initialCards.filter(c => c.card_type === 'lemma')
+      const phraseCards = initialCards.filter(c => c.card_type === 'phrase')
+
+      // Load both in parallel
+      const [lemmasWithSentences, phrasesWithSentences] = await Promise.all([
+        lemmaCards.length > 0 ? addSentencesToCards(lemmaCards) : [],
+        phraseCards.length > 0 ? addSentencesToPhraseCards(phraseCards) : []
+      ])
+
+      // Build lookup map for quick updates
+      const sentenceMap = new Map()
+      for (const card of [...lemmasWithSentences, ...phrasesWithSentences]) {
+        const id = card.lemma_id || card.phrase_id
+        sentenceMap.set(id, {
+          example_sentence: card.example_sentence,
+          example_sentence_translation: card.example_sentence_translation,
+          word_in_sentence: card.word_in_sentence
+        })
+      }
+
+      // Update cards with sentences
+      setCards(prevCards => prevCards.map(card => {
+        const id = card.lemma_id || card.phrase_id
+        const sentenceData = sentenceMap.get(id)
+        if (sentenceData) {
+          return { ...card, ...sentenceData }
+        }
+        return card
+      }))
+
+      console.log('✅ Sentences loaded for', sentenceMap.size, 'cards')
+    } catch (err) {
+      console.error('⚠️ Background sentence loading failed:', err)
+      // Non-fatal - cards still work without sentences
     }
   }
 
@@ -234,7 +286,7 @@ export default function Flashcards() {
 
   // Loading state
   if (loading) {
-    return <LoadingScreen mode={mode === SessionMode.LEARN ? 'learn' : 'review'} />
+    return <LoadingScreen mode={mode === SessionMode.LEARN ? 'learn' : 'review'} progress={loadingProgress} />
   }
 
   // Error state

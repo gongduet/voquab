@@ -12,7 +12,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { X, Search, Check, Plus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
-export default function AddPhraseModal({ isOpen, words, sentenceId, onClose, onSuccess }) {
+export default function AddPhraseModal({ isOpen, words, sentenceId, chapterId, onClose, onSuccess }) {
   const [mode, setMode] = useState('existing') // 'existing' or 'new'
   const [startPosition, setStartPosition] = useState('')
   const [endPosition, setEndPosition] = useState('')
@@ -127,11 +127,19 @@ export default function AddPhraseModal({ isOpen, words, sentenceId, onClose, onS
           .insert({
             phrase_id: selectedPhraseId,
             sentence_id: sentenceId,
+            chapter_id: chapterId,
             start_position: start,
             end_position: end
           })
 
         if (error) throw error
+
+        // Refresh chapter vocabulary stats (non-blocking)
+        try {
+          await supabase.rpc('refresh_chapter_vocabulary_stats', { p_chapter_id: chapterId })
+        } catch (e) {
+          console.warn('Could not refresh chapter stats:', e)
+        }
       } else {
         // Create new phrase
         if (!newPhraseText.trim()) {
@@ -170,11 +178,19 @@ export default function AddPhraseModal({ isOpen, words, sentenceId, onClose, onS
           .insert({
             phrase_id: newPhrase.phrase_id,
             sentence_id: sentenceId,
+            chapter_id: chapterId,
             start_position: start,
             end_position: end
           })
 
         if (occError) throw occError
+
+        // Refresh chapter vocabulary stats (non-blocking)
+        try {
+          await supabase.rpc('refresh_chapter_vocabulary_stats', { p_chapter_id: chapterId })
+        } catch (e) {
+          console.warn('Could not refresh chapter stats:', e)
+        }
       }
 
       onSuccess()

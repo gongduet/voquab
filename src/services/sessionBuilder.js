@@ -56,10 +56,10 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
 
   switch (mode) {
     case SessionMode.REVIEW:
-      return buildReviewSession(userId, sessionSize)
+      return buildReviewSession(userId, sessionSize, options.onProgress, { skipSentences: options.skipSentences })
 
     case SessionMode.LEARN:
-      return buildLearnSession(userId, sessionSize)
+      return buildLearnSession(userId, sessionSize, options.onProgress)
 
     case SessionMode.CHAPTER:
       if (!options.chapterNumber) {
@@ -83,9 +83,15 @@ export async function buildSession(userId, mode = SessionMode.REVIEW, options = 
  *
  * @param {string} userId - User ID
  * @param {number} sessionSize - Max cards in session
+ * @param {Function} onProgress - Optional progress callback
+ * @param {Object} options - { skipSentences: boolean }
  * @returns {Object} - { cards, stats, mode }
  */
-export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_SIZE) {
+export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_SIZE, onProgress = null, options = {}) {
+  const { skipSentences = false } = options
+  // Report stage 1
+  onProgress?.({ stage: 1, totalStages: 4, message: "Loading your progress..." })
+
   // Run independent queries in parallel
   const [
     { data: userSettings },
@@ -138,6 +144,9 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
     // Continue without phrases rather than failing
   }
 
+  // Report stage 2
+  onProgress?.({ stage: 2, totalStages: 4, message: "Finding due cards..." })
+
   // TODO: Reintroduce exposure oversampling post-MVP
   // Exposure logic commented out - just fetch due cards for now
   // const { data: dailyStats } = await supabase.from('user_daily_stats')...
@@ -189,10 +198,20 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
   const lemmaCards = allCards.filter(c => c.card_type === 'lemma')
   const phraseCards = allCards.filter(c => c.card_type === 'phrase')
 
-  const lemmaCardsWithSentences = await addSentencesToCards(lemmaCards)
-  const phraseCardsWithSentences = await addSentencesToPhraseCards(phraseCards)
+  let cardsWithSentences
 
-  const cardsWithSentences = shuffleArray([...lemmaCardsWithSentences, ...phraseCardsWithSentences])
+  if (skipSentences) {
+    // Return cards without sentences - they'll be loaded in background
+    cardsWithSentences = shuffleArray([...lemmaCards, ...phraseCards])
+    onProgress?.({ stage: 4, totalStages: 4, message: "Starting session..." })
+  } else {
+    // Load sentences synchronously (original behavior)
+    onProgress?.({ stage: 3, totalStages: 4, message: "Loading sentences..." })
+    const lemmaCardsWithSentences = await addSentencesToCards(lemmaCards)
+    const phraseCardsWithSentences = await addSentencesToPhraseCards(phraseCards)
+    cardsWithSentences = shuffleArray([...lemmaCardsWithSentences, ...phraseCardsWithSentences])
+    onProgress?.({ stage: 4, totalStages: 4, message: "Building session..." })
+  }
 
   const stats = {
     totalDue: dueCards.length,
@@ -200,8 +219,8 @@ export async function buildReviewSession(userId, sessionSize = DEFAULT_SESSION_S
     exposureAvailable: 0,  // Exposure disabled for MVP
     selectedExposure: 0,   // Exposure disabled for MVP
     // activityLevel: activityLevel.level,  // Exposure disabled for MVP
-    lemmaCount: lemmaCardsWithSentences.length,
-    phraseCount: phraseCardsWithSentences.length,
+    lemmaCount: lemmaCards.length,
+    phraseCount: phraseCards.length,
     dueRemaining: Math.max(0, dueCards.length - selectedDue.length),
     newRemaining: 0
   }
@@ -243,7 +262,7 @@ function enrichCardWithPhrase(card) {
  * @param {Array} cards - Array of phrase card objects
  * @returns {Array} - Cards with example_sentence and example_sentence_translation
  */
-async function addSentencesToPhraseCards(cards) {
+export async function addSentencesToPhraseCards(cards) {
   if (cards.length === 0) return cards
 
   const phraseIds = cards.map(c => c.phrase_id)
@@ -289,7 +308,10 @@ async function addSentencesToPhraseCards(cards) {
  * @param {number} sessionSize - Max cards in session
  * @returns {Object} - { cards, stats, mode }
  */
-export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SIZE) {
+export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SIZE, onProgress = null) {
+  // Report stage 1
+  onProgress?.({ stage: 1, totalStages: 4, message: "Checking unlocked chapters..." })
+
   // 1. Get unlocked chapter IDs
   const unlockedChapterIds = await getUnlockedChapterIds(userId)
   console.log('📚 Unlocked chapters:', unlockedChapterIds.length)
@@ -302,6 +324,9 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
       message: 'No chapters available.'
     }
   }
+
+  // Report stage 2
+  onProgress?.({ stage: 2, totalStages: 4, message: "Finding new words..." })
 
   // 2. Get unexposed lemmas from unlocked chapters (sorted by sentence order)
   const unexposedLemmas = await getUnexposedLemmas(userId, unlockedChapterIds)
@@ -346,8 +371,14 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
     isExposure: false
   }))
 
+  // Report stage 3
+  onProgress?.({ stage: 3, totalStages: 4, message: "Loading sentences..." })
+
   // 7. Add sentences to lemma cards
   const lemmaCardsWithSentences = await addSentencesToCards(selectedLemmas)
+
+  // Report stage 4
+  onProgress?.({ stage: 4, totalStages: 4, message: "Building session..." })
 
   // 8. Combine and shuffle for variety
   const session = shuffleArray([...lemmaCardsWithSentences, ...selectedPhrases])
@@ -378,88 +409,68 @@ export async function buildLearnSession(userId, sessionSize = DEFAULT_SESSION_SI
  * @returns {Array<string>} - Array of unlocked chapter UUIDs
  */
 async function getUnlockedChapterIds(userId) {
-  // Get all chapters
-  const { data: chapters } = await supabase
-    .from('chapters')
-    .select('chapter_id, chapter_number')
-    .order('chapter_number', { ascending: true })
+  // Run all queries in parallel (3 queries total - no URL length issues)
+  const [
+    { data: chapters },
+    { data: chapterStats },
+    { data: userProgress }
+  ] = await Promise.all([
+    // 1. All chapters ordered
+    supabase
+      .from('chapters')
+      .select('chapter_id, chapter_number')
+      .order('chapter_number', { ascending: true }),
+    // 2. Pre-computed chapter vocabulary stats (totals)
+    supabase
+      .from('chapter_vocabulary_stats')
+      .select('chapter_id, total_lemmas, total_phrases'),
+    // 3. User's introduced counts per chapter (via RPC - no URL length issues)
+    supabase.rpc('get_user_chapter_progress', { p_user_id: userId })
+  ])
 
   if (!chapters || chapters.length === 0) {
-    // Return first chapter if it exists
-    const { data: firstChapter } = await supabase
-      .from('chapters')
-      .select('chapter_id')
-      .eq('chapter_number', 1)
-      .single()
-    return firstChapter ? [firstChapter.chapter_id] : []
+    return []
   }
 
-  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
-  const { data: userProgress } = await supabase
-    .from('user_lemma_progress')
-    .select('lemma_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
+  // Build stats lookup: chapter_id -> {total_lemmas, total_phrases}
+  const statsMap = new Map()
+  for (const stat of (chapterStats || [])) {
+    statsMap.set(stat.chapter_id, {
+      total_lemmas: stat.total_lemmas,
+      total_phrases: stat.total_phrases
+    })
+  }
 
-  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
+  // Build progress lookup: chapter_id -> {introduced_lemmas, introduced_phrases}
+  const progressMap = new Map()
+  for (const row of (userProgress || [])) {
+    progressMap.set(row.chapter_id, {
+      introduced_lemmas: Number(row.introduced_lemmas) || 0,
+      introduced_phrases: Number(row.introduced_phrases) || 0
+    })
+  }
 
   // First chapter always unlocked
   const unlockedChapterIds = [chapters[0].chapter_id]
 
+  // Check each chapter's introduction rate
   for (let i = 0; i < chapters.length - 1; i++) {
     const currentChapter = chapters[i]
+    const chapterId = currentChapter.chapter_id
 
-    // Get sentences for current chapter
-    const { data: sentences } = await supabase
-      .from('sentences')
-      .select('sentence_id')
-      .eq('chapter_id', currentChapter.chapter_id)
+    const stats = statsMap.get(chapterId) || { total_lemmas: 0, total_phrases: 0 }
+    const progress = progressMap.get(chapterId) || { introduced_lemmas: 0, introduced_phrases: 0 }
 
-    const sentenceIds = (sentences || []).map(s => s.sentence_id)
-
-    if (sentenceIds.length === 0) continue
-
-    // Get lemmas for this chapter EXCLUDING stop words
-    const { data: words } = await supabase
-      .from('words')
-      .select('lemma_id, lemmas!inner(is_stop_word)')
-      .in('sentence_id', sentenceIds)
-      .eq('lemmas.is_stop_word', false)
-
-    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
-
-    // Also get phrases for this chapter
-    const { data: phraseOccurrences } = await supabase
-      .from('phrase_occurrences')
-      .select('phrase_id')
-      .in('sentence_id', sentenceIds)
-
-    const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
-
-    // Get user's introduced phrases for this chapter
-    const { data: userPhraseProgress } = await supabase
-      .from('user_phrase_progress')
-      .select('phrase_id')
-      .eq('user_id', userId)
-      .gte('reps', 1)
-      .in('phrase_id', chapterPhraseIds)
-
-    const introducedPhraseCount = userPhraseProgress?.length || 0
-
-    // Combined totals (lemmas + phrases)
-    const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
-    const introducedCount = introducedLemmaCount + introducedPhraseCount
+    const totalCount = stats.total_lemmas + stats.total_phrases
+    const introducedCount = progress.introduced_lemmas + progress.introduced_phrases
     const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
 
-    // 95% threshold to unlock next chapter
     if (introductionRate >= 0.95) {
       const nextChapter = chapters[i + 1]
       if (nextChapter) {
         unlockedChapterIds.push(nextChapter.chapter_id)
       }
     } else {
-      // Stop - can't unlock further chapters
       break
     }
   }
@@ -1336,85 +1347,73 @@ async function addSongSentencesToCards(cards, songId) {
  * @returns {Array<number>} - Array of unlocked chapter numbers
  */
 export async function getUnlockedChapters(userId) {
-  // Get all chapters
-  const { data: chapters } = await supabase
-    .from('chapters')
-    .select('chapter_id, chapter_number')
-    .order('chapter_number', { ascending: true })
+  // Run all queries in parallel (3 queries total - no URL length issues)
+  const [
+    { data: chapters },
+    { data: chapterStats },
+    { data: userProgress }
+  ] = await Promise.all([
+    // 1. All chapters ordered
+    supabase
+      .from('chapters')
+      .select('chapter_id, chapter_number')
+      .order('chapter_number', { ascending: true }),
+    // 2. Pre-computed chapter vocabulary stats (totals)
+    supabase
+      .from('chapter_vocabulary_stats')
+      .select('chapter_id, total_lemmas, total_phrases'),
+    // 3. User's introduced counts per chapter (via RPC - no URL length issues)
+    supabase.rpc('get_user_chapter_progress', { p_user_id: userId })
+  ])
 
   if (!chapters || chapters.length === 0) {
     return [1] // First chapter always unlocked
   }
 
-  // Get user's introduced lemmas (reps >= 1 means reviewed at least once)
-  const { data: userProgress } = await supabase
-    .from('user_lemma_progress')
-    .select('lemma_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
+  // Build stats lookup: chapter_id -> {total_lemmas, total_phrases}
+  const statsMap = new Map()
+  for (const stat of (chapterStats || [])) {
+    statsMap.set(stat.chapter_id, {
+      total_lemmas: stat.total_lemmas,
+      total_phrases: stat.total_phrases
+    })
+  }
 
-  const introducedLemmaIds = new Set((userProgress || []).map(p => p.lemma_id))
+  // Build progress lookup: chapter_id -> {introduced_lemmas, introduced_phrases}
+  const progressMap = new Map()
+  for (const row of (userProgress || [])) {
+    progressMap.set(row.chapter_id, {
+      introduced_lemmas: Number(row.introduced_lemmas) || 0,
+      introduced_phrases: Number(row.introduced_phrases) || 0
+    })
+  }
 
-  // Get user's introduced phrases
-  const { data: userPhraseProgress } = await supabase
-    .from('user_phrase_progress')
-    .select('phrase_id')
-    .eq('user_id', userId)
-    .gte('reps', 1)
+  // First chapter always unlocked
+  const unlockedChapters = [1]
 
-  const introducedPhraseIds = new Set((userPhraseProgress || []).map(p => p.phrase_id))
-
-  const unlockedChapters = [1] // First chapter always unlocked
-
+  // Check each chapter's introduction rate
   for (let i = 0; i < chapters.length - 1; i++) {
     const currentChapter = chapters[i]
+    const chapterId = currentChapter.chapter_id
 
-    // Get lemmas for current chapter (EXCLUDING stop words)
-    const { data: sentences } = await supabase
-      .from('sentences')
-      .select('sentence_id')
-      .eq('chapter_id', currentChapter.chapter_id)
+    const stats = statsMap.get(chapterId) || { total_lemmas: 0, total_phrases: 0 }
+    const progress = progressMap.get(chapterId) || { introduced_lemmas: 0, introduced_phrases: 0 }
 
-    const sentenceIds = (sentences || []).map(s => s.sentence_id)
-
-    if (sentenceIds.length === 0) continue
-
-    const { data: words } = await supabase
-      .from('words')
-      .select('lemma_id, lemmas!inner(is_stop_word)')
-      .in('sentence_id', sentenceIds)
-      .eq('lemmas.is_stop_word', false)
-
-    const chapterLemmaIds = [...new Set((words || []).map(w => w.lemma_id))]
-    const introducedLemmaCount = chapterLemmaIds.filter(id => introducedLemmaIds.has(id)).length
-
-    // Get phrases for current chapter
-    const { data: phraseOccurrences } = await supabase
-      .from('phrase_occurrences')
-      .select('phrase_id')
-      .in('sentence_id', sentenceIds)
-
-    const chapterPhraseIds = [...new Set((phraseOccurrences || []).map(po => po.phrase_id))]
-    const introducedPhraseCount = chapterPhraseIds.filter(id => introducedPhraseIds.has(id)).length
-
-    // Combined calculation
-    const totalCount = chapterLemmaIds.length + chapterPhraseIds.length
-    const introducedCount = introducedLemmaCount + introducedPhraseCount
+    const totalCount = stats.total_lemmas + stats.total_phrases
+    const introducedCount = progress.introduced_lemmas + progress.introduced_phrases
     const introductionRate = totalCount > 0 ? introducedCount / totalCount : 0
 
-    // 95% threshold to unlock next chapter
     if (introductionRate >= 0.95) {
       const nextChapter = chapters[i + 1]
-      if (nextChapter && !unlockedChapters.includes(nextChapter.chapter_number)) {
+      if (nextChapter) {
         unlockedChapters.push(nextChapter.chapter_number)
       }
     } else {
-      // Stop - can't unlock further chapters
       break
     }
   }
 
-  return unlockedChapters.sort((a, b) => a - b)
+  return unlockedChapters
 }
 
 /**
@@ -1444,7 +1443,7 @@ function enrichCardWithLemma(card) {
  * @param {Array} cards - Array of card objects
  * @returns {Array} - Cards with example_sentence, example_sentence_translation, and word_in_sentence
  */
-async function addSentencesToCards(cards) {
+export async function addSentencesToCards(cards) {
   if (cards.length === 0) return cards
 
   const lemmaIds = cards.map(c => c.lemma_id)
@@ -1507,5 +1506,7 @@ export default {
   buildChapterFocusSession,
   buildSongSession,
   getUnlockedChapters,
+  addSentencesToCards,
+  addSentencesToPhraseCards,
   SessionMode
 }

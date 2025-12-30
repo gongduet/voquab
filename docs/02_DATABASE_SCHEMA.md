@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 25, 2025
+**Last Updated:** December 30, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -670,9 +670,15 @@ CREATE TABLE user_settings (
   daily_goal_words INTEGER DEFAULT 100,
   cards_per_session INTEGER DEFAULT 25,
   default_package VARCHAR(20) DEFAULT 'standard', -- foundation/standard/immersion/mastery
+  active_book_id UUID REFERENCES books(book_id),  -- Currently active book
+  active_song_id UUID REFERENCES songs(song_id),  -- Currently active song
+  allow_explicit_content BOOLEAN DEFAULT FALSE,   -- Show vulgar slang terms
+  is_admin BOOLEAN DEFAULT FALSE,                 -- Admin access flag (manually granted)
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+COMMENT ON COLUMN user_settings.is_admin IS 'Admin access flag. Only granted manually by super admin.';
 ```
 
 ---
@@ -1173,6 +1179,70 @@ CREATE TABLE user_daily_stats (
   PRIMARY KEY (user_id, review_date)
 );
 ```
+
+---
+
+## RPC FUNCTIONS
+
+Server-side RPC functions for efficient querying with filters and pagination.
+
+### Progress RPC Functions
+
+```sql
+-- Book-level progress with vocabulary mastery
+get_book_progress(p_user_id UUID, p_book_id UUID)
+RETURNS: due_count, new_count, mastered, familiar, learning, not_seen,
+         total_vocab, unlocked_chapters[], current_chapter, total_chapters
+
+-- Song-level progress with vocabulary mastery
+get_song_progress(p_user_id UUID, p_song_id UUID)
+RETURNS: due_count, new_count, mastered, familiar, learning, not_seen,
+         total_vocab, sections
+
+-- Per-chapter progress breakdown
+get_book_chapters_progress(p_user_id UUID, p_book_id UUID)
+RETURNS: chapter_number, title, total_vocab, mastered, familiar,
+         learning, not_seen, is_unlocked
+```
+
+### Admin Search RPC Functions
+
+```sql
+-- Paginated lemma search with server-side filtering
+search_lemmas(
+  p_search TEXT DEFAULT '',
+  p_pos TEXT DEFAULT 'all',
+  p_stop_words TEXT DEFAULT 'all',
+  p_reviewed TEXT DEFAULT 'all',
+  p_chapter_id UUID DEFAULT NULL,
+  p_sort_by TEXT DEFAULT 'frequency',
+  p_sort_order TEXT DEFAULT 'desc',
+  p_page INTEGER DEFAULT 0,
+  p_page_size INTEGER DEFAULT 50
+)
+RETURNS: lemma_id, lemma_text, definitions, part_of_speech, gender,
+         is_stop_word, is_reviewed, frequency, total_count
+
+-- Paginated phrase search with server-side filtering
+search_phrases(
+  p_search TEXT DEFAULT '',
+  p_type TEXT DEFAULT 'all',
+  p_reviewed TEXT DEFAULT 'all',
+  p_chapter_id UUID DEFAULT NULL,
+  p_sort_by TEXT DEFAULT 'alphabetical',
+  p_sort_order TEXT DEFAULT 'asc',
+  p_page INTEGER DEFAULT 0,
+  p_page_size INTEGER DEFAULT 50
+)
+RETURNS: phrase_id, phrase_text, definitions, phrase_type,
+         is_reviewed, occurrence_count, total_count
+```
+
+**Migration Files:**
+- `supabase/migrations/20251228_progress_rpc_functions.sql`
+- `supabase/migrations/20251229_book_chapters_progress.sql`
+- `supabase/migrations/20251229_search_lemmas_rpc.sql`
+- `supabase/migrations/20251230_search_phrases_rpc.sql`
 
 ---
 

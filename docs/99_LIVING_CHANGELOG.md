@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 29, 2025
+**Last Updated:** December 30, 2025
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,76 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2025-12-30 - Flashcard 4-Button System, Loading UX & Admin Optimizations
+
+### Flashcards
+- **4-button FSRS system**: Added Easy button alongside Again/Hard/Got It
+- **Tuned FSRS parameters**: 94% retention (more conservative), 5-day hard cap
+- **New config file**: `src/config/fsrsConfig.js` for tunable FSRS settings
+- **Optimistic UI**: Card transitions are now instant (no waiting for DB)
+- **Context-aware navigation**: Returns to correct dashboard (book/song/main)
+- **Updated button colors**: Again (#d4806a), Hard (#e5989b), Got It (#5aada4), Easy (#006d77)
+- **Session summary**: "Needs Attention" now includes Hard + Again ratings
+- **Multiple definitions**: Flashcards now show all definitions comma-separated
+- **Floating animation**: Skipped for "Again" (card requeues immediately)
+
+### Loading Screen & Performance
+- **Progress indicator**: LoadingScreen now shows progress bar with stage messages
+- **4-stage progress tracking**: "Loading your progress..." → "Finding due cards..." → "Loading sentences..." → "Building session..."
+- **Background sentence loading**: Sessions start immediately, sentences load in background
+- **Deferred sentence loading**: Cards display instantly, sentences appear when ready
+- **Exported sentence functions**: `addSentencesToCards` and `addSentencesToPhraseCards` now exported from sessionBuilder
+
+### Admin - Lemmas
+- **Copy button**: One-click copy lemma to clipboard
+- **Collins dictionary link**: Opens Spanish-English dictionary in new tab
+- **Server-side pagination**: 50 lemmas per page (was loading all 1,800+)
+- **Server-side filtering**: Search, POS, stop words, reviewed, chapter filters
+- **Debounced search**: 300ms delay for better performance
+- **Inline definition editing**: Click definition to edit directly (Enter to save, Esc to cancel)
+- **New RPC**: `search_lemmas()` for paginated queries
+
+### Admin - Phrases
+- **Copy button**: One-click copy phrase to clipboard
+- **Server-side pagination**: 50 phrases per page
+- **Server-side filtering**: Search, type, reviewed, chapter filters
+- **Debounced search**: 300ms delay
+- **Inline definition editing**: Click definition to edit directly
+- **New RPC**: `search_phrases()` for paginated queries
+
+### Admin Access
+- **is_admin flag**: Added to user_settings table
+- **Admin header link**: Amber shield icon shows for admin users only
+- **Dashboard link**: Added "← Dashboard" link in admin header
+
+### Bug Fixes
+- **Streak calculation**: Fixed bug where streak showed 0 if no activity today yet
+- **Query history**: Extended from 35 to 70 days for accurate streak calculation
+
+### Database Migrations
+- `20251229_search_lemmas_rpc.sql` - Paginated lemma search
+- `20251230_search_phrases_rpc.sql` - Paginated phrase search
+- `20251230_add_is_admin.sql` - Admin flag for users
+
+### Files Changed
+- `src/config/fsrsConfig.js` (new)
+- `src/services/fsrsService.js`
+- `src/services/sessionBuilder.js` (progress callbacks, skipSentences option, exported functions)
+- `src/components/flashcard/DifficultyButtons.jsx`
+- `src/components/flashcard/FloatingFeedback.jsx`
+- `src/components/flashcard/SessionSummary.jsx`
+- `src/components/flashcard/LoadingScreen.jsx` (progress prop, progress bar UI)
+- `src/hooks/flashcard/useFlashcardSession.js`
+- `src/pages/Flashcards.jsx` (background sentence loading)
+- `src/pages/Dashboard.jsx`
+- `src/pages/BookDashboard.jsx`
+- `src/pages/Admin.jsx`
+- `src/pages/AdminCommonWords.jsx`
+- `src/pages/AdminPhrases.jsx`
+- `src/components/dashboard/DashboardHeader.jsx`
 
 ---
 

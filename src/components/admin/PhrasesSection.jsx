@@ -14,7 +14,7 @@ import { Edit2, Check, X, Trash2, CheckCircle2, Circle, Plus } from 'lucide-reac
 import { supabase } from '../../lib/supabase'
 import AddPhraseModal from './AddPhraseModal'
 
-export default function PhrasesSection({ phraseOccurrences, words, sentenceId, onUpdate }) {
+export default function PhrasesSection({ phraseOccurrences, words, sentenceId, chapterId, onUpdate }) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingPhraseId, setEditingPhraseId] = useState(null)
   const [editedDefinitions, setEditedDefinitions] = useState('')
@@ -228,6 +228,7 @@ export default function PhrasesSection({ phraseOccurrences, words, sentenceId, o
         isOpen={showAddModal}
         words={words || []}
         sentenceId={sentenceId}
+        chapterId={chapterId}
         onClose={() => setShowAddModal(false)}
         onSuccess={() => {
           setShowAddModal(false)

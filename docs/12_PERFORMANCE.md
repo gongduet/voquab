@@ -501,7 +501,7 @@ const AdminDashboard = lazy(() => import('./pages/Admin'));
 
 function App() {
   const { user } = useAuth();
-  
+
   return user?.isAdmin ? (
     <Suspense fallback={<LoadingSpinner />}>
       <AdminDashboard />
@@ -511,6 +511,45 @@ function App() {
   );
 }
 ```
+
+---
+
+### Flashcard Session Loading (Added Dec 30, 2025)
+
+**Background sentence loading for instant session start:**
+
+Sessions now start immediately without waiting for example sentences to load:
+
+```javascript
+// sessionBuilder.js - skipSentences option
+const result = await buildSession(userId, mode, {
+  onProgress: setLoadingProgress,
+  skipSentences: true  // Start immediately, load sentences in background
+})
+
+// Flashcards.jsx - background loading
+if (effectiveMode === SessionMode.REVIEW && result.cards?.length > 0) {
+  loadSentencesInBackground(result.cards)
+}
+```
+
+**Progress indicator with stages:**
+
+LoadingScreen shows real-time progress during session building:
+
+```javascript
+// Progress stages reported via onProgress callback
+{ stage: 1, totalStages: 4, message: "Loading your progress..." }
+{ stage: 2, totalStages: 4, message: "Finding due cards..." }
+{ stage: 3, totalStages: 4, message: "Loading sentences..." }  // or skipped
+{ stage: 4, totalStages: 4, message: "Starting session..." }
+```
+
+**Benefits:**
+- Session starts 50-70% faster (no sentence loading blocking)
+- Users see first card immediately
+- Sentences appear seamlessly as they load
+- Progress bar gives feedback during loading
 
 ---
 
@@ -956,7 +995,8 @@ body {
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
+- 2025-12-30: Added Flashcard Session Loading section (background sentence loading, progress indicator)
+- Status: Active
 
 ---
 
