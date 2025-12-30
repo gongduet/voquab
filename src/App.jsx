@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
@@ -221,8 +222,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Admin Routes (password-protected, no ProtectedRoute needed) */}
-          <Route path="/admin" element={<Admin />}>
+          {/* Admin Routes (requires is_admin flag in user_settings) */}
+          <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>}>
             <Route path="common-words" element={<AdminCommonWords />} />
             <Route path="lemmas/orphaned" element={<OrphanedWords />} />
             <Route path="lemmas/:lemmaId" element={<LemmaDeepDive />} />

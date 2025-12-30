@@ -31,6 +31,35 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2025-12-30 - AdminRoute Component for Admin Access Control
+
+### Added
+- **`src/components/AdminRoute.jsx`** - New route protection component for admin pages
+
+### How It Works
+1. Checks if user is authenticated (via `useAuth` context)
+2. Queries `user_settings.is_admin` for the logged-in user
+3. Shows loading spinner while checking both auth and admin status
+4. Redirects to `/login` if not authenticated
+5. Redirects to `/dashboard` if authenticated but not admin
+6. Renders children if user has `is_admin = true`
+
+### Usage
+```jsx
+// In App.jsx route definitions
+<Route path="/admin/*" element={
+  <AdminRoute>
+    <AdminLayout />
+  </AdminRoute>
+} />
+```
+
+### Related Components
+- `ProtectedRoute.jsx` - Only checks authentication (any logged-in user)
+- `AdminRoute.jsx` - Checks authentication AND admin flag in `user_settings`
+
+---
+
 ## 2025-12-30 - Chapter Unlock Performance Fix (N+1 Query Elimination)
 
 ### Problem

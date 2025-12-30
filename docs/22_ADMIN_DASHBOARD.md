@@ -49,6 +49,7 @@
 
 **Admin Access Control:**
 - ✅ **is_admin flag** - Column in `user_settings` table
+- ✅ **AdminRoute component** - Route protection via `src/components/AdminRoute.jsx`
 - ✅ **Admin header link** - Amber shield icon in dashboard header (admins only)
 - ✅ **Dashboard link** - "← Dashboard" link in admin header
 
@@ -124,8 +125,8 @@ The Admin Dashboard is a critical MVP component that enables manual content cura
 
 ### Reviewer User
 
-**Who:** Native Spanish speakers  
-**Permissions:** Limited to translation review  
+**Who:** Native Spanish speakers
+**Permissions:** Limited to translation review
 **Can:**
 - View lemmas and definitions
 - Suggest definition changes
@@ -136,6 +137,40 @@ The Admin Dashboard is a critical MVP component that enables manual content cura
 - Delete entries
 - Change database structure
 - Bulk operations
+
+---
+
+### Access Control Implementation
+
+**Client-Side Route Protection:**
+
+Admin routes are protected by the `AdminRoute` component (`src/components/AdminRoute.jsx`):
+
+```jsx
+// App.jsx
+<Route path="/admin/*" element={
+  <AdminRoute>
+    <AdminLayout />
+  </AdminRoute>
+} />
+```
+
+**How AdminRoute works:**
+1. Checks if user is authenticated (via `useAuth` context)
+2. Queries `user_settings.is_admin` from database
+3. Shows loading spinner while checking
+4. Redirects to `/login` if not authenticated
+5. Redirects to `/dashboard` if not admin
+6. Renders children if `is_admin = true`
+
+**Related Components:**
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `ProtectedRoute` | `src/components/ProtectedRoute.jsx` | Auth check only (any logged-in user) |
+| `AdminRoute` | `src/components/AdminRoute.jsx` | Auth + admin flag check |
+
+**Database:**
+- `user_settings.is_admin` (boolean) - Set manually in database for admin users
 
 ---
 

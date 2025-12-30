@@ -1,7 +1,7 @@
 # 18_SECURITY.md
 
-**Last Updated:** November 30, 2025  
-**Status:** Draft  
+**Last Updated:** December 30, 2025
+**Status:** Active  
 **Owner:** Claude + Peter
 
 ---
@@ -341,6 +341,47 @@ async function isUserAdmin() {
   return data === true;
 }
 ```
+
+---
+
+### Client-Side Route Protection (Updated Dec 30, 2025)
+
+**Note:** The actual implementation uses `user_settings.is_admin` column rather than a separate `user_roles` table.
+
+**Route Protection Components:**
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `ProtectedRoute` | `src/components/ProtectedRoute.jsx` | Requires authentication (any logged-in user) |
+| `AdminRoute` | `src/components/AdminRoute.jsx` | Requires authentication + `is_admin = true` |
+
+**ProtectedRoute:**
+```jsx
+// Checks useAuth() for logged-in user
+// Redirects to /login if not authenticated
+<ProtectedRoute>
+  <Dashboard />
+</ProtectedRoute>
+```
+
+**AdminRoute:**
+```jsx
+// Checks useAuth() + queries user_settings.is_admin
+// Redirects to /login if not authenticated
+// Redirects to /dashboard if not admin
+<AdminRoute>
+  <AdminLayout />
+</AdminRoute>
+```
+
+**Implementation Flow (AdminRoute):**
+1. Wait for auth context to load
+2. Query `user_settings.is_admin` for current user
+3. Show loading spinner while checking
+4. Redirect based on auth/admin status
+5. Render children if authorized
+
+**Important:** Client-side route protection is for UX only. Database RLS policies are the true security layer.
 
 ---
 
@@ -771,7 +812,8 @@ if (import.meta.env.DEV) {
 ## REVISION HISTORY
 
 - 2025-11-30: Initial draft (Claude)
-- Status: Awaiting Peter's approval
+- 2025-12-30: Added Client-Side Route Protection section (ProtectedRoute, AdminRoute)
+- Status: Active
 
 ---
 
