@@ -8,6 +8,8 @@
 
 > **4-Button Update (Dec 30, 2025):** Rating system expanded from 3 buttons to 4 buttons (Again/Hard/Got It/Easy). New centralized config in `src/config/fsrsConfig.js`. Optimistic UI updates for instant card transitions.
 
+> **Chapter Unlock Optimization (Dec 30, 2025):** `getUnlockedChapters()` rewritten to eliminate N+1 query problem. Now uses `chapter_vocabulary_stats` table and `get_user_chapter_progress()` RPC. Reduced from 108 sequential queries to 3 parallel queries (57s → <2s).
+
 ---
 
 ## TABLE OF CONTENTS
@@ -89,7 +91,8 @@ Voquab uses FSRS (Free Spaced Repetition Scheduler) to optimize vocabulary revie
 │    - scheduleCard()        │    - buildReviewSession()          │
 │    - isCardDue()           │    - buildLearnSession()           │
 │    - getActivityLevel()    │    - getUnlockedChapters()         │
-│    - calculateRetrievability() │ - getChaptersReadyForPhrases() │
+│    - calculateRetrievability() │ - getUnlockedChapterIds()      │
+│                            │    (uses RPC + chapter_vocab_stats)│
 └─────────────────────────────────────────────────────────────────┘
                                  │
                                  ▼
@@ -625,6 +628,7 @@ function balanceReviewLoad(dueDate, dailyCapacity) {
 ## REVISION HISTORY
 
 - 2025-12-13: Initial creation documenting FSRS implementation (Claude)
+- 2025-12-30: Added chapter unlock optimization note (N+1 → RPC), updated architecture diagram
 - Status: Active
 
 ---

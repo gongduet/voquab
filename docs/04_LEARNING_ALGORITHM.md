@@ -456,11 +456,13 @@ The unlock calculation is done in `sessionBuilder.js`:
 - `getUnlockedChapterIds()` - Returns array of unlocked chapter IDs
 - `getUnlockedChapters()` - Returns chapter objects with progress data
 
-Both functions:
-1. Query lemmas with `.eq('lemmas.is_stop_word', false)` to exclude stop words
-2. Query phrases via `phrase_occurrences` table
-3. Check user progress with `reps >= 1` (no `introduced` column exists)
-4. Calculate combined completion rate
+**Optimized approach (Dec 30, 2025):**
+1. Query pre-computed totals from `chapter_vocabulary_stats` table (27 rows)
+2. Call `get_user_chapter_progress(userId)` RPC for user's introduced counts per chapter
+3. Calculate introduction rate using cached totals vs. user progress
+4. No client-side counting of 13K+ words - server handles aggregation
+
+This replaces the old N+1 query approach (108 sequential queries → 3 parallel queries).
 
 ### UI Indicator
 
@@ -472,20 +474,21 @@ Both functions:
 
 ## BUTTON MAPPING
 
-### Three-Button Interface
+### Four-Button Interface (Updated Dec 30, 2025)
 
-| Button | Label | FSRS Rating | Effect |
-|--------|-------|-------------|--------|
-| Again | "Again" | 1 | Stability reset (~0.2-2 days), lapses +1, difficulty +1.0 |
-| Hard | "Hard" | 2 | Stability × 0.6, difficulty +0.5 |
-| Got It | "Got It" | 3 (Good) | Stability × 1.5-3.0, difficulty -0.2 |
+| Button | Label | FSRS Rating | Color | Effect |
+|--------|-------|-------------|-------|--------|
+| Again | "Again" | 1 | #d4806a (coral) | Stability reset (~0.2-2 days), lapses +1, difficulty +1.0 |
+| Hard | "Hard" | 2 | #e5989b (dusty rose) | Stability × 0.6, difficulty +0.5, capped at 5 days |
+| Got It | "Got It" | 3 (Good) | #5aada4 (teal) | Stability × 1.5-3.0, difficulty -0.2 |
+| Easy | "Easy" | 4 | #006d77 (dark teal) | Stability × 2.5-4.0, difficulty -0.5 |
 
-### Why No "Easy" Button?
+### Config
 
-- Simpler interface (3 buttons instead of 4)
-- Research shows 4-button adds cognitive load without significant benefit
-- "Got It" covers both Good and Easy use cases
-- Future: May add Easy for power users
+FSRS parameters are centralized in `src/config/fsrsConfig.js`:
+- Target retention: 94% (conservative)
+- Hard interval cap: 5 days
+- Maximum interval: 365 days
 
 ### Keyboard Shortcuts
 
@@ -495,6 +498,7 @@ Both functions:
 | 1 | Again |
 | 2 | Hard |
 | 3 | Got It |
+| 4 | Easy |
 
 ### "Again" Button Behavior
 
@@ -635,6 +639,7 @@ async function logReviewEvent(card, difficulty) {
 - 2025-12-13: **Major rewrite** - Replaced with FSRS algorithm, added phrases integration (Claude)
 - 2025-12-14: Added Activity Tracking section documenting `user_review_history` logging (Claude)
 - 2025-12-15: Added Progress Visualization Levels section (4-tier Mastered/Familiar/Learning/Not Seen) (Claude)
+- 2025-12-30: Updated Button Mapping to 4-button system, updated Chapter Unlock implementation (optimized approach)
 - Status: Active
 
 ---

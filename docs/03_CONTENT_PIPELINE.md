@@ -1,6 +1,6 @@
 # 03_CONTENT_PIPELINE.md
 
-**Last Updated:** December 13, 2025
+**Last Updated:** December 30, 2025
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -868,9 +868,12 @@ PHRASE DETECTION COMPLETE
 INSERT INTO phrases (phrase_text, definitions, phrase_type, component_lemma_ids)
 VALUES ('personas mayores', '["grown-ups", "adults"]', 'compound', ARRAY[uuid1, uuid2]);
 
--- phrase_occurrences links to sentences
-INSERT INTO phrase_occurrences (phrase_id, sentence_id, start_word_position, end_word_position)
-VALUES (phrase_uuid, sentence_uuid, 3, 4);
+-- phrase_occurrences links to sentences (includes chapter_id for direct lookups)
+INSERT INTO phrase_occurrences (phrase_id, sentence_id, chapter_id, start_word_position, end_word_position)
+VALUES (phrase_uuid, sentence_uuid, chapter_uuid, 3, 4);
+
+-- After import, refresh chapter vocabulary stats
+SELECT refresh_chapter_vocabulary_stats(chapter_uuid);
 ```
 
 **Manual Review Required:**
@@ -1547,6 +1550,7 @@ const phraseCount = hasPhraseChapters ? Math.floor(sessionSize * 0.2) : 0
 - 2025-11-30: Initial draft (Claude)
 - 2025-12-06: Added Steps 10-11 for AI dictionary form validation (Claude)
 - 2025-12-13: Added "Phrase Integration in Learning" section documenting 20% threshold and 80/20 session split (Claude)
+- 2025-12-30: Updated phrase_occurrences to include chapter_id, added refresh_chapter_vocabulary_stats call
 - Status: Active
 
 ---

@@ -353,15 +353,46 @@ CREATE TABLE phrase_occurrences (
   occurrence_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   phrase_id UUID NOT NULL REFERENCES phrases(phrase_id) ON DELETE CASCADE,
   sentence_id UUID NOT NULL REFERENCES sentences(sentence_id) ON DELETE CASCADE,
+  chapter_id UUID NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
   start_position INTEGER, -- Where phrase starts in sentence (0-indexed)
   end_position INTEGER, -- Where phrase ends in sentence (0-indexed)
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Performance index for chapter-based queries
+CREATE INDEX idx_phrase_occurrences_chapter ON phrase_occurrences(chapter_id);
+
 COMMENT ON TABLE phrase_occurrences IS 'Tracks where phrases appear in text';
+COMMENT ON COLUMN phrase_occurrences.chapter_id IS 'Denormalized for efficient chapter unlock calculations';
 ```
 
-**Purpose:** Track exact locations of phrases within sentences for highlighting and learning context.
+**Purpose:** Track exact locations of phrases within sentences for highlighting and learning context. The `chapter_id` column is denormalized from the sentence's chapter for performance - enables efficient chapter unlock calculations without joining through sentences.
+
+---
+
+### chapter_vocabulary_stats
+
+Pre-computed vocabulary totals per chapter for efficient chapter unlock calculations.
+
+```sql
+CREATE TABLE chapter_vocabulary_stats (
+  chapter_id UUID PRIMARY KEY REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+  total_lemmas INTEGER NOT NULL DEFAULT 0,   -- Unique lemmas excluding stop words
+  total_phrases INTEGER NOT NULL DEFAULT 0,  -- Unique phrases in chapter
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+COMMENT ON TABLE chapter_vocabulary_stats IS 'Pre-computed vocabulary counts per chapter for efficient unlock calculations';
+COMMENT ON COLUMN chapter_vocabulary_stats.total_lemmas IS 'Count of unique lemmas in chapter, excluding stop words';
+COMMENT ON COLUMN chapter_vocabulary_stats.total_phrases IS 'Count of unique phrases in chapter';
+```
+
+**Purpose:** Caches vocabulary totals per chapter to avoid counting 13K+ words on every chapter unlock check. Refreshed via `refresh_chapter_vocabulary_stats()` RPC after content changes.
+
+**Usage:**
+- Used by `getUnlockedChapterIds()` and `getUnlockedChapters()` in sessionBuilder.js
+- Combined with `get_user_chapter_progress()` RPC to calculate unlock percentage
+- Chapter unlocks when `introduced_count / (total_lemmas + total_phrases) >= 0.95`
 
 ---
 
@@ -1238,11 +1269,31 @@ RETURNS: phrase_id, phrase_text, definitions, phrase_type,
          is_reviewed, occurrence_count, total_count
 ```
 
+### Chapter Unlock RPC Functions
+
+```sql
+-- Get user's introduced vocabulary counts per chapter (for unlock calculations)
+get_user_chapter_progress(p_user_id UUID)
+RETURNS: chapter_id, introduced_lemmas, introduced_phrases
+
+-- Refresh pre-computed vocabulary stats for a chapter (after content changes)
+refresh_chapter_vocabulary_stats(p_chapter_id UUID)
+RETURNS: void (updates chapter_vocabulary_stats table)
+```
+
+**Purpose:** These functions power the optimized chapter unlock calculation:
+- `get_user_chapter_progress`: Returns how many lemmas/phrases the user has introduced per chapter (server-side counting, no URL length limits)
+- `refresh_chapter_vocabulary_stats`: Updates cached totals after import or admin changes
+
+**Performance:** Reduced chapter unlock calculation from 61 API calls (57s) to 3 API calls (<2s).
+
 **Migration Files:**
 - `supabase/migrations/20251228_progress_rpc_functions.sql`
 - `supabase/migrations/20251229_book_chapters_progress.sql`
 - `supabase/migrations/20251229_search_lemmas_rpc.sql`
 - `supabase/migrations/20251230_search_phrases_rpc.sql`
+- `supabase/migrations/20251230_chapter_vocabulary_stats.sql`
+- `supabase/migrations/20251230_get_user_chapter_progress.sql`
 
 ---
 
@@ -1386,7 +1437,8 @@ ORDER BY ulp.health ASC;
 | lemmas | Canonical forms | lemma_text, definitions, part_of_speech |
 | words | Word instances | word_text, lemma_id, sentence_id |
 | phrases | Idiomatic expressions | phrase_text, definitions, phrase_type |
-| phrase_occurrences | Phrase locations | phrase_id, sentence_id, start_position |
+| phrase_occurrences | Phrase locations | phrase_id, sentence_id, chapter_id, start_position |
+| chapter_vocabulary_stats | Cached vocab totals | chapter_id, total_lemmas, total_phrases |
 | validation_reports | AI quality checks | is_valid, issues, suggested_fixes |
 | user_lemma_progress | Mastery tracking | mastery_level, health |
 | user_word_encounters | Form exposure | times_encountered, last_encountered_sentence_id |
@@ -1614,6 +1666,7 @@ ALTER TABLE user_phrase_progress
 
 ## REVISION HISTORY
 
+- 2025-12-30: **Chapter Unlock Performance Optimization** - Added chapter_id column to phrase_occurrences (NOT NULL, with index), created chapter_vocabulary_stats table for cached vocab totals, added get_user_chapter_progress and refresh_chapter_vocabulary_stats RPC functions. Reduced chapter unlock calculation from 61 API calls to 3. (Claude)
 - 2025-12-29: **RPC Functions** - Added section documenting get_book_progress, get_song_progress, get_book_chapters_progress server-side functions for efficient progress queries (Claude)
 - 2025-12-25: **Lyrics Database POC** - Added 10 new tables for lyrics-based learning: songs, song_sections, song_lines, slang_terms, song_slang, song_lemmas, song_phrases, user_slang_progress, user_line_progress, user_song_progress (Claude)
 - 2025-12-24: **Admin Suite Phase 2** - Added is_reviewed/reviewed_at to lemmas, sentences, phrases; made words.lemma_id nullable for orphaned words; added RLS policies section; added CASCADE delete constraints

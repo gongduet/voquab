@@ -31,6 +31,63 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2025-12-30 - Chapter Unlock Performance Fix (N+1 Query Elimination)
+
+### Problem
+Flashcard session loading was extremely slow (57 seconds) due to N+1 query problem in chapter unlock calculation:
+- Old code ran 4 queries per chapter × 27 chapters = 108 sequential API calls
+- Each query fetched sentence IDs, then words, then phrases, then user progress
+- URL length limit exceeded with 600+ UUIDs in IN clauses (400 Bad Request)
+- Fetched all 13K+ words to count per-chapter totals
+
+### Solution
+Complete rewrite using server-side RPC and pre-computed stats:
+
+#### Database Changes
+1. **Added `chapter_id` to `phrase_occurrences`** (NOT NULL)
+   - Denormalized column for direct chapter lookups
+   - Index: `idx_phrase_occurrences_chapter`
+
+2. **Created `chapter_vocabulary_stats` table**
+   - Pre-computed totals: `total_lemmas` (excluding stop words), `total_phrases`
+   - One row per chapter (27 rows vs counting 13K words)
+
+3. **Created `get_user_chapter_progress(p_user_id)` RPC**
+   - Returns introduced lemma/phrase counts per chapter
+   - Server-side counting eliminates URL length issues
+
+4. **Created `refresh_chapter_vocabulary_stats(p_chapter_id)` RPC**
+   - Updates cached totals after content changes
+   - Called by import scripts and admin UI
+
+#### Code Changes
+- **`src/services/sessionBuilder.js`** - Rewrote `getUnlockedChapterIds()` and `getUnlockedChapters()` to use RPC (3 queries instead of 108)
+- **`scripts/import_chapter.py`** - Added `chapter_id` to phrase inserts, calls refresh RPC after import
+- **`src/components/admin/AddPhraseModal.jsx`** - Added `chapter_id` to inserts, calls refresh RPC
+- **`src/components/admin/PhrasesSection.jsx`** - Now passes `chapterId` prop
+- **`src/pages/SentenceDeepDive.jsx`** - Now passes `chapterId` to PhrasesSection
+
+### Performance Results
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| API Calls | 61 | ~3 | 95% reduction |
+| Load Time | 57s | <2s | 96% faster |
+| Data Transfer | 2.6MB | ~50KB | 98% reduction |
+
+### Lessons Learned
+1. **N+1 queries are insidious** - Loop with await inside always deserves scrutiny
+2. **URL length limits bite** - Large IN clauses should use RPC instead
+3. **Denormalize for read performance** - `chapter_id` on phrase_occurrences avoids joins
+4. **Pre-compute aggregates** - Stats table beats counting 13K rows every time
+
+### Migration Files
+- `supabase/migrations/20251230_phrase_occurrences_chapter_id.sql`
+- `supabase/migrations/20251230_chapter_vocabulary_stats.sql`
+- `supabase/migrations/20251230_get_user_chapter_progress.sql`
+- `supabase/migrations/20251230_refresh_chapter_vocabulary_stats.sql`
+
+---
+
 ## 2025-12-30 - Flashcard 4-Button System, Loading UX & Admin Optimizations
 
 ### Flashcards
