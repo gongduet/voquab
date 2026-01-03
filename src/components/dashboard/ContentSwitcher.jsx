@@ -47,25 +47,43 @@ export default function ContentSwitcher() {
   async function fetchData() {
     setLoading(true)
     try {
-      // Fetch all in parallel
-      const [booksResult, songsResult, settingsResult] = await Promise.all([
-        supabase.from('books').select('book_id, title, author'),
-        supabase.from('songs').select('song_id, title, artist').eq('is_published', true),
-        supabase.from('user_settings').select('active_book_id, active_song_id').eq('user_id', user.id).maybeSingle()
+      // First get user settings to know active language
+      const { data: settingsData } = await supabase
+        .from('user_settings')
+        .select('active_book_id, active_song_id, active_language')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      const userLanguage = settingsData?.active_language || 'es'
+
+      // Fetch books and songs filtered by active language
+      const [booksResult, songsResult] = await Promise.all([
+        supabase
+          .from('books')
+          .select('book_id, title, author, language_code')
+          .eq('language_code', userLanguage),
+        supabase
+          .from('songs')
+          .select('song_id, title, artist, language_code')
+          .eq('is_published', true)
+          .eq('language_code', userLanguage)
       ])
 
-      if (booksResult.data) setBooks(booksResult.data)
-      if (songsResult.data) setSongs(songsResult.data)
+      const filteredBooks = booksResult.data || []
+      const filteredSongs = songsResult.data || []
+
+      setBooks(filteredBooks)
+      setSongs(filteredSongs)
 
       // Set active content
-      if (settingsResult.data) {
-        const activeBookData = booksResult.data?.find(b => b.book_id === settingsResult.data.active_book_id)
-        const activeSongData = songsResult.data?.find(s => s.song_id === settingsResult.data.active_song_id)
-        setActiveBook(activeBookData || booksResult.data?.[0] || null) // Default to first book
+      if (settingsData) {
+        const activeBookData = filteredBooks.find(b => b.book_id === settingsData.active_book_id)
+        const activeSongData = filteredSongs.find(s => s.song_id === settingsData.active_song_id)
+        setActiveBook(activeBookData || filteredBooks[0] || null)
         setActiveSong(activeSongData || null)
       } else {
         // No settings yet, default to first book
-        setActiveBook(booksResult.data?.[0] || null)
+        setActiveBook(filteredBooks[0] || null)
       }
     } catch (error) {
       console.error('Error fetching content:', error)

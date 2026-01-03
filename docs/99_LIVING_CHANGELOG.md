@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 2, 2026
+**Last Updated:** January 3, 2026 (Header/Settings Redesign)
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,154 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2026-01-03 - Flashcard FSRS Bug Fixes & UX Improvements
+
+### Overview
+Critical bug fixes for the FSRS spaced repetition system and flashcard user experience. These fixes ensure proper scheduling for phrases, correct handling of the "Again" button, and improved visual consistency during card transitions.
+
+### Fixed
+
+#### FSRS Phrase Scheduling
+- **Issue:** Phrases were stuck at 2-3 day intervals regardless of how many times reviewed
+- **Cause:** `last_reviewed_at` was only being saved for lemmas, not phrases. FSRS needs this timestamp to calculate `elapsed_days` for proper interval scheduling.
+- **Fix:** `useProgressTracking.js` now saves `last_reviewed_at` for both lemmas and phrases
+- **File:** `src/hooks/flashcard/useProgressTracking.js:147-148`
+
+#### "Again" Button Not Affecting Requeued Cards
+- **Issue:** When clicking "Again", the card was requeued but the second review ignored the "Again" click - FSRS calculated intervals based on stale card data
+- **Cause:** When a card was requeued, the card object in `cardQueue` retained its old FSRS values. The database was updated correctly, but the in-memory card wasn't.
+- **Fix:** After "Again" is clicked, the requeued card in `cardQueue` is now updated with the new FSRS values (reduced stability, increased difficulty, Relearning state)
+- **Files:** `src/hooks/flashcard/useProgressTracking.js:199,202`, `src/pages/Flashcards.jsx:73,281-299`
+
+#### Sentences Missing in Review Mode
+- **Issue:** Flashcards in "Review Now" mode showed no example sentences, while "Learn New" mode worked correctly
+- **Cause:** Review sessions use background sentence loading for fast startup. The `cards` state was updated with sentences, but `cardQueue` (which the UI displays from) was never updated.
+- **Fix:** `loadSentencesInBackground()` now updates both `cards` state and `cardQueue` when sentences are loaded
+- **File:** `src/pages/Flashcards.jsx:187-195`
+
+#### Partial Word Bolding in Sentences
+- **Issue:** Short words like "mi" were being bolded inside other words (e.g., "fa**mi**lia", "a**mi**go")
+- **Cause:** The regex for highlighting didn't use word boundaries, matching the pattern anywhere in the sentence
+- **Fix:** Added Spanish-aware word boundary detection that checks characters before/after each match, including accented characters (á, é, í, ó, ú, ñ)
+- **File:** `src/components/flashcard/FlashcardDisplay.jsx:53-90`
+
+#### Flash of English Translation on Card Advance
+- **Issue:** When clicking a rating button while viewing the English side, the next card briefly flashed its English translation before flipping to Spanish
+- **Cause:** CSS flip animation (400ms) was animating from 180° back to 0° while the new card's content was already rendered
+- **Fix:** Added `key` prop based on card ID to force React to mount a fresh component for each card, eliminating the animation during card changes
+- **File:** `src/components/flashcard/FlashcardDisplay.jsx:128`
+
+### Technical Details
+
+#### FSRS State Flow for "Again" Button
+When a user clicks "Again" on a card with stability=30:
+- `stability`: 30 → 2.32 days (92% reduction)
+- `difficulty`: 5 → 8.34 (increased)
+- `fsrs_state`: Review (2) → Relearning (3)
+- `lapses`: 0 → 1 (incremented)
+- `due_date`: Now + 10 minutes
+
+The card is requeued to the end of the session AND its in-memory FSRS values are updated so subsequent reviews use the correct state.
+
+#### Spanish Word Boundary Detection
+```javascript
+const isSpanishLetter = (char) => /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/.test(char)
+
+// Check boundaries before bolding
+const boundaryBefore = !charBefore || !isSpanishLetter(charBefore)
+const boundaryAfter = !charAfter || !isSpanishLetter(charAfter)
+```
+
+### Files Modified
+- `src/hooks/flashcard/useProgressTracking.js` - Phrase scheduling fix, return new FSRS fields
+- `src/pages/Flashcards.jsx` - Card queue updates for "Again" and background sentences
+- `src/components/flashcard/FlashcardDisplay.jsx` - Word boundary detection, card key for transitions
+
+---
+
+## 2026-01-03 - Header Dropdown & Settings Page Redesign
+
+### Overview
+Consolidated header navigation into a user dropdown menu and redesigned the Settings page with a clean Notion-like aesthetic.
+
+### Added
+
+#### UserMenu Dropdown Component
+- **New component:** `src/components/dashboard/UserMenu.jsx`
+- Replaces separate Settings, Admin, and Avatar buttons with unified dropdown
+- Features:
+  - User avatar trigger with initial letter
+  - User info header (name + active language)
+  - Language switcher with inline submenu
+  - Settings link
+  - Admin link (conditional on isAdmin)
+  - Logout button
+- Compact Notion-like styling with smaller fonts
+
+#### Multi-Language Support Infrastructure
+- **Database:** `languages` table with `language_code`, `language_name`, `flag_emoji`, `is_active`, `display_order`
+- **Database:** `active_language` column on `user_settings` table
+- Language switching updates `active_language`, `active_book_id`, and resets `active_song_id`
+- ContentSwitcher now filters books/songs by user's active language
+
+### Changed
+
+#### DashboardHeader Simplification
+- Removed individual Settings, Admin, and Avatar buttons
+- Added single UserMenu component
+- Cleaner header with logo, content switcher, streak pill, and user menu
+
+#### ContentSwitcher Language Filtering
+- Now fetches user's `active_language` from settings
+- Filters books and songs to only show content in the active language
+
+#### Settings Page Redesign
+- Complete rewrite of `src/pages/Settings.jsx`
+- Clean Notion-like aesthetic with white cards and subtle borders
+- Three sections:
+  - **Account:** Display name (editable), email (read-only)
+  - **Learning:** Daily word goal (10-500), cards per session (5-100)
+  - **Content:** Explicit content toggle switch
+- Manual save button with "Saved" confirmation feedback (2 second display)
+- Lucide icons for section headers
+
+### Fixed
+
+#### Streak Pill Centering and Sizing
+- **Issue:** Flame icon and streak number weren't centered in the compact pill, and the pill was too small for 2+ digit streaks
+- **Fix:** Added `justify-center` for proper centering and dynamic width calculation based on digit count:
+  - 1 digit: 52px
+  - 2 digits: 64px
+  - 3+ digits: 76px
+- **File:** `src/components/dashboard/DashboardHeader.jsx:46-52`
+
+### Database Changes Required
+```sql
+-- Languages table (new)
+CREATE TABLE languages (
+  language_code TEXT PRIMARY KEY,
+  language_name TEXT NOT NULL,
+  flag_emoji TEXT,
+  is_active BOOLEAN DEFAULT true,
+  display_order INT DEFAULT 0
+);
+
+INSERT INTO languages (language_code, language_name, flag_emoji, display_order)
+VALUES ('es', 'Spanish', '🇪🇸', 1);
+
+-- Add active_language to user_settings
+ALTER TABLE user_settings
+ADD COLUMN active_language TEXT DEFAULT 'es' REFERENCES languages(language_code);
+```
+
+### Files Modified/Created
+- `src/components/dashboard/UserMenu.jsx` (NEW)
+- `src/components/dashboard/DashboardHeader.jsx` - Simplified, uses UserMenu, streak pill fix
+- `src/components/dashboard/ContentSwitcher.jsx` - Language filtering
+- `src/pages/Settings.jsx` - Complete redesign
 
 ---
 

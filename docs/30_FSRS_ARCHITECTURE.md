@@ -1,6 +1,6 @@
 # 30_FSRS_ARCHITECTURE.md
 
-**Last Updated:** December 30, 2025
+**Last Updated:** January 3, 2026
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -9,6 +9,8 @@
 > **4-Button Update (Dec 30, 2025):** Rating system expanded from 3 buttons to 4 buttons (Again/Hard/Got It/Easy). New centralized config in `src/config/fsrsConfig.js`. Optimistic UI updates for instant card transitions.
 
 > **Chapter Unlock Optimization (Dec 30, 2025):** `getUnlockedChapters()` rewritten to eliminate N+1 query problem. Now uses `chapter_vocabulary_stats` table and `get_user_chapter_progress()` RPC. Reduced from 108 sequential queries to 3 parallel queries (57s → <2s).
+
+> **Bug Fixes (Jan 3, 2026):** Fixed phrase scheduling (now saves `last_reviewed_at`), fixed "Again" button to properly update requeued card state, and fixed sentence display in review mode. See changelog for details.
 
 ---
 
@@ -437,25 +439,23 @@ const EXPOSURE_SETTINGS = {
 
 ```javascript
 async function updateProgress(card, difficulty, isExposure = false) {
-  // 1. Determine table (lemma vs phrase)
+  // 1. Determine table (lemma, phrase, or slang)
+  const isSlang = card.card_type === 'slang'
   const isPhrase = card.card_type === 'phrase'
-  const tableName = isPhrase ? 'user_phrase_progress' : 'user_lemma_progress'
-  const idField = isPhrase ? 'phrase_id' : 'lemma_id'
+  const tableName = isSlang ? 'user_slang_progress'
+                  : isPhrase ? 'user_phrase_progress'
+                  : 'user_lemma_progress'
 
   // 2. Handle exposure cards (only update last_seen_at)
   if (isExposure) {
-    await supabase.from(tableName).upsert({
-      user_id: userId,
-      [idField]: card[idField],
-      last_seen_at: new Date().toISOString()
-    })
+    await supabase.from(tableName).upsert({ ... })
     return { success: true, isExposure: true }
   }
 
   // 3. Calculate new FSRS values
   const scheduled = scheduleCard(card, difficulty)
 
-  // 4. Update database
+  // 4. Update database - IMPORTANT: last_reviewed_at saved for BOTH lemmas and phrases
   await supabase.from(tableName).upsert({
     user_id: userId,
     [idField]: card[idField],
@@ -465,13 +465,24 @@ async function updateProgress(card, difficulty, isExposure = false) {
     fsrs_state: scheduled.fsrs_state,
     reps: scheduled.reps,
     lapses: scheduled.lapses,
-    last_seen_at: new Date().toISOString()
+    last_seen_at: new Date().toISOString(),
+    last_reviewed_at: scheduled.last_reviewed_at  // Required for elapsed_days calculation
   })
 
   // 5. Update daily stats
   await updateDailyStats(userId)
 
-  return { success: true, ...scheduled }
+  // 6. Return new FSRS values (used to update card queue for "Again" requeue)
+  return {
+    success: true,
+    newStability: scheduled.stability,
+    newDifficulty: scheduled.difficulty,
+    dueDate: scheduled.due_date,
+    fsrsStateNumeric: scheduled.fsrs_state,  // Numeric for card updates
+    reps: scheduled.reps,
+    lapses: scheduled.lapses,
+    lastReviewedAt: scheduled.last_reviewed_at
+  }
 }
 ```
 
@@ -508,6 +519,49 @@ Card transitions are now instant (no waiting for DB):
 2. UI immediately advances to next card
 3. DB update happens in background
 4. FloatingFeedback animation shows "+X days"
+
+### "Again" Button Behavior
+
+When a user clicks "Again", two things happen:
+
+**1. Queue Management (useFlashcardSession.js)**
+- Card is removed from current position and added to end of queue
+- Progress counter stays the same (e.g., remains "5/20")
+- User must complete the card before session ends
+
+**2. FSRS State Update**
+- `stability`: Drastically reduced (e.g., 30 days → 2.32 days)
+- `difficulty`: Increased (e.g., 5 → 8.34)
+- `fsrs_state`: Changes to Relearning (3)
+- `lapses`: Incremented by 1
+- `due_date`: Set to ~10 minutes from now
+
+**Critical: Card Queue Sync**
+
+When the requeued card comes around again, it must use the UPDATED FSRS values, not the stale values from when it was first loaded. The flow:
+
+```javascript
+// Flashcards.jsx - After "Again" DB update completes
+if (isAgain) {
+  setCardQueue(prevQueue => prevQueue.map(card => {
+    if (cardId === thisCardId) {
+      return {
+        ...card,
+        stability: result.newStability,
+        difficulty: result.newDifficulty,
+        due_date: result.dueDate,
+        fsrs_state: result.fsrsStateNumeric,
+        reps: result.reps,
+        lapses: result.lapses,
+        last_reviewed_at: result.lastReviewedAt
+      }
+    }
+    return card
+  }))
+}
+```
+
+This ensures the second review of the card uses the correct (reduced) stability for scheduling.
 
 ### Card Badges
 

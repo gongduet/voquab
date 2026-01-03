@@ -127,6 +127,8 @@ Before marking work complete:
 2. **Chapter Boundaries**: `nextSentencePreview` is null at chapter end, check `nextChapterPreview`
 3. **FSRS State**: Use `reps >= 1` to check if a card has been introduced (no `introduced` column)
 4. **Local Dates**: Use `formatLocalDate()` for user-facing dates, not `toISOString()`
+5. **Card Queue State**: When modifying flashcard behavior, remember that `cardQueue` in `useFlashcardSession` is separate from `cards` state. Updates to one don't automatically reflect in the other.
+6. **FSRS for Phrases**: Both lemmas AND phrases need `last_reviewed_at` saved for proper interval calculation. FSRS uses this to compute `elapsed_days`.
 
 ## Active Development Areas
 
