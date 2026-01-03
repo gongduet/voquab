@@ -1,0 +1,47 @@
+[
+  {
+    "lemma_id": "a136e442-3fdb-48d7-8707-eb5107a92506",
+    "lemma_text": "enviar",
+    "part_of_speech": null,
+    "definitions": [
+      "send"
+    ],
+    "gender": null
+  },
+  {
+    "lemma_id": "9415733d-44eb-4c61-bb0b-344b3eba34a8",
+    "lemma_text": "extrañar",
+    "part_of_speech": null,
+    "definitions": [
+      "miss"
+    ],
+    "gender": null
+  },
+  {
+    "lemma_id": "efac4fe3-deb4-4d5e-a7d4-0bd35c005267",
+    "lemma_text": "lindo",
+    "part_of_speech": null,
+    "definitions": [
+      "nice"
+    ],
+    "gender": null
+  },
+  {
+    "lemma_id": "f5ca953b-8d45-48f5-a33d-db04a16d575d",
+    "lemma_text": "meter",
+    "part_of_speech": null,
+    "definitions": [
+      "enter"
+    ],
+    "gender": null
+  },
+  {
+    "lemma_id": "cf735e80-12d3-4a3a-aca5-f36b0f59eec8",
+    "lemma_text": "perreo",
+    "part_of_speech": null,
+    "definitions": [
+      "perreo (reggaeton dancing style)"
+    ],
+    "gender": null
+  }
+]

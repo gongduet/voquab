@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Search, ChevronDown, ChevronLeft, ChevronRight, RefreshCw, ExternalLink, CheckCircle, Circle, Plus, AlertTriangle, Copy, BookOpen } from 'lucide-react'
+import { Search, ChevronDown, ChevronLeft, ChevronRight, RefreshCw, ExternalLink, CheckCircle, Circle, Plus, AlertTriangle, Copy, BookOpen, Music } from 'lucide-react'
 import CreateLemmaModal from '../components/admin/CreateLemmaModal'
 
 /**
@@ -22,6 +22,8 @@ export default function AdminCommonWords() {
 
   // Read filter values from URL (with defaults)
   const searchTerm = searchParams.get('search') || ''
+  const contentSource = searchParams.get('source') || 'all'
+  const filterSong = searchParams.get('song') || 'all'
   const filterStopWords = searchParams.get('stopWords') || 'all'
   const filterPOS = searchParams.get('pos') || 'all'
   const filterChapter = searchParams.get('chapter') || 'all'
@@ -38,6 +40,8 @@ export default function AdminCommonWords() {
     // Remove default values from URL to keep it clean
     const defaults = {
       search: '',
+      source: 'all',
+      song: 'all',
       stopWords: 'all',
       pos: 'all',
       chapter: 'all',
@@ -64,6 +68,8 @@ export default function AdminCommonWords() {
   const [searchInput, setSearchInput] = useState(searchTerm)
   const [error, setError] = useState(null)
   const [chapters, setChapters] = useState([])
+  const [songs, setSongs] = useState([])
+  const [songLemmaIds, setSongLemmaIds] = useState(null) // null = no filter, array = filter to these IDs
   const [processing, setProcessing] = useState(false)
   const [selectedId, setSelectedId] = useState(null)
   const [showBulkMenu, setShowBulkMenu] = useState(false)
@@ -82,16 +88,46 @@ export default function AdminCommonWords() {
     activeWords: 0
   })
 
-  // Fetch chapters on mount
+  // Fetch chapters and songs on mount
   useEffect(() => {
     fetchChapters()
+    fetchSongs()
     fetchStats()
   }, [])
+
+  // Fetch song lemma IDs when song filter changes
+  useEffect(() => {
+    async function fetchSongLemmaIds() {
+      if (contentSource !== 'songs' || filterSong === 'all') {
+        setSongLemmaIds(null)
+        return
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('song_line_words')
+          .select('lemma_id')
+          .eq('song_id', filterSong)
+          .not('lemma_id', 'is', null)
+
+        if (error) throw error
+
+        // Get unique lemma IDs
+        const uniqueIds = [...new Set(data.map(d => d.lemma_id))]
+        setSongLemmaIds(uniqueIds)
+      } catch (err) {
+        console.error('Error fetching song lemma IDs:', err)
+        setSongLemmaIds([])
+      }
+    }
+
+    fetchSongLemmaIds()
+  }, [contentSource, filterSong])
 
   // Fetch words when filters/pagination change
   useEffect(() => {
     fetchWords()
-  }, [searchTerm, filterStopWords, filterPOS, filterChapter, filterReviewed, filterDefinition, sortBy, sortOrder, currentPage])
+  }, [searchTerm, filterStopWords, filterPOS, filterChapter, filterReviewed, filterDefinition, sortBy, sortOrder, currentPage, contentSource, filterSong, songLemmaIds])
 
   // Close bulk menu on outside click
   useEffect(() => {
@@ -128,6 +164,14 @@ export default function AdminCommonWords() {
     setChapters(data || [])
   }
 
+  async function fetchSongs() {
+    const { data } = await supabase
+      .from('songs')
+      .select('song_id, title, artist')
+      .order('title')
+    setSongs(data || [])
+  }
+
   async function fetchStats() {
     // Get total counts for stats cards
     const { count: total } = await supabase
@@ -153,8 +197,86 @@ export default function AdminCommonWords() {
       setLoading(true)
       setError(null)
 
+      // If filtering by song, wait for songLemmaIds to be populated
+      if (contentSource === 'songs' && filterSong !== 'all' && songLemmaIds === null) {
+        // Still loading song lemma IDs
+        return
+      }
+
+      // If filtering by song and no lemmas found, show empty result
+      if (contentSource === 'songs' && filterSong !== 'all' && songLemmaIds?.length === 0) {
+        setWords([])
+        setTotalCount(0)
+        setLoading(false)
+        return
+      }
+
+      // For song filtering, use a direct query approach
+      if (contentSource === 'songs' && filterSong !== 'all' && songLemmaIds?.length > 0) {
+        let query = supabase
+          .from('lemmas')
+          .select('*', { count: 'exact' })
+          .eq('language_code', 'es')
+          .in('lemma_id', songLemmaIds)
+
+        // Apply other filters
+        if (searchTerm) {
+          query = query.or(`lemma_text.ilike.%${searchTerm}%,definitions.cs.{${searchTerm}}`)
+        }
+        if (filterStopWords === 'active') {
+          query = query.eq('is_stop_word', false)
+        } else if (filterStopWords === 'stop') {
+          query = query.eq('is_stop_word', true)
+        }
+        if (filterPOS !== 'all') {
+          query = query.eq('part_of_speech', filterPOS)
+        }
+        if (filterReviewed === 'reviewed') {
+          query = query.eq('is_reviewed', true)
+        } else if (filterReviewed === 'unreviewed') {
+          query = query.eq('is_reviewed', false)
+        }
+        if (filterDefinition === 'has') {
+          query = query.not('definitions', 'is', null)
+        } else if (filterDefinition === 'missing') {
+          query = query.or('definitions.is.null,definitions.eq.{}')
+        }
+
+        // Sorting
+        const orderColumn = sortBy === 'alphabetical' ? 'lemma_text' : 'lemma_text' // No frequency available in direct query
+        query = query.order(orderColumn, { ascending: sortOrder === 'asc' })
+
+        // Pagination
+        const from = currentPage * pageSize
+        const to = from + pageSize - 1
+        query = query.range(from, to)
+
+        const { data, error: queryError, count } = await query
+
+        if (queryError) throw queryError
+
+        const transformedWords = (data || []).map(l => ({
+          ...l,
+          vocab_id: l.lemma_id,
+          lemma: l.lemma_text,
+          english_definition: Array.isArray(l.definitions) ? l.definitions.join(', ') : l.definitions,
+          word_count: 0 // Not available in this query
+        }))
+
+        setWords(transformedWords)
+        setTotalCount(count || 0)
+        setLoading(false)
+        return
+      }
+
+      // Default: use RPC for book/chapter filtering
       // Map sortBy to RPC parameter format
       const rpcSortBy = sortBy === 'alphabetical' ? 'alpha' : 'frequency'
+
+      // Only use chapter filter when content source is 'books' or 'all'
+      const effectiveChapter = (contentSource === 'books' || contentSource === 'all') && filterChapter !== 'all'
+        ? filterChapter
+        : null
 
       const { data, error: rpcError } = await supabase.rpc('search_lemmas', {
         p_search: searchTerm,
@@ -162,7 +284,7 @@ export default function AdminCommonWords() {
         p_stop_words: filterStopWords,
         p_reviewed: filterReviewed,
         p_definition: filterDefinition,
-        p_chapter_id: filterChapter !== 'all' ? filterChapter : null,
+        p_chapter_id: effectiveChapter,
         p_sort_by: rpcSortBy,
         p_sort_order: sortOrder,
         p_page: currentPage,
@@ -483,7 +605,7 @@ export default function AdminCommonWords() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
@@ -493,6 +615,59 @@ export default function AdminCommonWords() {
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
+        {/* Content source filter */}
+        <select
+          value={contentSource}
+          onChange={(e) => {
+            // Must update all params in single call to avoid race condition
+            const newParams = new URLSearchParams(searchParams)
+            const newSource = e.target.value
+
+            // Set or clear source param
+            if (newSource === 'all') {
+              newParams.delete('source')
+            } else {
+              newParams.set('source', newSource)
+            }
+
+            // Clear chapter filter when not in books mode
+            if (newSource !== 'books' && newSource !== 'all') {
+              newParams.delete('chapter')
+            }
+
+            // Clear song filter when not in songs mode
+            if (newSource !== 'songs') {
+              newParams.delete('song')
+            }
+
+            // Reset to page 0
+            newParams.delete('page')
+
+            setSearchParams(newParams, { replace: true })
+          }}
+          className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">All Content</option>
+          <option value="books">Books</option>
+          <option value="songs">Songs</option>
+        </select>
+
+        {/* Song filter (shown when content source is 'songs') */}
+        {contentSource === 'songs' && (
+          <select
+            value={filterSong}
+            onChange={(e) => updateFilter('song', e.target.value)}
+            className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Songs</option>
+            {songs.map(song => (
+              <option key={song.song_id} value={song.song_id}>
+                {song.title} – {song.artist}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Stop word filter */}
         <select
@@ -523,19 +698,21 @@ export default function AdminCommonWords() {
           <option value="NUM">Numerals</option>
         </select>
 
-        {/* Chapter filter */}
-        <select
-          value={filterChapter}
-          onChange={(e) => updateFilter('chapter', e.target.value)}
-          className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All Chapters</option>
-          {chapters.map(ch => (
-            <option key={ch.chapter_id} value={ch.chapter_id}>
-              Ch. {ch.chapter_number}: {ch.title}
-            </option>
-          ))}
-        </select>
+        {/* Chapter filter (shown when content source is 'books' or 'all') */}
+        {(contentSource === 'books' || contentSource === 'all') && (
+          <select
+            value={filterChapter}
+            onChange={(e) => updateFilter('chapter', e.target.value)}
+            className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Chapters</option>
+            {chapters.map(ch => (
+              <option key={ch.chapter_id} value={ch.chapter_id}>
+                Ch. {ch.chapter_number}: {ch.title}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Review status filter */}
         <select
@@ -579,7 +756,8 @@ export default function AdminCommonWords() {
         </button>
 
         {/* Clear filters button */}
-        {(searchTerm || filterStopWords !== 'all' || filterPOS !== 'all' ||
+        {(searchTerm || contentSource !== 'all' || filterSong !== 'all' ||
+          filterStopWords !== 'all' || filterPOS !== 'all' ||
           filterChapter !== 'all' || filterReviewed !== 'all' || filterDefinition !== 'all') && (
           <button
             onClick={() => setSearchParams({})}

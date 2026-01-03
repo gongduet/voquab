@@ -23,6 +23,8 @@ import AdminPhrases from './pages/AdminPhrases'
 import PhraseDeepDive from './pages/PhraseDeepDive'
 import AdminSongs from './pages/AdminSongs'
 import SongDeepDive from './pages/SongDeepDive'
+import AdminSongLines from './pages/AdminSongLines'
+import LineDeepDive from './pages/LineDeepDive'
 import AdminSlang from './pages/AdminSlang'
 import SlangDeepDive from './pages/SlangDeepDive'
 import Songs from './pages/Songs'
@@ -233,6 +235,8 @@ function App() {
             <Route path="sentences/:sentenceId" element={<SentenceDeepDive />} />
             <Route path="songs" element={<AdminSongs />} />
             <Route path="songs/:songId" element={<SongDeepDive />} />
+            <Route path="song-lines/:lineId" element={<LineDeepDive />} />
+            <Route path="song-lines" element={<AdminSongLines />} />
             <Route path="slang" element={<AdminSlang />} />
             <Route path="slang/:slangId" element={<SlangDeepDive />} />
           </Route>

@@ -845,8 +845,8 @@ Efficient mass updates for specific scenarios.
 
 **Use Case:** Remove entries created by mistake
 
-**Caution:** Destructive operation  
-**Requires:** Confirmation + admin password re-entry
+**Caution:** Destructive operation
+**Requires:** Type confirmation (e.g., "DELETE") to proceed
 
 **UI:**
 ```
@@ -864,8 +864,8 @@ Efficient mass updates for specific scenarios.
 │                                                     │
 │  Preview: 0 lemmas will be deleted                  │
 │                                                     │
-│  Confirm your password:                             │
-│  [••••••••]                                         │
+│  Type DELETE to confirm:                            │
+│  [________]                                         │
 │                                                     │
 │  [Cancel]  [Delete Permanently]                     │
 └─────────────────────────────────────────────────────┘

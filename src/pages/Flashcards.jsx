@@ -69,7 +69,8 @@ export default function Flashcards() {
     sessionRatings,
     handleCardClick,
     handleDifficulty: handleDifficultySession,
-    cardQueue
+    cardQueue,
+    setCardQueue
   } = useFlashcardSession(cards, 20)
 
   // Progress tracking
@@ -173,8 +174,18 @@ export default function Flashcards() {
         })
       }
 
-      // Update cards with sentences
+      // Update cards state with sentences
       setCards(prevCards => prevCards.map(card => {
+        const id = card.lemma_id || card.phrase_id
+        const sentenceData = sentenceMap.get(id)
+        if (sentenceData) {
+          return { ...card, ...sentenceData }
+        }
+        return card
+      }))
+
+      // Also update cardQueue so current session shows sentences
+      setCardQueue(prevQueue => prevQueue.map(card => {
         const id = card.lemma_id || card.phrase_id
         const sentenceData = sentenceMap.get(id)
         if (sentenceData) {
@@ -275,6 +286,26 @@ export default function Flashcards() {
             setFeedbackMessage(`+${result.dueFormatted}`)
             setShowFeedback(true)
             setTimeout(() => setShowFeedback(false), 1500)
+          }
+
+          // Update requeued card with new FSRS values so second review uses correct state
+          if (isAgain) {
+            setCardQueue(prevQueue => prevQueue.map(card => {
+              const thisCardId = card.slang_id || card.phrase_id || card.lemma_id
+              if (thisCardId === cardId) {
+                return {
+                  ...card,
+                  stability: result.newStability,
+                  difficulty: result.newDifficulty,
+                  due_date: result.dueDate,
+                  fsrs_state: result.fsrsStateNumeric,
+                  reps: result.reps,
+                  lapses: result.lapses,
+                  last_reviewed_at: result.lastReviewedAt
+                }
+              }
+              return card
+            }))
           }
         }
       })

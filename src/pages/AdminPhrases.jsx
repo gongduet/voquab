@@ -31,6 +31,8 @@ export default function AdminPhrases() {
 
   // Read filters from URL
   const searchTerm = searchParams.get('search') || ''
+  const contentSource = searchParams.get('source') || 'all'
+  const filterSong = searchParams.get('song') || 'all'
   const filterType = searchParams.get('type') || 'all'
   const filterReviewed = searchParams.get('reviewed') || 'all'
   const filterChapter = searchParams.get('chapter') || 'all'
@@ -40,6 +42,8 @@ export default function AdminPhrases() {
   // State
   const [phrases, setPhrases] = useState([])
   const [chapters, setChapters] = useState([])
+  const [songs, setSongs] = useState([])
+  const [songPhraseIds, setSongPhraseIds] = useState(null) // null = no filter, array = filter to these IDs
   const [loading, setLoading] = useState(true)
   const [searchInput, setSearchInput] = useState(searchTerm)
   const [error, setError] = useState(null)
@@ -67,6 +71,8 @@ export default function AdminPhrases() {
     const newParams = new URLSearchParams(searchParams)
     const defaults = {
       search: '',
+      source: 'all',
+      song: 'all',
       type: 'all',
       reviewed: 'all',
       chapter: 'all',
@@ -86,12 +92,69 @@ export default function AdminPhrases() {
     setError(null)
 
     try {
-      // Use RPC for server-side filtering, sorting, and pagination
+      // If filtering by song, wait for songPhraseIds to be populated
+      if (contentSource === 'songs' && filterSong !== 'all' && songPhraseIds === null) {
+        return
+      }
+
+      // If filtering by song and no phrases found, show empty result
+      if (contentSource === 'songs' && filterSong !== 'all' && songPhraseIds?.length === 0) {
+        setPhrases([])
+        setTotalCount(0)
+        setLoading(false)
+        return
+      }
+
+      // For song filtering, use a direct query approach
+      if (contentSource === 'songs' && filterSong !== 'all' && songPhraseIds?.length > 0) {
+        let query = supabase
+          .from('phrases')
+          .select('*', { count: 'exact' })
+          .in('phrase_id', songPhraseIds)
+
+        // Apply other filters
+        if (searchTerm) {
+          query = query.or(`phrase_text.ilike.%${searchTerm}%,definitions.cs.{${searchTerm}}`)
+        }
+        if (filterType !== 'all') {
+          query = query.eq('phrase_type', filterType)
+        }
+        if (filterReviewed === 'reviewed') {
+          query = query.eq('is_reviewed', true)
+        } else if (filterReviewed === 'unreviewed') {
+          query = query.eq('is_reviewed', false)
+        }
+
+        // Sorting
+        const orderColumn = sortBy === 'alphabetical' ? 'phrase_text' : 'phrase_text'
+        query = query.order(orderColumn, { ascending: sortOrder === 'asc' })
+
+        // Pagination
+        const from = page * pageSize
+        const to = from + pageSize - 1
+        query = query.range(from, to)
+
+        const { data, error: queryError, count } = await query
+
+        if (queryError) throw queryError
+
+        setPhrases(data || [])
+        setTotalCount(count || 0)
+        setLoading(false)
+        return
+      }
+
+      // Default: Use RPC for server-side filtering, sorting, and pagination
+      // Only use chapter filter when content source is 'books' or 'all'
+      const effectiveChapter = (contentSource === 'books' || contentSource === 'all') && filterChapter !== 'all'
+        ? filterChapter
+        : null
+
       const { data, error: rpcError } = await supabase.rpc('search_phrases', {
         p_search: searchTerm,
         p_type: filterType,
         p_reviewed: filterReviewed,
-        p_chapter_id: filterChapter !== 'all' ? filterChapter : null,
+        p_chapter_id: effectiveChapter,
         p_sort_by: sortBy,
         p_sort_order: sortOrder,
         p_page: page,
@@ -117,13 +180,23 @@ export default function AdminPhrases() {
         setChapters(chaptersData || [])
       }
 
+      // Fetch songs for filter dropdown (only once)
+      if (songs.length === 0) {
+        const { data: songsData } = await supabase
+          .from('songs')
+          .select('song_id, title, artist')
+          .order('title')
+
+        setSongs(songsData || [])
+      }
+
     } catch (err) {
       console.error('Error fetching phrases:', err)
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, filterType, filterReviewed, filterChapter, sortBy, sortOrder, page, pageSize, chapters.length])
+  }, [searchTerm, contentSource, filterSong, songPhraseIds, filterType, filterReviewed, filterChapter, sortBy, sortOrder, page, pageSize, chapters.length, songs.length])
 
   useEffect(() => {
     fetchPhrases()
@@ -153,7 +226,36 @@ export default function AdminPhrases() {
   // Reset to page 0 when filters change
   useEffect(() => {
     setPage(0)
-  }, [searchTerm, filterType, filterReviewed, filterChapter, sortBy, sortOrder])
+  }, [searchTerm, contentSource, filterSong, filterType, filterReviewed, filterChapter, sortBy, sortOrder])
+
+  // Fetch phrase IDs from song_line_phrase_occurrences when song filter changes
+  useEffect(() => {
+    async function fetchSongPhraseIds() {
+      if (contentSource !== 'songs' || filterSong === 'all') {
+        setSongPhraseIds(null)
+        return
+      }
+
+      try {
+        // Query song_line_phrase_occurrences directly - it has song_id column
+        const { data, error } = await supabase
+          .from('song_line_phrase_occurrences')
+          .select('phrase_id')
+          .eq('song_id', filterSong)
+          .not('phrase_id', 'is', null)
+
+        if (error) throw error
+
+        const uniqueIds = [...new Set(data.map(d => d.phrase_id))]
+        setSongPhraseIds(uniqueIds)
+      } catch (err) {
+        console.error('Error fetching song phrase IDs:', err)
+        setSongPhraseIds([])
+      }
+    }
+
+    fetchSongPhraseIds()
+  }, [contentSource, filterSong])
 
   const toggleReviewed = useCallback(async (phrase) => {
     const newValue = !phrase.is_reviewed
@@ -328,7 +430,7 @@ export default function AdminPhrases() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
@@ -338,6 +440,56 @@ export default function AdminPhrases() {
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
+
+        {/* Content source filter */}
+        <select
+          value={contentSource}
+          onChange={(e) => {
+            // Must update all params in single call to avoid race condition
+            const newParams = new URLSearchParams(searchParams)
+            const newSource = e.target.value
+
+            // Set or clear source param
+            if (newSource === 'all') {
+              newParams.delete('source')
+            } else {
+              newParams.set('source', newSource)
+            }
+
+            // Clear song filter when not in songs mode
+            if (newSource !== 'songs') {
+              newParams.delete('song')
+            }
+
+            // Clear chapter filter when in songs mode
+            if (newSource === 'songs') {
+              newParams.delete('chapter')
+            }
+
+            setSearchParams(newParams, { replace: true })
+          }}
+          className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">All Sources</option>
+          <option value="books">Books</option>
+          <option value="songs">Songs</option>
+        </select>
+
+        {/* Song filter - only show when songs content source is selected */}
+        {contentSource === 'songs' && (
+          <select
+            value={filterSong}
+            onChange={(e) => updateFilter('song', e.target.value)}
+            className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Songs</option>
+            {songs.map(song => (
+              <option key={song.song_id} value={song.song_id}>
+                {song.title} - {song.artist}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Type filter */}
         <select
@@ -352,19 +504,21 @@ export default function AdminPhrases() {
           <option value="expression">Expressions</option>
         </select>
 
-        {/* Chapter filter */}
-        <select
-          value={filterChapter}
-          onChange={(e) => updateFilter('chapter', e.target.value)}
-          className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">All Chapters</option>
-          {chapters.map(ch => (
-            <option key={ch.chapter_id} value={ch.chapter_id}>
-              Ch. {ch.chapter_number}: {ch.title}
-            </option>
-          ))}
-        </select>
+        {/* Chapter filter - only show for books or all sources */}
+        {(contentSource === 'all' || contentSource === 'books') && (
+          <select
+            value={filterChapter}
+            onChange={(e) => updateFilter('chapter', e.target.value)}
+            className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Chapters</option>
+            {chapters.map(ch => (
+              <option key={ch.chapter_id} value={ch.chapter_id}>
+                Ch. {ch.chapter_number}: {ch.title}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Review status filter */}
         <select
@@ -405,7 +559,7 @@ export default function AdminPhrases() {
         </button>
 
         {/* Clear filters */}
-        {(searchTerm || filterType !== 'all' || filterReviewed !== 'all' || filterChapter !== 'all') && (
+        {(searchTerm || contentSource !== 'all' || filterSong !== 'all' || filterType !== 'all' || filterReviewed !== 'all' || filterChapter !== 'all') && (
           <button
             onClick={() => setSearchParams({})}
             className="px-3 py-2 text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg"

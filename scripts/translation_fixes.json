@@ -1,0 +1,2490 @@
+[
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "This sounds awesome",
+    "corrected": "I thought I was going to grow old with you",
+    "reason": "Translation completely unrelated to Spanish text"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "No, I cannot delete you",
+    "corrected": "No, I can't erase you",
+    "reason": "Better contextual translation - 'borrar' means erase/remove from memory, not computer delete"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "This sounds like a bastard",
+    "corrected": "This sounds awesome",
+    "reason": "Misunderstood Puerto Rican slang - 'cabrón' here means awesome/great, not bastard"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "My devil, my angel, my crazy girl",
+    "corrected": "My devil, my angel, my little crazy girl",
+    "reason": "Missing diminutive 'loquita' implies affectionate 'little crazy girl'"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "As you were kissing me, as I was kissing you",
+    "corrected": "How you used to kiss me, how I used to do it to you",
+    "reason": "Misunderstood 'como' (how/the way) and 'hacía' (used to do)"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 1,
+    "spanish": "Pensaba que contigo iba a envejecer",
+    "original": "There, there, there, here we go!",
+    "corrected": "There, there, there, let's do this!",
+    "reason": "Idiomatic phrase 'vamos allá' means 'let's do this' not literal 'here we go'"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 2,
+    "spanish": "En otra vida, en otro mundo podrá ser",
+    "original": "The way you looked at me made me so naughty",
+    "corrected": "In another life, in another world it could be",
+    "reason": "Translation completely unrelated to Spanish text"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 2,
+    "spanish": "En otra vida, en otro mundo podrá ser",
+    "original": "No, I cannot delete you",
+    "corrected": "No, I can't erase you",
+    "reason": "Better contextual translation for 'borrar'"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 2,
+    "spanish": "En otra vida, en otro mundo podrá ser",
+    "original": "No, I can't delete you",
+    "corrected": "No, I can't erase you",
+    "reason": "Better contextual translation for 'borrar'"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 2,
+    "spanish": "En otra vida, en otro mundo podrá ser",
+    "original": "No, I cannot delete you",
+    "corrected": "No, I can't erase you",
+    "reason": "Better contextual translation for 'borrar'"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 2,
+    "spanish": "En otra vida, en otro mundo podrá ser",
+    "original": "The way you looked at me, I was so beautiful",
+    "corrected": "The way you looked at me, you made me so naughty",
+    "reason": "Misunderstood 'bellaquito' - Puerto Rican slang for naughty/mischievous, not beautiful"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 3,
+    "spanish": "En esta solo queda irme un día",
+    "original": "In this one, there is only one day left to go",
+    "corrected": "In this life, all that's left is to leave one day",
+    "reason": "Missing context - 'esta' refers to 'esta vida' (this life)"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 4,
+    "spanish": "Y solamente verte en el atardecer",
+    "original": "The new girl kisses well, but it's not your little mouth",
+    "corrected": "And only seeing you at sunset",
+    "reason": "Translation completely unrelated to Spanish text"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 4,
+    "spanish": "Y solamente verte en el atardecer",
+    "original": "If I think about you, I'll throw myself at you, eh-eh.",
+    "corrected": "If I think about you, I'll kill myself, eh-eh",
+    "reason": "Idiomatic phrase 'me tiro de una' means 'I'll jump/kill myself' not throw myself at someone"
+  },
+  {
+    "song": "Baile Inolvidable",
+    "line_order": 4,
+    "spanish": "Y solamente verte en el atardecer",
+    "original": "The new mom is fine, but it's not your mouth.",
+    "corrected": "The new girl kisses well, but it's not your little mouth",
+    "reason": "Idiomatic phrase 'la nueva mama bien' means 'the new girl kisses well' not about a mother"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 1,
+    "spanish": "Eh, se-",
+    "original": "My feelings change like the seasons",
+    "corrected": "Eh, se-",
+    "reason": "Translation doesn't match the Spanish text at all - Spanish is just an incomplete utterance"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 1,
+    "spanish": "Eh, se-",
+    "original": "Hey, hey, you're a gap in PR, that's why I'm dodging you.",
+    "corrected": "Hey, hey, you're a small insignificant town in PR, that's why I avoid you",
+    "reason": "Phrase 'un boquete en PR' is an idiom meaning 'a small insignificant town in PR', not literally 'a gap'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 1,
+    "spanish": "Eh, se-",
+    "original": "My feelings change as I park",
+    "corrected": "My feelings change like the seasons",
+    "reason": "'estacione' is contracted form of 'estaciones' (seasons), not parking"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 1,
+    "spanish": "Eh, se-",
+    "original": "My feelings change like the seasons",
+    "corrected": "One day you're going to get old",
+    "reason": "Translation doesn't match the Spanish text - 'Un día va'a ponerte vieja'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 2,
+    "spanish": "¿Cuál de los dos es quien más va a sufrir?",
+    "original": "Looking at your pictures, testing if I'm strong",
+    "corrected": "Which of us two is going to suffer more?",
+    "reason": "Translation doesn't match the Spanish text at all"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 2,
+    "spanish": "¿Cuál de los dos es quien más va a sufrir?",
+    "original": "Seeing pictures of you', testing if I'm strong",
+    "corrected": "Looking at little pictures of you, testing if I'm strong",
+    "reason": "'fotitos' is the diminutive form meaning 'little pictures'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 2,
+    "spanish": "¿Cuál de los dos es quien más va a sufrir?",
+    "original": "Looking at little pictures of you, testing if I'm strong",
+    "corrected": "Seeing our hearts",
+    "reason": "'Viéndono los corazone' means 'seeing our hearts' - 'viéndono' = 'viéndonos' (seeing us)"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 3,
+    "spanish": "O quizá fue que la vida nos mintió",
+    "original": "Of all the most real things you've had in your life",
+    "corrected": "Or maybe it was that life lied to us",
+    "reason": "Translation doesn't match the Spanish text at all"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 3,
+    "spanish": "O quizá fue que la vida nos mintió",
+    "original": "Sometimes flashbacks come', you and me aggressively chinging.",
+    "corrected": "Sometimes flashbacks come, you and me having intense sex",
+    "reason": "'chingando agresivo' means having intense/passionate sex, not 'chinging'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 3,
+    "spanish": "O quizá fue que la vida nos mintió",
+    "original": "The most real thing you have ever had in your life.",
+    "corrected": "Of all the most real things you've had in your life",
+    "reason": "'De to lo más real' means 'Of all the most real things' - 'to' = 'todo'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 3,
+    "spanish": "O quizá fue que la vida nos mintió",
+    "original": "The most real thing you have ever had in your life.",
+    "corrected": "Of all the most real things you've had in your life",
+    "reason": "Same as above - 'De to lo más real' means 'Of all the most real things'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 4,
+    "spanish": "Lo dejaste ir",
+    "original": "It's time to move on, ignore and forget",
+    "corrected": "You let it go",
+    "reason": "Translation doesn't match - 'Lo dejaste ir' means 'You let it go'"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 4,
+    "spanish": "Lo dejaste ir",
+    "original": "Unanswered question",
+    "corrected": "Questions without answers",
+    "reason": "'Pregunta'' is plural (questions) and 'contestacione' is also plural (answers)"
+  },
+  {
+    "song": "Bokete",
+    "line_order": 4,
+    "spanish": "Lo dejaste ir",
+    "original": "It's time to go on, to bite and forget",
+    "corrected": "It's time to move on, ignore and forget",
+    "reason": "'pichar' is Puerto Rican slang meaning 'to ignore', not 'to bite'"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 1,
+    "spanish": "Brother, yo no sé ni cómo llegué a casa anoche",
+    "original": "Come on up (come on!), come on up (dale p'acá)",
+    "corrected": "Come on up (let's go!), come on up (come over here)",
+    "reason": "Should translate 'vamo' as 'let's go' and 'dale p'acá' as 'come over here'"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 1,
+    "spanish": "Brother, yo no sé ni cómo llegué a casa anoche",
+    "original": "I'm going to tell you something so that you know",
+    "corrected": "I'm going to tell you something so you know",
+    "reason": "'sepa'' is the contracted form of 'sepas' (you know), not 'sepa' (know)"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 1,
+    "spanish": "Brother, yo no sé ni cómo llegué a casa anoche",
+    "original": "In the bush, today it breaks",
+    "corrected": "In the mountains, today we party hard",
+    "reason": "'monte' means mountains in PR context, 'se rompe' is idiomatic for partying hard"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 1,
+    "spanish": "Brother, yo no sé ni cómo llegué a casa anoche",
+    "original": "Let them dance it in Lloren, let them dance it in Canale'.",
+    "corrected": "Let them dance it in Lloren, let them dance it in Canales",
+    "reason": "'Canale'' is contracted form of 'Canales' (place name)"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 1,
+    "spanish": "Brother, yo no sé ni cómo llegué a casa anoche",
+    "original": "Down there, down there, down there, down there",
+    "corrected": "In the morning, coffee; in the afternoon, rum",
+    "reason": "Wrong translation - this line repeats the coffee/rum refrain, not 'allá abajo'"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 2,
+    "spanish": "Ya estamo en la calle, sal de tu balcón",
+    "original": "Today I'm going on the road with all my crazy ones",
+    "corrected": "We're already on the street, come out of your balcony",
+    "reason": "Wrong translation - should match the Spanish 'Ya estamo en la calle, sal de tu balcón'"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 2,
+    "spanish": "Ya estamo en la calle, sal de tu balcón",
+    "original": "That we are not going to go down",
+    "corrected": "We're not backing down",
+    "reason": "Idiomatic phrase 'no le vamo a bajar' means not backing down/slowing down"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 2,
+    "spanish": "Ya estamo en la calle, sal de tu balcón",
+    "original": "Class 'e loquera y hoy me 'tan 'tan tirando nuevamente pa 'bajar p'allá",
+    "corrected": "Total craziness and today they're calling me again to go down there",
+    "reason": "'Clase 'e loquera' means total craziness, 'me 'tan tirando' means they're calling/pulling me"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 2,
+    "spanish": "Ya estamo en la calle, sal de tu balcón",
+    "original": "Today I'm going on the road with all my anormale",
+    "corrected": "Today I'm going on the road with all my crazy ones",
+    "reason": "'anormale'' (contracted 'anormales') means crazy ones/wild ones"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "The samurai is shining and the crew is going to bar hop",
+    "corrected": "In the mountains, today we party hard",
+    "reason": "Wrong translation - should be 'En el monte, hoy se rompe'"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "The truth codes are up in the bush.",
+    "corrected": "The truth codes are up in the mountains",
+    "reason": "'monte' should be translated as mountains in PR context"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "That you don't leave by cliff and we have to look for you.",
+    "corrected": "Don't take the dangerous path so we don't have to search for you",
+    "reason": "'no te vayas por risco' is idiomatic for don't take the dangerous path"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "I was going to be quiet, but if you want to hesitate",
+    "corrected": "I was going to stay calm, but if you want to party",
+    "reason": "'vacilar' means to party/have fun, not hesitate"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "But I think that today, acho, pichaera, don't wait for me, por-",
+    "corrected": "But I think that today, damn, what a mess, don't wait for me, because-",
+    "reason": "'acho' is PR exclamation (damn), 'pichaera' means mess/trouble"
+  },
+  {
+    "song": "Café con Ron",
+    "line_order": 3,
+    "spanish": "En el monte, hoy se rompe",
+    "original": "The samurai is in brightness and the combo is going to chinchorrear.",
+    "corrected": "The samurai is shining and the crew is going to bar hop",
+    "reason": "'en brillo' means shining, 'chinchorrear' means bar hopping"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "Bernie already has the boy, and Jan, the girl",
+    "corrected": "Another beautiful sunset that I see in San Juan",
+    "reason": "Translation was completely unrelated to the Spanish text"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "Hey, I've got a bare chest, I've had a bad case of the bumps.",
+    "corrected": "Hey, I have a bare chest, I took a beating",
+    "reason": "matá = beating/hit, not 'bumps'"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "And it would be a bastard for you to touch my güiro",
+    "corrected": "And it would be awesome if you would touch me intimately",
+    "reason": "cabrón is positive here, and 'tocar el güiro' is sexual innuendo"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "Hey, today I'm going to be with my grandfather all day playing dominoes.",
+    "corrected": "Hey, today I'm going to be with my grandfather all day playing dominoes",
+    "reason": "vo'a = voy a, to' = todo - translation was mostly correct but missed contractions"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "Toy bien loco (I'm really crazy), toy bien loco (I'm really crazy)",
+    "corrected": "I'm really crazy (I'm really crazy), I'm really crazy (I'm really crazy)",
+    "reason": "Toy = Estoy, should translate the main text not leave it in Spanish"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 1,
+    "spanish": "Otro sunset bonito que veo en San Juan",
+    "original": "I'm really crazy (I'm really crazy), I'm really crazy (I'm really crazy)",
+    "corrected": "Bernie already has the boy, and Jan, the girl",
+    "reason": "Translation was swapped with wrong line"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "The heart kicking me'.",
+    "corrected": "My heart beating fast",
+    "reason": "patá' = patadas, and 'dándome patá'' refers to heart palpitations"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "We are no longer for movies and chains",
+    "corrected": "We're no longer living the flashy lifestyle with jewelry",
+    "reason": "'estar pa la movie' is an idiom meaning living glamorously"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "Here you can still find the cane, check out the babies.",
+    "corrected": "Here there's still action happening, check out the girls",
+    "reason": "'se da caña' means action is happening, babies refers to attractive women"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "People, I love you with balls, I love you.",
+    "corrected": "People, I love you guys so much, I love you",
+    "reason": "'con cojones' here means intensely/a lot, not literally 'with balls'"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "Bastard, you guide me, I'm even walking and I'm so shaken up",
+    "corrected": "Dude, you guide me, I'm so messed up I'm stumbling while walking",
+    "reason": "cabrón is friendly here, choco means crash/stumble"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "Enjoying all' those things missed by those who are leaving",
+    "corrected": "Enjoying all those things that those who leave end up missing",
+    "reason": "toda' = todas, meaning is about what people miss after they leave"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 2,
+    "spanish": "Y contarte las cosas que no te conté (te pareces a mi crush, ja, ja)",
+    "original": "Enjoying all those things missed by those who leave",
+    "corrected": "I should have given you more kisses and hugs when I could have",
+    "reason": "Translation was swapped with wrong line"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 3,
+    "spanish": "Y tirarte las fotos que no te tiré",
+    "original": "Enjoying those kinds of nights that don't happen anymore",
+    "corrected": "And take the photos of you that I didn't take",
+    "reason": "Translation was completely different from Spanish text"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 3,
+    "spanish": "Y tirarte las fotos que no te tiré",
+    "original": "Toy bien loco (I'm really crazy), toy bien loco (I'm really crazy)",
+    "corrected": "I'm really crazy (I'm really crazy), I'm really crazy (I'm really crazy)",
+    "reason": "Toy = Estoy, should translate the main text"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 3,
+    "spanish": "Y tirarte las fotos que no te tiré",
+    "original": "Enjoying nights of those nights that are not given anymore.",
+    "corrected": "Enjoying those kinds of nights that don't happen anymore",
+    "reason": "Better flow and 'que ya no se dan' means that no longer happen"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 4,
+    "spanish": "Acho, jurado te ves bien linda, déjame tirarte una foto",
+    "original": "Let's enjoy, you never know if we have little time left",
+    "corrected": "Wow, I swear you look really pretty, let me take a photo of you",
+    "reason": "Acho = Puerto Rican exclamation, jurado = I swear, completely different meaning"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 4,
+    "spanish": "Acho, jurado te ves bien linda, déjame tirarte una foto",
+    "original": "Let's enjoy, you never know if we have little time left",
+    "corrected": "That no longer happen",
+    "reason": "Simple phrase about things that don't occur anymore"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 4,
+    "spanish": "Acho, jurado te ves bien linda, déjame tirarte una foto",
+    "original": "Hey, pa'l perreo, salsa, bomba y plena",
+    "corrected": "Hey, for reggaeton dancing, salsa, bomba and plena",
+    "reason": "pa'l = para el, perreo should be translated as reggaeton dancing"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 4,
+    "spanish": "Acho, jurado te ves bien linda, déjame tirarte una foto",
+    "original": "Let's enjoy, you never know if we are close to the end.",
+    "corrected": "Let's enjoy, you never know if we have little time left",
+    "reason": "Better translation of the sentiment"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 5,
+    "spanish": "Cada uno de ustedes significa mucho para mí",
+    "original": "And talk nonsense until they kick me out",
+    "corrected": "Each one of you means a lot to me",
+    "reason": "Translation was swapped with wrong line"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 5,
+    "spanish": "Cada uno de ustedes significa mucho para mí",
+    "original": "And talk shit until I get kicked out",
+    "corrected": "And talk nonsense until they kick me out",
+    "reason": "'hablar mierda' here means casual chatting/talking nonsense rather than offensive talk"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 6,
+    "spanish": "Hoy la calle la dejamos esbaratá",
+    "original": "So let's go take the photo, come over here",
+    "corrected": "Today we're going to leave the streets wrecked",
+    "reason": "Translation was swapped - 'dejar la calle esbaratá' means party hard/wreck the streets"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 6,
+    "spanish": "Hoy la calle la dejamos esbaratá",
+    "original": "So let's go for the picture, come on over here.",
+    "corrected": "So let's go take the photo, come over here",
+    "reason": "p'acá = para acá (over here)"
+  },
+  {
+    "song": "DTMF",
+    "line_order": 7,
+    "spanish": "Métase to el mundo, to el corillo, vamo",
+    "original": "Everyone get in, the whole crew, let's go",
+    "corrected": "Everyone get in, the whole crew, let's go",
+    "reason": "to' = todo, corillo = crew - translation is actually correct"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Come on, mommy, get close, turn around",
+    "corrected": "She comes around and never arrives alone",
+    "reason": "Completely wrong translation - Spanish text doesn't match at all"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "You are listening to the number one on sale'.",
+    "corrected": "You're listening to the number one in sales",
+    "reason": "venta' is 'sales' (plural) not 'on sale', and missing apostrophe correction"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "I blow her and she gets happy",
+    "corrected": "I go down on her and she gets happy",
+    "reason": "Better translation of sexual reference 'se la mamo'"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "You're listening to Puerto Rican music, cabrón",
+    "corrected": "You're listening to Puerto Rican music, dude",
+    "reason": "cabrón in this context is casual/positive meaning 'dude'"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Has 20 on the list 'e waitin'.",
+    "corrected": "She has 20 on the waiting list",
+    "reason": "lista'e = 'list of', needs proper subject and cleaner phrasing"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Breaks the street",
+    "corrected": "Tear up the street",
+    "reason": "'Rompe la calle' is idiomatic for partying hard/making a scene"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Mommy, I know you drive you crazy",
+    "corrected": "Mommy, I know you go wild",
+    "reason": "Grammar error and 'te vuelves loca' means 'you go wild/crazy'"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Hey, I give you deo dancing",
+    "corrected": "Hey, I finger you while dancing",
+    "reason": "deo = finger, this is a sexual reference"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 1,
+    "spanish": "Ella viene por ahí y nunca llega sola",
+    "original": "Come on, mommy, stick, dress up",
+    "corrected": "Come on, mommy, get close, turn around",
+    "reason": "pégate, vírate is idiomatic dance instruction meaning get close and turn around"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "We grew up listening to and singing this",
+    "corrected": "Tra-tra, baby, all the way down, baby",
+    "reason": "Wrong Spanish text matched - this doesn't correspond to the Spanish line"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "She's wileá and already turned 30",
+    "corrected": "She's wild and already turned 30",
+    "reason": "wileá = wild/crazy"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "If you look at me too much, you know I'm going to kiss you.",
+    "corrected": "If you look at me a lot, you know I'm going to kiss you",
+    "reason": "mira' = look (removing unnecessary period and 'too much' vs 'a lot')"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "Whenever",
+    "corrected": "Whenever she goes out",
+    "reason": "sale' = goes out, incomplete translation"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "Mommy, toy testin', hey (dale)",
+    "corrected": "Mommy, I'm testing, hey (come on)",
+    "reason": "Toy = I'm (estoy), dale = come on"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "You and I are involved in the beauty of the",
+    "corrected": "You and I are wrapped up in the sexual tension",
+    "reason": "envuelto' = wrapped up, bellaqueo = sexual behavior/horniness"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 2,
+    "spanish": "Tra-tra, baby, hasta abajo, baby",
+    "original": "We were raised listening to and singing this",
+    "corrected": "We grew up listening to and singing this",
+    "reason": "criamo = we grew up"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "All the gangsters let loose with their guns",
+    "corrected": "After midnight she doesn't count them",
+    "reason": "Completely wrong translation - doesn't match Spanish text at all"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "All the way down, baby, stay down, baby",
+    "corrected": "All the way down, baby, don't stop, baby",
+    "reason": "no te quites = don't stop/don't take off"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "In the hamlets', in the neighborhoods'.",
+    "corrected": "In the projects, in the neighborhoods",
+    "reason": "caserío' = public housing projects, not hamlets"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "Bring your beast",
+    "corrected": "Bring your bestie",
+    "reason": "bestie = best friend"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "Mommy, you are fit",
+    "corrected": "Mommy, you're hot",
+    "reason": "tas fit in this context means attractive/hot"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "Come on, mommy, stick, dress up",
+    "corrected": "Come on, mommy, get close, turn around",
+    "reason": "pégate, vírate is dance instruction meaning get close and turn around"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "But obligao you remember me",
+    "corrected": "But for sure you remember me",
+    "reason": "obligao = for sure/definitely"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "I like you because you and I are the same",
+    "corrected": "I like you because you and I are alike",
+    "reason": "iguale' = alike/the same, but 'alike' flows better"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "But obligao you remember me",
+    "corrected": "But for sure you remember me",
+    "reason": "obligao = for sure/definitely"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "All the gangsters let loose with their guns",
+    "corrected": "I feel like a big shot in the nineties",
+    "reason": "Completely wrong translation - bichote = big shot/boss"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 3,
+    "spanish": "Después de las 12 no los cuenta",
+    "original": "All the bandi-di- guns are unloaded",
+    "corrected": "All the gangsters let loose with their guns",
+    "reason": "bandi = gangsters/thugs, pistola' = guns, sueltan = let loose"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "Don't talk shit to me, you bastards, I don't see you here",
+    "corrected": "Tra-tra, baby, tra-tra, baby",
+    "reason": "Wrong Spanish text matched - should match the actual Spanish line"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "Don't call her in the jangueo if you don't want her to lie.",
+    "corrected": "Don't call her at the party if you don't want her to lie",
+    "reason": "jangueo = party/hanging out"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "That to the do's we lower the panty (tra)",
+    "corrected": "By 2 AM we're pulling down panties",
+    "reason": "do' = two (dos), referring to 2 AM, sexual reference"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "Let's lick your abs",
+    "corrected": "I'm gonna lick your abs",
+    "reason": "Vo'a = I'm going to (voy a)"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "I have it for you, come, so you can feel it'.",
+    "corrected": "I have it hard, come feel it",
+    "reason": "parao = standing/erect, sexual reference"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "If I kiss you and you grab it, then I'll take you away",
+    "corrected": "If I kiss you and you grab it, then I'm gonna take you",
+    "reason": "entonce vo'a = then I'm gonna (entonces voy a)"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "Go hunting, it is not datin'.",
+    "corrected": "She's hunting, not dating",
+    "reason": "Better subject agreement and flow"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 4,
+    "spanish": "Tra-tra, baby, tra-tra, baby",
+    "original": "Don't snore at me, you bastards, I can't see you here.",
+    "corrected": "Don't talk shit to me, you bastards, I don't see you here",
+    "reason": "roncar in this context means 'talk shit/brag', not literally snore"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 5,
+    "spanish": "Y ando con el mejor de to' los tiempo', Tainy",
+    "original": "And I'm with the best of all time, Tainy",
+    "corrected": "And I'm with the best of all times, Tainy",
+    "reason": "tiempo' = times (plural)"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 6,
+    "spanish": "Chequéate la historia",
+    "original": "And I don't have to brag, you already know",
+    "corrected": "Check the history",
+    "reason": "Wrong translation - should match 'Chequéate la historia'"
+  },
+  {
+    "song": "Eoo",
+    "line_order": 6,
+    "spanish": "Chequéate la historia",
+    "original": "And I don't have to snore, you know already.",
+    "corrected": "And I don't have to brag, you already know",
+    "reason": "roncar = brag/talk shit in this context, not snore"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 1,
+    "spanish": "La que yo quiera dice que sí",
+    "original": "2019, one blink and now we're here",
+    "corrected": "Whoever I want says yes",
+    "reason": "Translation completely mismatched - wrong Spanish line translated"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 1,
+    "spanish": "La que yo quiera dice que sí",
+    "original": "I don't know what happened, I asked God",
+    "corrected": "Yeah, 2:00 in the morning at the club",
+    "reason": "Translation completely mismatched - wrong Spanish line translated"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 1,
+    "spanish": "La que yo quiera dice que sí",
+    "original": "I don't know what happened.",
+    "corrected": "I don't know what happened, I asked God",
+    "reason": "Incomplete translation - missing the part about asking God"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 1,
+    "spanish": "La que yo quiera dice que sí",
+    "original": "2019, one blink of an eye and now we are here",
+    "corrected": "2019, one blink and now we're here",
+    "reason": "Puerto Rican contraction 'estamo' = 'estamos' (we are) was correctly understood but could be more natural"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 2,
+    "spanish": "Bien loco cantando la canción",
+    "original": "Everyone having a great time",
+    "corrected": "Really crazy singing the song",
+    "reason": "Misunderstood 'bien loco' - means 'really crazy/wild' not 'everyone having a great time'"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 2,
+    "spanish": "Bien loco cantando la canción",
+    "original": "Once again I was beaten by sentiment'.",
+    "corrected": "Once again my feelings got the best of me",
+    "reason": "Idiom 'me ganaron los sentimiento'' means emotions overwhelmed/got the best of me, plus missing contraction sentimiento' = sentimientos"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 2,
+    "spanish": "Bien loco cantando la canción",
+    "original": "That you haven't seen it for some time?",
+    "corrected": "That hasn't been seen around for some time?",
+    "reason": "Awkward pronoun reference - should be 'hasn't been seen around' referring to the person"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 2,
+    "spanish": "Bien loco cantando la canción",
+    "original": "Will he be jangling or will he be sleeping?",
+    "corrected": "Will she be partying or will she be sleeping?",
+    "reason": "Puerto Rican slang 'jangueando' means partying/hanging out, not 'jangling', and gender should be consistent with 'nena mía' (my baby girl)"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 2,
+    "spanish": "Bien loco cantando la canción",
+    "original": "Will she be partying or will she be sleeping?",
+    "corrected": "Everyone having a great time",
+    "reason": "Translation mismatched - 'To'l mundo pasándola cabrón' means everyone having a great time"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 3,
+    "spanish": "Las mujeres encima de mí",
+    "original": "After here we're going to-",
+    "corrected": "Women all over me",
+    "reason": "Translation completely mismatched - wrong Spanish line translated"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 3,
+    "spanish": "Las mujeres encima de mí",
+    "original": "The future struck me, in the past it left me",
+    "corrected": "The future hit me hard, left me stuck in the past",
+    "reason": "Idiom 'el futuro me golpeó' means reality/future hit me hard, and the meaning is clearer as 'left me stuck in the past'"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 3,
+    "spanish": "Las mujeres encima de mí",
+    "original": "Could it be that he has outgrown me and is doing well?",
+    "corrected": "Could it be that she got over me and is doing well?",
+    "reason": "Gender consistency - should be 'she' based on context of 'nena mía', and 'superó' means got over/moved on from"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 3,
+    "spanish": "Las mujeres encima de mí",
+    "original": "Could it be that she got over me and is doing well?",
+    "corrected": "After here we're going to-",
+    "reason": "Translation mismatched - 'Después de aquí nos vamos pa-' means after here we're going to (incomplete phrase with 'pa-' = para)"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 4,
+    "spanish": "¿Seguirá sola o está saliendo",
+    "original": "While I, drunk, think",
+    "corrected": "Is she still single or is she dating",
+    "reason": "Translation completely mismatched - wrong Spanish line translated"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 4,
+    "spanish": "¿Seguirá sola o está saliendo",
+    "original": "The one I always came with",
+    "corrected": "The one I always had orgasms with",
+    "reason": "'venía' in this sexual context refers to climaxing/having orgasms, not just 'came with'"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 4,
+    "spanish": "¿Seguirá sola o está saliendo",
+    "original": "Life didn't give me anything I asked of it",
+    "corrected": "Life didn't fulfill any of what I asked for",
+    "reason": "'no me cumplió na' (na = nada) means didn't fulfill/grant, not just didn't give"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 4,
+    "spanish": "¿Seguirá sola o está saliendo",
+    "original": "Happiness is gone",
+    "corrected": "Happiness went away",
+    "reason": "More literal and accurate translation of 'se alejó' (went away/distanced itself)"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 4,
+    "spanish": "¿Seguirá sola o está saliendo",
+    "original": "The one I always had orgasms with",
+    "corrected": "While I, drunk, think",
+    "reason": "Translation mismatched - lines are swapped"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 6,
+    "spanish": "Y ahora no sé na, y ahora no sé na, ey",
+    "original": "Mami, that's not me, that's not me",
+    "corrected": "And now I don't know anything, and now I don't know anything, hey",
+    "reason": "Translation mismatched - 'no sé na' = I don't know anything (na = nada)"
+  },
+  {
+    "song": "El Clúb",
+    "line_order": 6,
+    "spanish": "Y ahora no sé na, y ahora no sé na, ey",
+    "original": "And now I don't know anything, and now I don't know anything, hey",
+    "corrected": "Baby, that's not me, that's not me",
+    "reason": "Translation mismatched - these lines are swapped, and 'mami' in this context means baby/babe"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Now you're loose and go out to the disco to dance reggaeton",
+    "corrected": "You weren't like this before",
+    "reason": "Completely wrong translation - 'Tú no eras así' means 'You weren't like this before'"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "She's all grown up, but I've got her on file.",
+    "corrected": "She's grown up, rebellious, but I've got her watched",
+    "reason": "Missing 'embichá' (rebellious/wild) and 'fichá' means watched/monitored, not 'on file'"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "To be applied as e', to be fronted as e'.",
+    "corrected": "To apply herself as she is, to show off as she is",
+    "reason": "'e'' is contraction of 'es' (is), and 'a frontear' means to show off/act tough"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Now let go'-let go'-let go'-let go'.",
+    "corrected": "Now you're loose-loose-loose-loose",
+    "reason": "'suelta'' means loose/free, not 'let go' in this context"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Now he lets you loose and goes out to the disco to dance and party",
+    "corrected": "Now you're loose and go out to the disco to dance reggaeton",
+    "reason": "Subject is 'you' (tú), not 'he', and 'perrear' specifically means dancing reggaeton"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Because now he lets you loose and goes out to the disco to party",
+    "corrected": "Because now you're loose and go out to the disco to dance reggaeton",
+    "reason": "Subject is 'you' (tú), not 'he', and 'perrear' specifically means dancing reggaeton"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "La mai is spent praying to see if it will be collected",
+    "corrected": "Your mom spends her time praying to see if you'll settle down",
+    "reason": "'mai' means mom, and 'se recoge' means to settle down/behave, not 'be collected'"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Little toy and none of them say \"Andy\".",
+    "corrected": "Little toy and none says 'Andy'",
+    "reason": "Reference to Toy Story - toys should say Andy's name but don't"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Nail', eyelash, photo' with more flash, eh",
+    "corrected": "Nails, eyelashes, little photos with more flash, eh",
+    "reason": "'fotito'' is little photos (diminutive), and proper pluralization"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "I didn't do anything, I didn't do anything for you to be like this with me, no. I didn't do anything for you to be like this with me, no.",
+    "corrected": "I didn't do anything, I didn't do anything for you to be like this with me, no",
+    "reason": "Removed duplicate repetition that wasn't in original"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "I am jealous with my feelings'.",
+    "corrected": "I am protective of my feelings",
+    "reason": "'celoso con' in this context means protective/possessive, not jealous"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 1,
+    "spanish": "Tú no eras así",
+    "original": "Now he lets you loose and goes out to the disco to party",
+    "corrected": "Now you're loose and go out to the disco to dance reggaeton",
+    "reason": "Subject is 'you' (tú), not 'he', and 'perrear' specifically means dancing reggaeton"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "When I met you",
+    "corrected": "Listening to old Plan B songs",
+    "reason": "Completely wrong - 'Escuchando viejeras de Plan B' refers to listening to old songs by Plan B"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "If you're going to show me your ass in person, I don't have Snapchat.",
+    "corrected": "If you're going to show me that ass, let it be in person, I don't have Snapchat",
+    "reason": "Better flow and meaning - 'que sea' means 'let it be'"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "Then it makes me cringe, it hurts, it bothers me.",
+    "corrected": "Then it pisses me off, it hurts me, it bothers me",
+    "reason": "'encojona' is stronger than cringe - means to piss off/anger"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "Now he lets you go and goes out to the disco to dance and party",
+    "corrected": "Now you're loose and go out to the disco to dance reggaeton",
+    "reason": "Subject consistency and 'perrear' specifically means reggaeton dancing"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "To throw chavo' in the club, the hookah and the Moët",
+    "corrected": "To spend money in the club, hookah and Moët",
+    "reason": "'tirar chavos' means to spend money lavishly, and 'chavo'' is Puerto Rican slang for money"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "But it's 11:00 a.m. and you're on your way, hey",
+    "corrected": "But it's 11:00 and she hits the streets, hey",
+    "reason": "'coge' here means to take/hit (the streets), and context suggests PM not AM"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "How did we end up being enemies'?",
+    "corrected": "How did we end up being enemies?",
+    "reason": "Removed unnecessary apostrophe"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 2,
+    "spanish": "Escuchando viejeras de Plan B",
+    "original": "How did we end up being enemies?",
+    "corrected": "When I met you",
+    "reason": "This line was incorrectly matched - 'Cuando yo te conocí' means 'When I met you'"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 3,
+    "spanish": "\"Hey Shorty\" de Jowell y Randy",
+    "original": "Now you're loose and go out to the disco to dance reggaeton",
+    "corrected": "'Hey Shorty' by Jowell y Randy",
+    "reason": "Completely wrong - refers to a specific song by those artists"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 3,
+    "spanish": "\"Hey Shorty\" de Jowell y Randy",
+    "original": "Baby, if a me' ago I was giving you punishment",
+    "corrected": "Baby, if a month ago I was punishing you",
+    "reason": "'me'' is contraction of 'mes' (month), and better English flow"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 3,
+    "spanish": "\"Hey Shorty\" de Jowell y Randy",
+    "original": "If you write me to fight, you know you're going to get hurt.",
+    "corrected": "If you text me to fight, you know I'm going to ignore you",
+    "reason": "'vo'a pichar' means 'I'm going to ignore' (pichar = to ignore in PR slang)"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 3,
+    "spanish": "\"Hey Shorty\" de Jowell y Randy",
+    "original": "Now he lets you loose and goes out to the disco to party",
+    "corrected": "Now you're loose and go out to the disco to dance reggaeton",
+    "reason": "Consistency with subject and perrear meaning"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 4,
+    "spanish": "Que me la chingue en el parkin'",
+    "original": "If she's not with Vero she's with Nacha, and if she texts me it's because she's drunk",
+    "corrected": "Let her fuck me in the parking lot",
+    "reason": "Completely wrong translation - 'Que me la chingue en el parkin'' is sexual/explicit content"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 4,
+    "spanish": "Que me la chingue en el parkin'",
+    "original": "If you see me doing the same as you, don't be angry'.",
+    "corrected": "If you see me doing the same as you, don't get angry",
+    "reason": "Better English and removed unnecessary apostrophe"
+  },
+  {
+    "song": "Ketu Tecré",
+    "line_order": 4,
+    "spanish": "Que me la chingue en el parkin'",
+    "original": "If he's not with Vero he's with Nacha, and if he writes to me he's drunk.",
+    "corrected": "If she's not with Vero she's with Nacha, and if she texts me it's because she's drunk",
+    "reason": "Gender consistency - should be 'she' throughout, and better flow"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 1,
+    "spanish": "¿Pero cómo quieres que me vaya bien",
+    "original": "Black-haired or blonde, ma, you are the baby",
+    "corrected": "But how do you want me to do well",
+    "reason": "Translation completely mismatched the Spanish text"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 1,
+    "spanish": "¿Pero cómo quieres que me vaya bien",
+    "original": "Pelinegra o blondie, ma, tú ere la baby",
+    "corrected": "Black-haired or blonde, ma, you are the baby",
+    "reason": "Spanish text was left untranslated - 'ere' is phonetic contraction of 'eres'"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 2,
+    "spanish": "Si tú no me sacas de lo' close friend'?",
+    "original": "And you make him laugh with the jokes you used to tell me?",
+    "corrected": "If you don't get me out of the close friends?",
+    "reason": "Translation mismatched - 'close friend'' is social media terminology for limited story access"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 2,
+    "spanish": "Si tú no me sacas de lo' close friend'?",
+    "original": "Another galla like you, I haven't stepped on yet.",
+    "corrected": "Another girl like you, I haven't encountered yet",
+    "reason": "'galla' means woman/girl in PR slang, 'pisao' means encountered, not literally stepped on"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 2,
+    "spanish": "Si tú no me sacas de lo' close friend'?",
+    "original": "And you make him laugh with the jokes you used to tell me'?",
+    "corrected": "And you make him laugh with the jokes you used to tell me?",
+    "reason": "Corrected apostrophe placement - 'hacía'' is phonetic contraction of 'hacías'"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 3,
+    "spanish": "Guau, qué obra de arte",
+    "original": "That pussy was beautiful, precious, cute",
+    "corrected": "Wow, what a work of art",
+    "reason": "Translation completely mismatched - 'Guau, qué obra de arte' means 'Wow, what a work of art'"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 3,
+    "spanish": "Guau, qué obra de arte",
+    "original": "I'm stalking you to see what he's doing'.",
+    "corrected": "I spend time stalking you to see what you're doing",
+    "reason": "'hace'' is phonetic contraction of 'haces' (you do/are doing), not 'he's doing'"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 3,
+    "spanish": "Guau, qué obra de arte",
+    "original": "I don't have any new stickers, mommy, because you don't send them to me anymore'.",
+    "corrected": "I don't have any new stickers, mami, because you don't send them to me anymore",
+    "reason": "'envía'' is phonetic contraction and removed unnecessary apostrophe"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 3,
+    "spanish": "Guau, qué obra de arte",
+    "original": "I spend time stalking you to see what you're doing",
+    "corrected": "That pussy was beautiful, precious, cute",
+    "reason": "Translation mismatched - 'totito' is Puerto Rican slang for female genitalia"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 4,
+    "spanish": "Ta cabrón que pa ti es normal",
+    "original": "You're a bastard, it's normal for you",
+    "corrected": "It's fucked up that for you it's normal",
+    "reason": "'Ta cabrón' means 'it's fucked up/tough', not calling someone a bastard"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 4,
+    "spanish": "Ta cabrón que pa ti es normal",
+    "original": "Hooked, maybe it will pass",
+    "corrected": "You left me addicted, ey",
+    "reason": "Translation mismatched Spanish text - 'enviciao' means addicted"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 4,
+    "spanish": "Ta cabrón que pa ti es normal",
+    "original": "Enchulao, I may miss it.",
+    "corrected": "Hooked, maybe it will pass",
+    "reason": "'Enchulao' means hooked/attached, 'se me pase' means it will pass/fade"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 4,
+    "spanish": "Ta cabrón que pa ti es normal",
+    "original": "Enchulao, I may miss it.",
+    "corrected": "Hooked, maybe it will pass",
+    "reason": "Same correction for repeated line"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 6,
+    "spanish": "Total, esto no iba a funcionar",
+    "original": "It's fucked up how I've already disappeared from your life",
+    "corrected": "Total, this wasn't going to work",
+    "reason": "Translation mismatched - 'Total, esto no iba a funcionar' means 'Anyway/Total, this wasn't going to work'"
+  },
+  {
+    "song": "Kloufrens",
+    "line_order": 6,
+    "spanish": "Total, esto no iba a funcionar",
+    "original": "It's a bastard how I've already disappeared from your life",
+    "corrected": "It's fucked up how I've already disappeared from your life",
+    "reason": "'Está cabrón' means 'it's fucked up/tough', not 'it's a bastard'"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 1,
+    "spanish": "Un día Tonito lo invitó pa hacer una mudanza",
+    "original": "Give him more than me? Are you crazy?",
+    "corrected": "One day Tonito invited him to help with a move",
+    "reason": "Complete mismatch - translation is from a different line entirely"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 2,
+    "spanish": "Pa buscarse alguito, par de pesos, pa algo alcanza",
+    "original": "Thanks to mommy and daddy for all the ear tugging.",
+    "corrected": "And play one of my songs the day they bring Hostos back",
+    "reason": "Complete mismatch - translation is from a different line entirely"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 2,
+    "spanish": "Pa buscarse alguito, par de pesos, pa algo alcanza",
+    "original": "To get a little something, a couple of pesos, for something is enough",
+    "corrected": "To find something little, a couple of pesos, enough for something",
+    "reason": "Missed 'alguito' (something little) contraction and awkward phrasing"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 2,
+    "spanish": "Pa buscarse alguito, par de pesos, pa algo alcanza",
+    "original": "Bastard, I am legendary",
+    "corrected": "Dude, I am legendary",
+    "reason": "'Cabrón' in this context is positive/friendly, not insulting"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 2,
+    "spanish": "Pa buscarse alguito, par de pesos, pa algo alcanza",
+    "original": "Na, you bastard, you're crazy",
+    "corrected": "Nah, dude, you're crazy",
+    "reason": "'Cabrón' in this context is friendly/casual, not insulting"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 2,
+    "spanish": "Pa buscarse alguito, par de pesos, pa algo alcanza",
+    "original": "Thanks to mommy and daddy for all the ear pulling.",
+    "corrected": "Thanks to mommy and daddy for all the ear tugging",
+    "reason": "'Jalone'e oreja' refers to ear tugging/pulling as discipline, missed 'to lo'' (all the) contraction"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 3,
+    "spanish": "Prometió graduarse antes de casarse y lo cumplió",
+    "original": "I go at it with balls and ovaries.",
+    "corrected": "She promised to graduate before getting married and she kept her promise",
+    "reason": "Complete mismatch - translation is from a different line entirely"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 3,
+    "spanish": "Prometió graduarse antes de casarse y lo cumplió",
+    "original": "Guiding trucks like pa and grandpa",
+    "corrected": "Driving trucks like dad and grandpa",
+    "reason": "'Pa' is contraction for 'papá' (dad), and 'guiando' means driving in this context"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 3,
+    "spanish": "Prometió graduarse antes de casarse y lo cumplió",
+    "original": "I've never been seen on the street or on podcasts' complaining'.",
+    "corrected": "They've never seen me on the street or on podcasts complaining",
+    "reason": "Awkward apostrophe placement and missed proper conjugation"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 3,
+    "spanish": "Prometió graduarse antes de casarse y lo cumplió",
+    "original": "That's why now I take her wherever I want, you bastard, what was it? (Ja)",
+    "corrected": "That's why now I take her wherever, dude, what's up? (Ha)",
+    "reason": "'Cabrón' is friendly here, and '¿qué fue?' is casual 'what's up?'"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 3,
+    "spanish": "Prometió graduarse antes de casarse y lo cumplió",
+    "original": "I put him in with cojone and ovario'.",
+    "corrected": "I go at it with balls and ovaries",
+    "reason": "'Le meto' means 'I go at it/I put effort into it', not 'I put him in'"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 4,
+    "spanish": "Porque en la mudanza fue donde conoció a Lisy",
+    "original": "Ay, let's see, let's see, come on, bring it over here",
+    "corrected": "Because it was during the move that he met Lisy",
+    "reason": "Complete mismatch - translation is from a different line entirely"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 4,
+    "spanish": "Porque en la mudanza fue donde conoció a Lisy",
+    "original": "December of nine 'do', with Tito she married",
+    "corrected": "December of '02, she married Tito",
+    "reason": "'do'' is contraction for '02' (2002), and more natural word order"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 4,
+    "spanish": "Porque en la mudanza fue donde conoció a Lisy",
+    "original": "A round of applause for mommy and daddy because they really broke through.",
+    "corrected": "A round of applause for mommy and daddy because they really killed it",
+    "reason": "'Rompieron' in this context means 'they killed it/did amazing', not 'broke through'"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 4,
+    "spanish": "Porque en la mudanza fue donde conoció a Lisy",
+    "original": "Ay, vamo a ver, vamo a ver, dale, métele pa'cá",
+    "corrected": "Ay, let's see, let's see, come on, bring it over here",
+    "reason": "Missed contractions: 'vamo' = vamos, 'pa'cá' = para acá (over here)"
+  },
+  {
+    "song": "La Mudanza",
+    "line_order": 4,
+    "spanish": "Porque en la mudanza fue donde conoció a Lisy",
+    "original": "They try to measure strength and they can't even in pairs'.",
+    "corrected": "They try to measure strength and they can't even as pairs",
+    "reason": "Awkward apostrophe and 'en pareja'' means 'as pairs/together'"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 1,
+    "spanish": "Lelolai, lelolai",
+    "original": "She looks pretty, even when things sometimes go badly for her",
+    "corrected": "Lelolai, lelolai",
+    "reason": "Completely incorrect translation - 'Lelolai' is a traditional Puerto Rican folk chant that should not be translated"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 1,
+    "spanish": "Lelolai, lelolai",
+    "original": "She looks pretty, even if she sometimes goes wrong.",
+    "corrected": "She looks pretty, even when things sometimes go badly for her",
+    "reason": "Better phrasing - 'le vaya mal' means things go badly for her, not that she goes wrong"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 2,
+    "spanish": "Quieren al barrio mío y que abuelita se vaya",
+    "original": "In her eyes a smile, fighting back tears",
+    "corrected": "They want my neighborhood and for grandma to leave",
+    "reason": "Completely wrong translation - 'barrio mío' = my neighborhood, 'abuelita se vaya' = grandma to leave"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 2,
+    "spanish": "Quieren al barrio mío y que abuelita se vaya",
+    "original": "In the eyes' a smile, holding back tears",
+    "corrected": "In her eyes a smile, fighting back tears",
+    "reason": "Awkward apostrophe usage and 'aguantándose llorar' means fighting back tears"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 2,
+    "spanish": "Quieren al barrio mío y que abuelita se vaya",
+    "original": "They want my neighborhood and your children to go away.",
+    "corrected": "They want my neighborhood and for your children to leave",
+    "reason": "Better phrasing - 'se vayan' means to leave, not just go away"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 3,
+    "spanish": "No, no suelte' la bandera ni olvide' el lelolai",
+    "original": "Another jíbara fighting, one who didn't give up",
+    "corrected": "No, don't let go of the flag or forget the lelolai",
+    "reason": "Completely wrong translation - 'no suelte' la bandera' = don't let go of the flag, 'ni olvide' = don't forget"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 3,
+    "spanish": "No, no suelte' la bandera ni olvide' el lelolai",
+    "original": "The foam on its 'shore' looks like champagne",
+    "corrected": "The foam from its shores looks like champagne",
+    "reason": "Unnecessary quotes around shore and 'su' orilla'' = its shores (contracted form)"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 3,
+    "spanish": "No, no suelte' la bandera ni olvide' el lelolai",
+    "original": "Another jíbara fighting, one who did not let herself",
+    "corrected": "Another jíbara fighting, one who didn't give up",
+    "reason": "'no se dejó' means didn't give up or didn't let herself be defeated, not incomplete phrase"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 4,
+    "spanish": "No quería irse tampoco y en la isla se quedó",
+    "original": "They are alcohol for the wounds, dancing away the sadness",
+    "corrected": "She didn't want to leave either and stayed on the island",
+    "reason": "Completely wrong translation - 'No quería irse tampoco' = didn't want to leave either, 'se quedó' = stayed"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 4,
+    "spanish": "No quería irse tampoco y en la isla se quedó",
+    "original": "They are alcohol for the wounds, for the sadness to dance.",
+    "corrected": "They are alcohol for the wounds, dancing away the sadness",
+    "reason": "'pa la tristeza bailar' is the phrase meaning dancing away sadness, not for sadness to dance"
+  },
+  {
+    "song": "Lo Que Le Pasó a Hawaii",
+    "line_order": 4,
+    "spanish": "No quería irse tampoco y en la isla se quedó",
+    "original": "He didn't want to leave for Orlando, but the corrupt man kicked him out.",
+    "corrected": "He didn't want to go to Orlando, but the corrupt one threw him out",
+    "reason": "'irse pa Orlando' = go to Orlando, 'lo echó' = threw him out/forced him out"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 1,
+    "spanish": "Hoy le dimo y mañana le damo",
+    "original": "you're a naughty girl just like me",
+    "corrected": "Today we gave it and tomorrow we give it",
+    "reason": "Completely mismatched translation - 'dimo/damo' means 'we gave/we give'"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 1,
+    "spanish": "Hoy le dimo y mañana le damo",
+    "original": "Mommy, you look good next to me",
+    "corrected": "Mommy, you look good by my side",
+    "reason": "'lao' is contracted form of 'lado' (side), 've'' is contracted 'ves' (you look)"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 1,
+    "spanish": "Hoy le dimo y mañana le damo",
+    "original": "Baby, you're a star, that mouth tastes like a carom.",
+    "corrected": "Baby, you're a star, that mouth tastes like star fruit",
+    "reason": "Carambola is star fruit, not carom"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 1,
+    "spanish": "Hoy le dimo y mañana le damo",
+    "original": "Eh-ah, devil, you're a beauty just like me.",
+    "corrected": "Eh-ah, damn, you're a naughty girl just like me",
+    "reason": "'bellaquita' means naughty/sexually mischievous girl, not beauty"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 2,
+    "spanish": "Sigue bailando, mami, que te estoy midiendo el ritmo",
+    "original": "It means I'm not going to give you a break anymore",
+    "corrected": "Weekend in Coamo",
+    "reason": "Completely wrong translation - this is about spending weekend in Coamo (a PR town)"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 2,
+    "spanish": "Sigue bailando, mami, que te estoy midiendo el ritmo",
+    "original": "Perfumito nuevo, you smell like a bastard",
+    "corrected": "New perfume, you smell amazing",
+    "reason": "'cabrón' here is positive slang meaning awesome/great, not bastard"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 2,
+    "spanish": "Sigue bailando, mami, que te estoy midiendo el ritmo",
+    "original": "It means that you will no longer get a break.",
+    "corrected": "It means I'm not going to give you a break anymore",
+    "reason": "Vo'a is 'I'm going to', not 'you will'"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 3,
+    "spanish": "Si me ve' por ahí, ni me conoce'",
+    "original": "On the mountain I'm going to give you a Russian, hey",
+    "corrected": "If you see me around, you don't even know me",
+    "reason": "Completely wrong translation - 've'' means 'see', 'conoce'' means 'know'"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 3,
+    "spanish": "Si me ve' por ahí, ni me conoce'",
+    "original": "Five-six, I've got you",
+    "corrected": "Five-six, I've got you dominated",
+    "reason": "'dominao' means dominated, should be included"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 3,
+    "spanish": "Si me ve' por ahí, ni me conoce'",
+    "original": "I almost broke your mahon",
+    "corrected": "I almost tore your jeans",
+    "reason": "'mahón' means jeans in Puerto Rican Spanish"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 3,
+    "spanish": "Si me ve' por ahí, ni me conoce'",
+    "original": "On the mountain you're going to do the roller coaster, hey",
+    "corrected": "On the mountain I'm going to give you oral sex, hey",
+    "reason": "'hacer la rusa' is sexual slang, not roller coaster"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 4,
+    "spanish": "Hoy estoy pa ti, ¿qué vas a hacer si me pego?",
+    "original": "Cinderella after 12:00 midnight",
+    "corrected": "Today I'm here for you, what are you going to do if I get close?",
+    "reason": "Completely wrong translation - doesn't match Spanish at all"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 4,
+    "spanish": "Hoy estoy pa ti, ¿qué vas a hacer si me pego?",
+    "original": "And we still haven't even chingao",
+    "corrected": "And we still haven't even had sex",
+    "reason": "'chingao' means had sex - should be translated clearly"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 4,
+    "spanish": "Hoy estoy pa ti, ¿qué vas a hacer si me pego?",
+    "original": "I got you dancing without modale' (dale)",
+    "corrected": "I got you dancing without manners (come on)",
+    "reason": "'modale'' is contracted 'modales' (manners)"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 4,
+    "spanish": "Hoy estoy pa ti, ¿qué vas a hacer si me pego?",
+    "original": "What the fuck? What is it about you that puts me in muse?",
+    "corrected": "What the hell? What do you have that inspires me?",
+    "reason": "'cojone'' is milder exclamation, 'pone en musa' means inspires/motivates"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 4,
+    "spanish": "Hoy estoy pa ti, ¿qué vas a hacer si me pego?",
+    "original": "Cinderella after 12:00 noon",
+    "corrected": "Cinderella after 12:00 midnight",
+    "reason": "Should be midnight (medianoche), not noon"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 5,
+    "spanish": "Ya me convertí",
+    "original": "Damn, you and I are the same",
+    "corrected": "I already transformed",
+    "reason": "Wrong translation - 'Ya me convertí' means 'I already transformed/became'"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 5,
+    "spanish": "Ya me convertí",
+    "original": "Hell, you and I are alike",
+    "corrected": "Damn, you and I are the same",
+    "reason": "'somo iguales' means 'are the same', and 'diantre' is milder than hell"
+  },
+  {
+    "song": "Perfumito Nuevo",
+    "line_order": 7,
+    "spanish": "O buscarme pa chingar",
+    "original": "That I like how you smell",
+    "corrected": "Or look for me to have sex",
+    "reason": "Wrong translation - 'buscarme pa chingar' means look for me to have sex"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 3,
+    "spanish": "Feliz Año Nuevo, pero no tan feliz",
+    "original": "The Three Wise Men ignored me and Santa never arrived",
+    "corrected": "Happy New Year, but not so happy",
+    "reason": "Wrong Spanish text matched - this line is 'Feliz Año Nuevo, pero no tan feliz'"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 3,
+    "spanish": "Feliz Año Nuevo, pero no tan feliz",
+    "original": "The Three Wise Men were out and Santa never arrived",
+    "corrected": "The Three Wise Men ignored me and Santa never arrived",
+    "reason": "'picharon' means 'ignored' in Puerto Rican slang, not 'were out'"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 4,
+    "spanish": "Llorando y bebiendo Pitorro de Coco",
+    "original": "Crying and drinking Coconut Spout",
+    "corrected": "Crying and drinking Coconut Pitorro",
+    "reason": "Pitorro is a Puerto Rican rum, not 'spout' - it's the name of the alcoholic drink"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 4,
+    "spanish": "Llorando y bebiendo Pitorro de Coco",
+    "original": "Crying and drinking Coconut Pitorro",
+    "corrected": "They gave you a kiss at 12 and it wasn't me who gave it to you",
+    "reason": "Wrong Spanish text matched - this line is about someone else kissing her at midnight"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 4,
+    "spanish": "Llorando y bebiendo Pitorro de Coco",
+    "original": "Crying and drinking Coconut Spout",
+    "corrected": "Crying and drinking Coconut Pitorro",
+    "reason": "Pitorro is a Puerto Rican rum, not 'spout'"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 5,
+    "spanish": "Que me trajo abuelo pa que vacilara",
+    "original": "That grandfather brought me here to make me waver",
+    "corrected": "That grandfather brought me so I could have fun",
+    "reason": "'vacilar' means 'to have fun/party' in Puerto Rican slang, not 'to waver'"
+  },
+  {
+    "song": "Pitorro de Coco",
+    "line_order": 6,
+    "spanish": "No pa que por un cuero a las 12 llorara",
+    "original": "Not so that I would cry for a leather at 12 o'clock.",
+    "corrected": "Not so that I would cry for a woman at 12 o'clock.",
+    "reason": "'cuero' is Puerto Rican slang for woman/girl, not literal 'leather'"
+  },
+  {
+    "song": "Turista",
+    "line_order": 2,
+    "spanish": "Tú solo viste lo mejor de mí",
+    "original": "It's been like this for many years'.",
+    "corrected": "It's been like this for many years",
+    "reason": "año' is the contracted form of años (years) with dropped 's' - should not include apostrophe in English"
+  },
+  {
+    "song": "Turista",
+    "line_order": 3,
+    "spanish": "Una bailaíta",
+    "original": "A little dance",
+    "corrected": "A little dance",
+    "reason": "Actually correct - bailaíta is diminutive form meaning 'little dance'"
+  },
+  {
+    "song": "Turista",
+    "line_order": 3,
+    "spanish": "Una bailaíta",
+    "original": "Hiding my feelings'.",
+    "corrected": "Hiding my feelings",
+    "reason": "sentimiento' is contracted form of sentimientos - should not include apostrophe in English"
+  },
+  {
+    "song": "Turista",
+    "line_order": 5,
+    "spanish": "El porqué de mis herida'",
+    "original": "The reason for my wounds'.",
+    "corrected": "The reason for my wounds",
+    "reason": "herida' is contracted form of heridas - should not include apostrophe in English"
+  },
+  {
+    "song": "Turista",
+    "line_order": 6,
+    "spanish": "Vamos a disfrutar que",
+    "original": "Looking into my eyes'.",
+    "corrected": "Looking into each other's eyes",
+    "reason": "Mirándono should be mirándanos (looking at each other) and ojo' is contracted ojos - translation should reflect the mutual action"
+  },
+  {
+    "song": "Turista",
+    "line_order": 6,
+    "spanish": "Vamos a disfrutar que",
+    "original": "And it wasn't up to you to cure her'.",
+    "corrected": "And it wasn't up to you to cure them",
+    "reason": "curarla' refers back to 'heridas' (wounds, feminine plural) - should be 'them' not 'her'"
+  },
+  {
+    "song": "Turista",
+    "line_order": 6,
+    "spanish": "Vamos a disfrutar que",
+    "original": "It's been like this for many years', ey",
+    "corrected": "It's been like this for many years, ey",
+    "reason": "año' is contracted años - should not include apostrophe in English"
+  },
+  {
+    "song": "Turista",
+    "line_order": 6,
+    "spanish": "Vamos a disfrutar que",
+    "original": "And it wasn't your turn to cure her'.",
+    "corrected": "And it wasn't your turn to cure them",
+    "reason": "curarla' refers to wounds (heridas, feminine plural) - should be 'them' not 'her'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "Oh, ma, yo quiero que tú seas mi loba",
+    "corrected": "Oh, ma, I want you to be my wolf girl",
+    "reason": "Translation doesn't match Spanish text - original says 'I want you to be my wolf girl'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "Baby, you do it' as if I knew'.",
+    "corrected": "Baby, you do it as if you knew how",
+    "reason": "Fixed pronoun - 'supiera' means 'you knew', not 'I knew', and corrected apostrophe placement"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "She came to him as crazy as a gringa in La Perla.",
+    "corrected": "She arrived totally wild like a gringa in La Perla",
+    "reason": "Better conveys the meaning of 'bien loca' as 'totally wild/crazy'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "The eyes' chiquitito', as if he were Don",
+    "corrected": "The little squinty eyes, like he's Asian",
+    "reason": "'Chiquitito' means small/squinty, and 'como si fuera Don' likely refers to Asian features"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "You're a pitcher, Mommy, but I grew up on the mound.",
+    "corrected": "You're a show-off, mami, but I grew up in the hood",
+    "reason": "'Pitcher' is slang for show-off, 'loma' means hill/hood, not baseball mound"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "Baby (baby), that ass is a bug's ass.",
+    "corrected": "Baby (baby), that ass belongs to a boss lady",
+    "reason": "'Bichota' means female boss/boss lady, not 'bug'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 1,
+    "spanish": "Vamo a ver si es verdá, eh",
+    "original": "What, baby, they told me you're a groper!",
+    "corrected": "What?! Baby, they told me you're hands-on",
+    "reason": "'Meter mano' means to be hands-on/forward, not necessarily groping"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "Even you would get horny if I looked at you with my eyes",
+    "corrected": "Ma, forget about it, you come, I'll go",
+    "reason": "Translation doesn't match Spanish text at all"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "Even you would be a knave if I could see you with my eyes, I could see you.",
+    "corrected": "Even you would get horny if I looked at you with my eyes, looked at you",
+    "reason": "'Bellaca' means horny/sexually aroused, not 'knave'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "And I always wanted to be a critter",
+    "corrected": "And I always wanted to be a big shot",
+    "reason": "'Bichote' means big shot/boss, not 'critter'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "I am drinking and I also burned",
+    "corrected": "I'm drinking and I also smoked",
+    "reason": "'Quemé' in this context means smoked (weed), not burned"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "And because you are good",
+    "corrected": "And because you're hot",
+    "reason": "'Tas buena' means you're hot/attractive, not just 'good'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "You gave me a like and I gave you two thumbs up.",
+    "corrected": "You gave me a like and I gave you two back",
+    "reason": "'Dos p'atrá' means two back, not thumbs up"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 2,
+    "spanish": "Ma, tú olvídate, tú te vienes, yo voy",
+    "original": "Even you would be a knave if I saw you with my eyes, I could see you'.",
+    "corrected": "Even you would get horny if I looked at you with my eyes, looked at you",
+    "reason": "'Bellaca' means horny/sexually aroused, not 'knave'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "I'm drinking and I also smoked",
+    "corrected": "Come on, follow me, this is what you were looking for",
+    "reason": "Translation doesn't match Spanish text at all"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "Let's see if it's true (true)",
+    "corrected": "Come on, follow me with that anime-style fake ass",
+    "reason": "Translation doesn't match Spanish text at all"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "Vámono pa onde no se nota",
+    "corrected": "Let's go somewhere we won't be noticed",
+    "reason": "Should be translated, not left in Spanish"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "I walk with Bad Bu, with Dei V, you with your' girla'.",
+    "corrected": "I hang with Bad Bunny, with Dei V, you with your girls",
+    "reason": "'Ando' means hang out/roll with, 'girla' is just 'girls'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "A bellaquear, then to fuck",
+    "corrected": "To get freaky, then to hook up",
+    "reason": "'Bellaquear' means to get freaky/sexual, 'coger' can mean hook up"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "Yo bajo pa tu barrio lowkey in the Tacoma",
+    "corrected": "I'll come down to your neighborhood lowkey in the Tacoma",
+    "reason": "Should be fully translated"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "Yo toy drinking and I also burned",
+    "corrected": "I'm drinking and I also smoked",
+    "reason": "'Toy' means 'I'm', 'quemé' means smoked"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 3,
+    "spanish": "Dale, sígueme, esto e' lo que estaba' buscando",
+    "original": "Vamo a ver si es verdadá (truth)",
+    "corrected": "Let's see if it's true (true)",
+    "reason": "'Verdá' is contraction of 'verdad' meaning 'true'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "I'm going to devour you like a red light",
+    "corrected": "My freaky message",
+    "reason": "Translation doesn't match Spanish text at all"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "He climbed a story nearby, toy that reached him on foot, еh.",
+    "corrected": "She posted a story nearby, I'm about to walk over to her, eh",
+    "reason": "'Subió una story' means posted a story, 'toy que le llego a pie' means I'm going to walk to her"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "The one I don't let go, but you let go, yes.",
+    "corrected": "The one I don't let loose, but you're loose, yeah",
+    "reason": "'Suelta' means loose/free, not just 'let go'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "You know, what' your idols",
+    "corrected": "You know, your idols",
+    "reason": "Removed unnecessary apostrophe"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "And I do not know if e'la yerba, but you have",
+    "corrected": "And I don't know if it's the weed, but you have",
+    "reason": "'E'la yerba' means 'it's the weed'"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "Or if not in the Lambo in a movie cabrona",
+    "corrected": "Or if not in the Lambo in a badass movie",
+    "reason": "'Cabrona' means badass/tough, not just left untranslated"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 4,
+    "spanish": "Mi mensaje bellaqueando",
+    "original": "I'm going to eat you like a red shark",
+    "corrected": "I'm going to devour you like a red light",
+    "reason": "'Lu' roja' means red light, not shark"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 5,
+    "spanish": "Dei V, Underwater (bellaquita)",
+    "original": "Pero tú tas suel-, pero-but you tas suelta (loose), ey",
+    "corrected": "But you're loos-, but-but you're loose (loose), ey",
+    "reason": "'Tas' means 'you're', should be translated"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 6,
+    "spanish": "Tienen que apretar",
+    "original": "That's why no ass intimidates me, fake",
+    "corrected": "They have to step up",
+    "reason": "Translation doesn't match Spanish text at all"
+  },
+  {
+    "song": "Veldá",
+    "line_order": 6,
+    "spanish": "Tienen que apretar",
+    "original": "That's why no asshole will ever hurt me, you trick!",
+    "corrected": "That's why no ass intimidates me, fake",
+    "reason": "'Ajora' means intimidate, 'embuste' means fake/phony"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 1,
+    "spanish": "Yeh, yeh, sí, sí",
+    "original": "I'm ready for trouble, tell me if you're down",
+    "corrected": "Oh, oh, she wants to kiss me",
+    "reason": "Complete mistranslation - 'me quiere besar' means 'she wants to kiss me'"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 1,
+    "spanish": "Yeh, yeh, sí, sí",
+    "original": "Today the street is on fire, hookah, pill milling",
+    "corrected": "Today the street is lit, hookah, crushed pill",
+    "reason": "Better translation of 'prendí'a' (lit/on fire) and 'molí'a' (crushed/ground up)"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 1,
+    "spanish": "Yeh, yeh, sí, sí",
+    "original": "I'm hunting and I die while I'm hunting",
+    "corrected": "I'm hunting and I die dancing reggaeton",
+    "reason": "Misunderstood 'perreando' - means dancing reggaeton, not hunting"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 1,
+    "spanish": "Yeh, yeh, sí, sí",
+    "original": "You are listening to the one with the most",
+    "corrected": "You're listening to the one who goes hardest",
+    "reason": "Incomplete translation - 'el que más le mete' means the one who goes hardest/strongest"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 1,
+    "spanish": "Yeh, yeh, sí, sí",
+    "original": "I'm ready for trouble, tell me if you're in trouble",
+    "corrected": "I'm ready for trouble, tell me if you're down",
+    "reason": "Misunderstood 'si tú lía' - means 'if you're down/ready' not 'in trouble'"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "I don't waste time, I change them like Rosalía",
+    "corrected": "I don't waste time, I change them like Rosalía",
+    "reason": "Mistranslation appears to be mixing up lines - this line doesn't appear in the Spanish column provided"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "I'm hunting and I die while I'm hunting",
+    "corrected": "I'm hunting and I die dancing reggaeton",
+    "reason": "Same error - 'perreando' means dancing reggaeton"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "Your friends and all the corillo are very rich.",
+    "corrected": "Your friends and the whole crew are really hot",
+    "reason": "Misunderstood 'rica' (hot/sexy) and 'corillo' (crew/group)"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "She knows there is a ticket here",
+    "corrected": "She knows there's money here",
+    "reason": "'Tique' is slang for money, not literal ticket"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "Look at me now, expertly bitching",
+    "corrected": "Look at me now, dancing reggaeton expertly",
+    "reason": "'Perreando' means dancing reggaeton, 'bitching' is inappropriate translation"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "Mommy, so you can see how to dance reggaeton",
+    "corrected": "Look at me wrong if you want me to f*ck you",
+    "reason": "Complete mistranslation - 'mírame mal si quieres que te singue' has sexual connotation"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 2,
+    "spanish": "Dale, mami, suéltate el grillete",
+    "original": "Mommy, so you can see how it's like to get perreated",
+    "corrected": "Mommy, so you can see how reggaeton is danced",
+    "reason": "'Perreated' isn't a word - should be 'how reggaeton is danced'"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 3,
+    "spanish": "Ponte en cuatro, que te vo'a dar fuete",
+    "original": "She wants me to give it to her",
+    "corrected": "Get on all fours, I'm gonna whip you",
+    "reason": "Complete mistranslation - 'ponte en cuatro' = get on all fours, 'fuete' = whip"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 3,
+    "spanish": "Ponte en cuatro, que te vo'a dar fuete",
+    "original": "Well drunk' los tre",
+    "corrected": "All three of us really drunk",
+    "reason": "Incomplete translation - 'bien borracho' los tre' means all three really drunk"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 3,
+    "spanish": "Ponte en cuatro, que te vo'a dar fuete",
+    "original": "He wants me to apply it to him",
+    "corrected": "She wants me to give it to her",
+    "reason": "Wrong gender and better translation of 'aplicar' in sexual context"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 3,
+    "spanish": "Ponte en cuatro, que te vo'a dar fuete",
+    "original": "I'm hunting and I die while I'm hunting",
+    "corrected": "I'm hunting and I die dancing reggaeton",
+    "reason": "Same error - 'perreando' means dancing reggaeton"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 3,
+    "spanish": "Ponte en cuatro, que te vo'a dar fuete",
+    "original": "I'll take you to PR for the weekend",
+    "corrected": "I'm gonna take you to PR all weekend",
+    "reason": "Better translation of 'to el finde' (all weekend)"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 4,
+    "spanish": "¿Dónde están las mala' que son bienvenía'?",
+    "original": "Baby, I'm going to take both of them",
+    "corrected": "Where are the bad girls who are welcome?",
+    "reason": "Complete mistranslation - doesn't match the Spanish text provided"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 4,
+    "spanish": "¿Dónde están las mala' que son bienvenía'?",
+    "original": "Tell him that tonight we're going to janguear",
+    "corrected": "Tell her that tonight we're going to party",
+    "reason": "Wrong gender and 'janguear' means to party/hang out"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 4,
+    "spanish": "¿Dónde están las mala' que son bienvenía'?",
+    "original": "Because now you're going to muss your hair",
+    "corrected": "Because right now I'm going to mess up your hair",
+    "reason": "Wrong subject - 'te vo'a' means 'I'm going to' not 'you're going to'"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 4,
+    "spanish": "¿Dónde están las mala' que son bienvenía'?",
+    "original": "Tell him that tonight we are going to janguear",
+    "corrected": "Tell her that tonight we're going to party",
+    "reason": "Wrong gender and 'janguear' means to party"
+  },
+  {
+    "song": "Voy a Llevarte Pa' PR",
+    "line_order": 4,
+    "spanish": "¿Dónde están las mala' que son bienvenía'?",
+    "original": "Baby, I'm going to take the do's away",
+    "corrected": "Baby, I'm gonna take both of them",
+    "reason": "Misunderstood 'do'' which is contraction of 'dos' (two/both)"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 1,
+    "spanish": "Baby, yo sé, baby, yo sé",
+    "original": "But put on your bathing suit, baby, I'm going to pick you up",
+    "corrected": "Baby, I know, baby, I know",
+    "reason": "Wrong translation - the Spanish says 'Baby, yo sé, baby, yo sé' which means 'Baby, I know, baby, I know'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 1,
+    "spanish": "Baby, yo sé, baby, yo sé",
+    "original": "Baby, we'll take you for a walk on the beach.",
+    "corrected": "Baby, I'm going to take you for a walk on the little beach",
+    "reason": "Misunderstood 'te vo'a' (I'm going to) as 'we'll take you' and missed the diminutive 'playita'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 1,
+    "spanish": "Baby, yo sé, baby, yo sé",
+    "original": "And for a kiss from the skinny girl I'd give anything (out)",
+    "corrected": "And for a kiss from the skinny girl I'd give anything (anything)",
+    "reason": "'fuera' here is repetition of 'lo que fuera' for emphasis, not 'out'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 1,
+    "spanish": "Baby, yo sé, baby, yo sé",
+    "original": "Baby, you're going for a walk on the beach (ja)",
+    "corrected": "Baby, I'm going to take you for a walk on the little beach (ha)",
+    "reason": "Misunderstood 'te vo'a dar' as 'you're going' instead of 'I'm going to give you'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 1,
+    "spanish": "Baby, yo sé, baby, yo sé",
+    "original": "But put on your bathing suit, mommy, I'm coming for you.",
+    "corrected": "But put on your bathing suit, baby, I'm going to pick you up",
+    "reason": "'que tе vo'a buscar' means 'I'm going to pick you up', and 'mami' is better as 'baby' in this context"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 2,
+    "spanish": "Te vo'a llenar de besitos la carita",
+    "original": "That we're well, it doesn't take much",
+    "corrected": "I'm going to fill your little face with kisses",
+    "reason": "Wrong translation - this line says 'Te vo'a llenar de besitos la carita' which means filling face with little kisses"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 2,
+    "spanish": "Te vo'a llenar de besitos la carita",
+    "original": "Be well, it doesn't take much",
+    "corrected": "That we're well, it doesn't take much",
+    "reason": "'Que estemo bien' means 'That we are well' - 'estemo' is contracted form of 'estemos'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 3,
+    "spanish": "Un día conmigo es lo que tú necesita'",
+    "original": "And a day together is what I need",
+    "corrected": "A day with me is what you need",
+    "reason": "This is the first instance of this line - 'Un día conmigo es lo que tú necesita'' means 'A day with me is what you need'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 3,
+    "spanish": "Un día conmigo es lo que tú necesita'",
+    "original": "And a day together' is what I need",
+    "corrected": "And a day together is what I need",
+    "reason": "'juntito'' means 'together' (diminutive) - 'juntito'' is the contracted form of 'juntitos'"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 5,
+    "spanish": "Y en repeat te vo'a tocar, ey",
+    "original": "Let's kiss in front of the waves (even if it's just a little peck, little peck)",
+    "corrected": "And on repeat I'm going to play you, ey",
+    "reason": "Wrong translation - 'Y en repeat te vo'a tocar' means 'And on repeat I'm going to play you' (like a song)"
+  },
+  {
+    "song": "Weltita",
+    "line_order": 5,
+    "spanish": "Y en repeat te vo'a tocar, ey",
+    "original": "Vamo a besarno frente a las ola' (even if it's just a peck, a peck).",
+    "corrected": "Let's kiss in front of the waves (even if it's just a little peck, little peck)",
+    "reason": "Should translate the Spanish part - 'Vamo a besarno frente a las ola'' means 'Let's kiss in front of the waves'"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "You have swag, mommy, me too",
+    "corrected": "If you want to have fun",
+    "reason": "Completely wrong translation - Spanish says 'Si te quieres divertir' (If you want to have fun)"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "The parakeet is white, yes, yes",
+    "corrected": "The cocaine is white, yes, yes",
+    "reason": "Missed slang - 'perico' in this context means cocaine, not parakeet"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "A shot of cañita at Toñita's house, ay",
+    "corrected": "A shot of rum at Toñita's house, ay",
+    "reason": "Missed slang - 'cañita' means rum in Puerto Rican Spanish"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "You have an itch, mommy, me too.",
+    "corrected": "You have swag, mommy, me too",
+    "reason": "Missed slang - 'piquete' means swag/attitude/style, not itch"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "Shh, careful, no one can hear us.",
+    "corrected": "Shh, careful, that no one hears us",
+    "reason": "Grammar - 'que nadie nos escuche' is subjunctive expressing concern/instruction"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 1,
+    "spanish": "Si te quieres divertir",
+    "original": "You have an itch, mommy, me too.",
+    "corrected": "You have swag, mommy, me too",
+    "reason": "Missed slang - 'piquete' means swag/attitude/style, not itch"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "With charm and with primor (but what is this?)",
+    "corrected": "With charm and with elegance (but what is this?)",
+    "reason": "Untranslated word - 'primor' means elegance/finesse"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "El tusi, rosita, eh-eh",
+    "corrected": "The pink cocaine, little pink one, eh-eh",
+    "reason": "Missed slang - 'tusi' means pink cocaine and 'rosita' means pink drug"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "Heavy flow, Big Pun",
+    "corrected": "PR feels close to home",
+    "reason": "Completely wrong translation - Spanish says 'PR se siente cerquita' using idiom meaning PR feels nearby/close to home"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "Shh, careful, no one can hear us.",
+    "corrected": "Shh, careful, that no one hears us",
+    "reason": "Grammar - 'que nadie nos escuche' is subjunctive expressing concern/instruction"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "I hang out with my cousin, drunk, rulay",
+    "corrected": "I hang out with my cousin, drunk, relaxed",
+    "reason": "Missed slang - 'rulay' means relaxed/chill"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 2,
+    "spanish": "Con encanto y con primor (¿pero qué es esto?)",
+    "original": "I hang out with my cousin, drunk, relaxed",
+    "corrected": "Heavy flow, Big Pun",
+    "reason": "Completely wrong translation - Spanish says 'Flow pesado, Big Pun' (Heavy flow, Big Pun)"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 3,
+    "spanish": "Lo tienes que mover, ve-ve-ve-ve-ve-ve-ve-ve-ve-ve-ve",
+    "original": "Shh, careful, that no one hears us",
+    "corrected": "You have to move it, ve-ve-ve-ve-ve-ve-ve-ve-ve-ve-ve",
+    "reason": "Completely wrong translation - Spanish says 'Lo tienes que mover' with repetitive sounds"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 3,
+    "spanish": "Lo tienes que mover, ve-ve-ve-ve-ve-ve-ve-ve-ve-ve-ve",
+    "original": "With muffler we steal the jacks",
+    "corrected": "With silencer we steal the women",
+    "reason": "Missed slang - 'gatas' means women/girls, not jacks"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 3,
+    "spanish": "Lo tienes que mover, ve-ve-ve-ve-ve-ve-ve-ve-ve-ve-ve",
+    "original": "I feel like the Pencil in \"Capea el Dough\".",
+    "corrected": "I feel like Lápiz in \"Capea el Dough\"",
+    "reason": "Artist name - 'Lápiz' should remain as the artist's name, not translated to 'Pencil'"
+  },
+  {
+    "song": "Nuevayol",
+    "line_order": 3,
+    "spanish": "Lo tienes que mover, ve-ve-ve-ve-ve-ve-ve-ve-ve-ve-ve",
+    "original": "Shh, careful, no one can hear us.",
+    "corrected": "Shh, careful, that no one hears us",
+    "reason": "Grammar - 'que nadie nos escuche' is subjunctive expressing concern/instruction"
+  }
+]

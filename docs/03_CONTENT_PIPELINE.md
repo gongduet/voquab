@@ -1,6 +1,6 @@
 # 03_CONTENT_PIPELINE.md
 
-**Last Updated:** December 30, 2025
+**Last Updated:** January 2, 2026
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -1545,12 +1545,55 @@ const phraseCount = hasPhraseChapters ? Math.floor(sessionSize * 0.2) : 0
 
 ---
 
+## LYRICS IMPORT PIPELINE
+
+A separate pipeline exists for importing song lyrics. See **34_LYRICS_IMPORT_PIPELINE.md** for full documentation.
+
+### Key Differences from Book Pipeline
+
+| Aspect | Book Pipeline | Lyrics Pipeline |
+|--------|---------------|-----------------|
+| **Script** | `scripts/import_chapter.py` | `scripts/import_lyrics.py` |
+| **Structure** | chapters → sentences → words | songs → sections → lines |
+| **Slang** | Standard lemmas only | Separate `slang_terms` table |
+| **Translation** | Per-lemma, then sentences | Per-line bulk translation |
+| **Validation** | AI semantic validation | AI translation fixing |
+
+### Lyrics-Specific Features
+
+1. **Slang Detection**: AI-powered detection of Puerto Rican slang and phonetic spellings
+2. **Section Types**: verse, chorus, bridge, intro, outro (vs chapters)
+3. **Vocalization Flagging**: Auto-detect skippable lines ("oh", "eh", etc.)
+4. **Gender Heuristics**: Spanish word endings determine article (el/la)
+
+### Vocabulary Overlap
+
+Songs share lemmas and phrases with El Principito:
+- `song_lemmas` links songs to existing `lemmas` table
+- `song_phrases` links songs to existing `phrases` table
+- 17.2% of El Principito vocabulary appears in Bad Bunny album
+
+### Usage
+
+```bash
+python3 scripts/import_lyrics.py --write            # Parse and save
+python3 scripts/import_lyrics.py --translate        # DeepL translation
+python3 scripts/import_lyrics.py --flag-skippable   # Detect vocalizations
+python3 scripts/import_lyrics.py --analyze          # AI slang detection
+python3 scripts/import_lyrics.py --insert-vocab     # Save vocabulary
+python3 scripts/import_lyrics.py --extract-lemmas   # spaCy lemmas
+python3 scripts/import_lyrics.py --fix-translations # AI correction
+```
+
+---
+
 ## REVISION HISTORY
 
-- 2025-11-30: Initial draft (Claude)
-- 2025-12-06: Added Steps 10-11 for AI dictionary form validation (Claude)
-- 2025-12-13: Added "Phrase Integration in Learning" section documenting 20% threshold and 80/20 session split (Claude)
+- 2026-01-02: Added lyrics pipeline reference section (Claude)
 - 2025-12-30: Updated phrase_occurrences to include chapter_id, added refresh_chapter_vocabulary_stats call
+- 2025-12-13: Added "Phrase Integration in Learning" section documenting 20% threshold and 80/20 session split (Claude)
+- 2025-12-06: Added Steps 10-11 for AI dictionary form validation (Claude)
+- 2025-11-30: Initial draft (Claude)
 - Status: Active
 
 ---

@@ -1,7 +1,7 @@
 # 32_LYRICS_DATABASE_SPEC.md
 
-**Last Updated:** December 25, 2025
-**Status:** Phase 4 Complete - Full UI Implementation
+**Last Updated:** January 2, 2026
+**Status:** Phase 6 Complete - Word-Level Vocabulary Architecture
 **Owner:** Claude + Peter
 
 ---
@@ -36,15 +36,24 @@ This document specifies the database schema for **Voquab for Music**, a lyrics-b
 
 ## POC SCOPE
 
-### What We're Building
+### What We Built
 
-A minimal implementation to validate the lyrics learning experience with a single song.
+Full album import pipeline validated with Bad Bunny's "Debí Tirar Más Fotos" album.
 
-**Test Song:** "Debí Tirar Más Fotos" by Bad Bunny
-- 46 learnable lines (excluding vocalizations)
-- 10 sections (verses, choruses, bridge, interlude)
-- ~60 standard lemmas (reuse existing system)
-- ~38 slang terms (new system)
+**First Import:** Bad Bunny - "Debí Tirar Más Fotos" (Full Album)
+
+| Metric | Count |
+|--------|-------|
+| Songs | 17 |
+| Total lines | 922 |
+| Learnable lines | 909 |
+| Skippable lines | 13 |
+| Slang terms | 215 |
+| Phrases | 118 |
+| Lemmas linked | 292 |
+| Translation fixes | 311 |
+
+**Vocabulary Overlap:** 17.2% of El Principito lemmas appear in Bad Bunny lyrics (287 shared lemmas)
 
 ### What's Included
 
@@ -70,18 +79,30 @@ A minimal implementation to validate the lyrics learning experience with a singl
 ```
 EXISTING (Books)                    NEW (Lyrics)
 ─────────────────                   ─────────────
-books                               songs
-  └── chapters                        └── song_sections
-        └── sentences                       └── song_lines
-              └── sentence_fragments              └── (atomic for POC)
+books                               albums
+  └── chapters                        └── songs
+        └── sentences                       └── song_sections
+              └── sentence_fragments              └── song_lines
+                    └── words                           └── song_line_words
+                                                              └── lemmas
 
 lemmas ←──────────────────────────→ slang_terms (parallel system)
-  └── words                           └── song_slang (links to songs)
+  └── words                           └── song_line_slang_occurrences
+                                      └── song_line_phrase_occurrences
 
 user_lemma_progress                 user_slang_progress
 user_sentence_progress              user_line_progress
 user_chapter_reading_progress       user_song_progress
 ```
+
+### Word-Level Architecture (Phase 6)
+
+As of January 2026, the lyrics system uses **word-level vocabulary linking**:
+
+- **`song_line_words`** - Individual words in each line linked to lemmas
+- **`song_line_phrase_occurrences`** - Phrase positions within lines
+- **`song_line_slang_occurrences`** - Slang positions within lines
+- **`song_lemmas`** (deprecated) - Old song-level lemma linking
 
 ### Design Principles
 
@@ -109,6 +130,44 @@ user_chapter_reading_progress       user_song_progress
 
 ## TABLE DEFINITIONS
 
+### albums
+
+Album metadata for organizing songs.
+
+```sql
+CREATE TABLE albums (
+  album_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Basic metadata
+  title TEXT NOT NULL,                    -- "Debí Tirar Más Fotos"
+  artist TEXT NOT NULL,                   -- "Bad Bunny"
+  release_year INTEGER,                   -- 2025
+  cover_image_url TEXT,                   -- Album artwork URL
+
+  -- Learning metadata
+  difficulty TEXT NOT NULL DEFAULT 'intermediate',
+  dialect TEXT,                           -- "Puerto Rican Spanish"
+  themes TEXT[],                          -- ARRAY['nostalgia', 'memory']
+
+  -- Stats (computed)
+  total_songs INTEGER DEFAULT 0,
+  total_lines INTEGER DEFAULT 0,
+  unique_lemmas INTEGER DEFAULT 0,
+  unique_slang_terms INTEGER DEFAULT 0,
+
+  -- Status
+  is_published BOOLEAN DEFAULT FALSE,
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+COMMENT ON TABLE albums IS 'Album metadata for organizing songs';
+```
+
+---
+
 ### songs
 
 Primary content container for a song.
@@ -116,11 +175,14 @@ Primary content container for a song.
 ```sql
 CREATE TABLE songs (
   song_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
+
+  -- Album reference (optional for backward compatibility)
+  album_id UUID REFERENCES albums(album_id) ON DELETE SET NULL,
+
   -- Basic metadata
   title TEXT NOT NULL,                    -- "Debí Tirar Más Fotos"
   artist TEXT NOT NULL,                   -- "Bad Bunny" (simple text for POC)
-  album TEXT,                             -- "DtMF"
+  album TEXT,                             -- "DtMF" (legacy text field)
   release_year INTEGER,                   -- 2025
   
   -- Learning metadata
@@ -202,16 +264,21 @@ CREATE TABLE song_lines (
   grammar_note TEXT,                      -- Optional explanation
   cultural_note TEXT,                     -- Cultural context if needed
   is_skippable BOOLEAN DEFAULT FALSE,     -- Skip "eh eh" or similar
-  
+
+  -- Review status
+  is_reviewed BOOLEAN DEFAULT FALSE,      -- Has this line been reviewed for quality?
+  reviewed_at TIMESTAMPTZ,                -- When was it reviewed?
+
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
+
   UNIQUE(section_id, line_order)
 );
 
 COMMENT ON TABLE song_lines IS 'Individual lyric lines with translations';
 COMMENT ON COLUMN song_lines.is_skippable IS 'True for vocalizations, ad-libs, or non-translatable content';
+COMMENT ON COLUMN song_lines.is_reviewed IS 'True when line translation and vocabulary have been manually reviewed';
 ```
 
 ---
@@ -280,7 +347,9 @@ COMMENT ON TABLE song_slang IS 'Links slang terms to songs where they appear';
 
 ---
 
-### song_lemmas
+### song_lemmas ⚠️ DEPRECATED
+
+> **Note:** This table is deprecated as of January 2026. Use `song_line_words` for word-level vocabulary linking instead. The `song_lemmas` table provided song-level lemma aggregation but lacked positional information needed for inline vocabulary highlights.
 
 Junction table linking standard lemmas to songs (reuses existing lemmas table).
 
@@ -288,15 +357,112 @@ Junction table linking standard lemmas to songs (reuses existing lemmas table).
 CREATE TABLE song_lemmas (
   song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
   lemma_id UUID NOT NULL REFERENCES lemmas(lemma_id) ON DELETE CASCADE,
-  
+
   -- First occurrence reference
   first_line_id UUID REFERENCES song_lines(line_id),
   occurrence_count INTEGER DEFAULT 1,
-  
+
   PRIMARY KEY (song_id, lemma_id)
 );
 
-COMMENT ON TABLE song_lemmas IS 'Links standard vocabulary (lemmas) to songs';
+COMMENT ON TABLE song_lemmas IS 'DEPRECATED: Use song_line_words instead';
+```
+
+---
+
+### song_line_words
+
+Word-level vocabulary linking. Each word in a line is tokenized and linked to a lemma.
+
+```sql
+CREATE TABLE song_line_words (
+  word_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- References
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  section_id UUID NOT NULL REFERENCES song_sections(section_id) ON DELETE CASCADE,
+  line_id UUID NOT NULL REFERENCES song_lines(line_id) ON DELETE CASCADE,
+  lemma_id UUID REFERENCES lemmas(lemma_id) ON DELETE SET NULL,
+
+  -- Word content
+  word_text TEXT NOT NULL,                -- Original text as it appears in line
+  word_position INTEGER NOT NULL,         -- 0-indexed position within line
+
+  -- Grammatical information (from spaCy)
+  grammatical_info JSONB,                 -- {pos, morph, gender, lemma_form}
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(line_id, word_position)
+);
+
+COMMENT ON TABLE song_line_words IS 'Word-level vocabulary linking for song lines';
+COMMENT ON COLUMN song_line_words.grammatical_info IS 'spaCy morphology: pos, morph, gender, lemma_form';
+
+CREATE INDEX idx_song_line_words_line ON song_line_words(line_id);
+CREATE INDEX idx_song_line_words_lemma ON song_line_words(lemma_id);
+CREATE INDEX idx_song_line_words_song ON song_line_words(song_id);
+```
+
+---
+
+### song_line_phrase_occurrences
+
+Tracks where phrases appear in song lines with word positions.
+
+```sql
+CREATE TABLE song_line_phrase_occurrences (
+  occurrence_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- References
+  line_id UUID NOT NULL REFERENCES song_lines(line_id) ON DELETE CASCADE,
+  phrase_id UUID NOT NULL REFERENCES phrases(phrase_id) ON DELETE CASCADE,
+
+  -- Position within line (word indices, 0-indexed)
+  start_position INTEGER NOT NULL,        -- First word index
+  end_position INTEGER NOT NULL,          -- Last word index (inclusive)
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(line_id, phrase_id, start_position)
+);
+
+COMMENT ON TABLE song_line_phrase_occurrences IS 'Phrase positions within song lines';
+
+CREATE INDEX idx_phrase_occurrences_line ON song_line_phrase_occurrences(line_id);
+CREATE INDEX idx_phrase_occurrences_phrase ON song_line_phrase_occurrences(phrase_id);
+```
+
+---
+
+### song_line_slang_occurrences
+
+Tracks where slang terms appear in song lines with word positions.
+
+```sql
+CREATE TABLE song_line_slang_occurrences (
+  occurrence_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- References
+  line_id UUID NOT NULL REFERENCES song_lines(line_id) ON DELETE CASCADE,
+  slang_id UUID NOT NULL REFERENCES slang_terms(slang_id) ON DELETE CASCADE,
+
+  -- Position within line (word indices, 0-indexed)
+  start_position INTEGER NOT NULL,        -- First word index
+  end_position INTEGER NOT NULL,          -- Last word index (inclusive)
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(line_id, slang_id, start_position)
+);
+
+COMMENT ON TABLE song_line_slang_occurrences IS 'Slang term positions within song lines';
+
+CREATE INDEX idx_slang_occurrences_line ON song_line_slang_occurrences(line_id);
+CREATE INDEX idx_slang_occurrences_slang ON song_line_slang_occurrences(slang_id);
 ```
 
 ---
@@ -451,6 +617,9 @@ COMMENT ON TABLE user_song_progress IS 'Overall song learning progress tracking'
 Performance indexes for common query patterns.
 
 ```sql
+-- Album/song queries
+CREATE INDEX idx_songs_album ON songs(album_id);
+
 -- Song content queries
 CREATE INDEX idx_song_sections_song ON song_sections(song_id, section_order);
 CREATE INDEX idx_song_lines_section ON song_lines(section_id, line_order);
@@ -460,7 +629,18 @@ CREATE INDEX idx_slang_terms_term ON slang_terms(term);
 CREATE INDEX idx_slang_terms_region ON slang_terms(region);
 CREATE INDEX idx_song_slang_song ON song_slang(song_id);
 
--- Song vocabulary
+-- Word-level vocabulary (new architecture)
+CREATE INDEX idx_song_line_words_line ON song_line_words(line_id);
+CREATE INDEX idx_song_line_words_lemma ON song_line_words(lemma_id);
+CREATE INDEX idx_song_line_words_song ON song_line_words(song_id);
+
+-- Phrase/slang occurrences
+CREATE INDEX idx_phrase_occurrences_line ON song_line_phrase_occurrences(line_id);
+CREATE INDEX idx_phrase_occurrences_phrase ON song_line_phrase_occurrences(phrase_id);
+CREATE INDEX idx_slang_occurrences_line ON song_line_slang_occurrences(line_id);
+CREATE INDEX idx_slang_occurrences_slang ON song_line_slang_occurrences(slang_id);
+
+-- Song vocabulary (deprecated - keeping for backward compatibility)
 CREATE INDEX idx_song_lemmas_song ON song_lemmas(song_id);
 
 -- User progress (already defined above)
@@ -472,63 +652,58 @@ CREATE INDEX idx_song_lemmas_song ON song_lemmas(song_id);
 
 ## SEED DATA REFERENCE
 
-The POC song "Debí Tirar Más Fotos" has been fully processed. Here's the structure for import:
+### Full Album Import: Bad Bunny "Debí Tirar Más Fotos"
 
-### Song Record
+The complete album has been imported via `scripts/import_lyrics.py`. See **34_LYRICS_IMPORT_PIPELINE.md** for the full import process.
 
-```
-title: "Debí Tirar Más Fotos"
-artist: "Bad Bunny"
-album: "DtMF"
-release_year: 2025
-difficulty: "intermediate"
-dialect: "Puerto Rican Spanish"
-themes: ['nostalgia', 'memory', 'home', 'friendship']
-total_sections: 12
-total_lines: 46
-unique_slang_terms: 38
-```
+### Album Statistics
 
-### Section Structure
+| Song | Lines | Lemmas |
+|------|-------|--------|
+| Lo Que Le Pasó a Hawaii | 48 | 24 |
+| Voy a Llevarte Pa' PR | 58 | 33 |
+| La Mudanza | 64 | 37 |
+| Nuevayol | 72 | 25 |
+| Baile Inolvidable | 60 | 44 |
+| Bokete | 52 | 54 |
+| Turista | 44 | 37 |
+| El Clúb | 56 | 54 |
+| Weltita | 60 | 44 |
+| Eoo | 76 | 45 |
+| Ketu Tecré | 68 | 37 |
+| Kloufrens | 56 | 34 |
+| DTMF | 80 | 52 |
+| Veldá | 84 | 44 |
+| Café con Ron | 76 | 41 |
+| Perfumito Nuevo | 60 | 34 |
+| Pitorro de Coco | 46 | 29 |
 
-| Order | Type | Label | Lines | Skippable |
-|-------|------|-------|-------|-----------|
-| 1 | intro | Intro | 1 | true (vocalization) |
-| 2 | verse | Verse 1 - Nostalgia | 4 | false |
-| 3 | pre_chorus | Pre-Chorus | 5 | false |
-| 4 | verse | Verse 2 - Party | 5 | false |
-| 5 | verse | Verse 3 - Romance | 5 | false |
-| 6 | chorus | Chorus | 4 | false |
-| 7 | chorus | Chorus (repeat) | 4 | false (repeat_of section 6) |
-| 8 | verse | Verse 4 - Abuelo | 4 | false |
-| 9 | verse | Verse 5 - Santurce | 5 | false |
-| 10 | verse | Verse 6 - Loco | 4 | false |
-| 11 | interlude | Spoken Interlude | 7 | false (valuable content) |
-| 12 | verse | Verse 7 - Reflection | 5 | false |
-| 13 | chorus | Chorus (variation) | 4 | false |
-| 14 | outro | Outro | 1 | false |
+### Slang Terms Summary (215 total)
 
-### Slang Terms Summary (38 total)
+**By Formality:**
+- Informal: 208
+- Vulgar: 7
 
-Full slang data was provided in the previous conversation. Key categories:
+**By Type:**
+- Phonetic spellings (dropped letters): 80 terms (año', pa', to', etc.)
+- True slang vocabulary: 135 terms (bellaqueo, perreo, bichota, etc.)
 
-**Phonetic Contractions (dropped consonants):**
-- pelao, matá, patá, esbaratá, vo'a, to el día, pa, pa'l, p'acá, Toy, Vamo
+**Key Categories:**
+
+**Phonetic Contractions:**
+- pa', año', to', vamo', ere', tiene', etc.
 
 **Puerto Rican Expressions:**
-- Acho, Dime, corillo, chequéate, se da caña, llegarle
+- Acho, bellaqueo, perreo, bichota, corillo, jangueo
 
 **Cultural/Musical Terms:**
-- batá, güiro, perreo, bomba, plena, Santurce
+- batá, güiro, dembow, reggaetón
 
 **Terms of Endearment:**
-- blanquita, perico, kilo, mami
+- blanquita, blanquito, mami, papi
 
-**Anglicisms:**
-- tirar fotos, babies, nudes, pa la movie
-
-**Intensifiers/Exclamations:**
-- jurado, cabrón, Diablo, cojones
+**Vulgar Terms (7):**
+- bichota, bichote, cabrón, cojón, puñeta, singue, chingao
 
 ---
 
@@ -610,8 +785,8 @@ const { data: progress } = await supabase
 - [x] Insert 54 lines with translations (more than spec estimate)
 - [x] Insert 38 slang terms with cultural notes
 - [x] Link slang terms to song via song_slang
-- [ ] Identify and link standard lemmas via song_lemmas (future)
-- [ ] Link standard phrases via song_phrases (future)
+- [x] Identify and link standard lemmas via song_lemmas (Phase 5)
+- [x] Link standard phrases via song_phrases (Phase 5)
 
 **Seed script:** `scripts/seed-lyrics-poc.js`
 **Verify script:** `scripts/verify-lyrics-seed.js`
@@ -648,10 +823,56 @@ const { data: progress } = await supabase
 **Files modified:**
 - `src/components/dashboard/QuickActions.jsx` - Added Songs button
 
+### Phase 5: Full Album Import Pipeline ✅ COMPLETE (2026-01-02)
+
+- [x] 8-phase import pipeline (`scripts/import_lyrics.py`)
+- [x] Parse album text file structure
+- [x] DeepL bulk translation
+- [x] Vocalization detection and flagging
+- [x] AI-powered slang/phrase detection
+- [x] Insert vocabulary to database
+- [x] spaCy lemma extraction with gender heuristics
+- [x] AI translation correction pass
+- [x] Full album import: 17 songs, 922 lines
+
+**Import script:** `scripts/import_lyrics.py`
+**Documentation:** `docs/34_LYRICS_IMPORT_PIPELINE.md`
+
+**Import statistics:**
+- 215 slang terms created
+- 118 phrases linked
+- 292 lemmas linked
+- 311 translation corrections
+
+### Phase 6: Word-Level Vocabulary Architecture ✅ COMPLETE (2026-01-02)
+
+- [x] Create `albums` table
+- [x] Add `album_id` column to `songs` table
+- [x] Add `is_reviewed`, `reviewed_at` columns to `song_lines` table
+- [x] Create `song_line_words` table for word-level vocabulary linking
+- [x] Create `song_line_phrase_occurrences` table
+- [x] Create `song_line_slang_occurrences` table
+- [x] Create backfill script for song_line_words (`scripts/backfill_song_line_words.py`)
+- [x] Create backfill script for occurrences (`scripts/backfill_phrase_slang_occurrences.py`)
+- [x] Update import_lyrics.py with Phase 7 (Extract Words) and Phase 8 (Detect Occurrences)
+- [x] Backfill all existing lines (2,019 words, 263 new lemmas)
+- [x] Backfill all occurrences (14 phrases, 61 slang)
+
+**Migration file:** `supabase/migrations/20260102_create_albums_table.sql`
+**Backfill scripts:**
+- `scripts/backfill_song_line_words.py`
+- `scripts/backfill_phrase_slang_occurrences.py`
+
+**Architecture change:** Song vocabulary now uses word-level linking through `song_line_words` instead of song-level aggregation via `song_lemmas`. This enables:
+- Precise word positions for inline highlights
+- Per-word grammatical information from spaCy
+- Phrase/slang occurrence positions for multi-word highlights
+
 ---
 
 ## RELATED DOCUMENTS
 
+- **34_LYRICS_IMPORT_PIPELINE.md** - Full import pipeline documentation
 - **02_DATABASE_SCHEMA.md** - Base schema patterns and conventions
 - **31_SENTENCE_COMPREHENSION.md** - Reading Mode patterns to mirror
 - **04_LEARNING_ALGORITHM.md** - FSRS implementation details
@@ -661,11 +882,22 @@ const { data: progress } = await supabase
 
 ## REVISION HISTORY
 
+- 2026-01-02: Phase 6 complete - Word-level vocabulary architecture (Claude)
+  - Added `albums` table for album-level organization
+  - Added `song_line_words` table for word-level vocabulary linking
+  - Added `song_line_phrase_occurrences` and `song_line_slang_occurrences` tables
+  - Updated `songs` table with `album_id` foreign key
+  - Updated `song_lines` table with `is_reviewed`, `reviewed_at` columns
+  - Deprecated `song_lemmas` table (replaced by `song_line_words`)
+  - Updated schema diagram and indexes
+- 2026-01-02: Phase 5 complete - Full album import pipeline (17 songs, 922 lines, 215 slang, 292 lemmas) (Claude)
+- 2025-12-25: Phase 4 complete - User-facing features (Songs browser, Study mode, Vocab mode) (Claude)
+- 2025-12-25: Phase 3 complete - Admin interface (Song management, Slang management) (Claude)
 - 2025-12-25: Phase 2 complete - Seed data inserted (54 lines, 38 slang terms) (Claude)
 - 2025-12-25: Phase 1 complete - Database tables created and verified (Claude)
 - 2025-12-25: Added song_phrases table (Peter, manual)
 - 2025-12-22: Initial POC specification (Claude + Peter)
-- Status: Phase 2 Complete
+- Status: Phase 6 Complete
 
 ---
 

@@ -144,12 +144,13 @@ export default function useProgressTracking(userId) {
       if (!isSlang) {
         progressUpdate.mastery_level = stabilityToMastery(scheduledCard.stability)
         progressUpdate.health = calculateRetrievability(scheduledCard)
+        // FSRS needs last_reviewed_at to calculate elapsed_days for proper interval scheduling
+        progressUpdate.last_reviewed_at = scheduledCard.last_reviewed_at
       }
 
       // These columns only exist in user_lemma_progress
       if (!isPhrase && !isSlang) {
         progressUpdate.total_reviews = scheduledCard.total_reviews
-        progressUpdate.last_reviewed_at = scheduledCard.last_reviewed_at
         progressUpdate.updated_at = new Date().toISOString()
 
         // Update correct_reviews for non-"again" responses (lemmas only)
@@ -195,8 +196,10 @@ export default function useProgressTracking(userId) {
         dueDate: scheduledCard.due_date,
         dueFormatted: dueInfo,
         fsrsState: getStateName(scheduledCard.fsrs_state),
+        fsrsStateNumeric: scheduledCard.fsrs_state,  // Numeric state for card updates
         reps: scheduledCard.reps,
         lapses: scheduledCard.lapses,
+        lastReviewedAt: scheduledCard.last_reviewed_at,  // For card queue updates
         // Legacy compatibility
         newMastery: progressUpdate.mastery_level,
         newHealth: progressUpdate.health,

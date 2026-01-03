@@ -50,7 +50,10 @@ export default function FlashcardDisplay({
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   }
 
-  // Helper to highlight word in sentence
+  // Helper to check if character is a Spanish letter (including accented)
+  const isSpanishLetter = (char) => /[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]/.test(char)
+
+  // Helper to highlight word in sentence (with proper word boundary detection)
   const highlightWordInSentence = (sentence, word) => {
     if (!sentence || !word) return sentence
 
@@ -59,14 +62,28 @@ export default function FlashcardDisplay({
     const regex = new RegExp(`(${escapedWord})`, 'gi')
     const parts = sentence.split(regex)
 
+    // Track position in original sentence for boundary checking
+    let position = 0
     return parts.map((part, index) => {
+      const start = position
+      position += part.length
+
       // Check if this part matches the word (case-insensitive)
       if (part.toLowerCase() === word.toLowerCase()) {
-        return (
-          <span key={index} className="font-bold text-gray-800">
-            {part}
-          </span>
-        )
+        // Check boundaries - only bold if this is a complete word
+        const charBefore = sentence[start - 1]
+        const charAfter = sentence[start + part.length]
+
+        const boundaryBefore = !charBefore || !isSpanishLetter(charBefore)
+        const boundaryAfter = !charAfter || !isSpanishLetter(charAfter)
+
+        if (boundaryBefore && boundaryAfter) {
+          return (
+            <span key={index} className="font-bold text-gray-800">
+              {part}
+            </span>
+          )
+        }
       }
       return <span key={index}>{part}</span>
     })
@@ -108,6 +125,7 @@ export default function FlashcardDisplay({
       {/* Card container with flip effect */}
       <div className="flip-card mb-8">
         <div
+          key={card.lemma_id || card.phrase_id || card.slang_id}
           onClick={onCardClick}
           className={`flip-card-inner ${isFlipped ? 'flipped' : ''} cursor-pointer`}
         >

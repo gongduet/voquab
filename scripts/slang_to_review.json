@@ -1,0 +1,2152 @@
+[
+  {
+    "slang_id": "d0c75a6a-856d-437e-9ab5-f494fa17adcd",
+    "term": "'tan",
+    "definition": "they are",
+    "standard_equivalent": "están",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "1eb68f58-3410-449e-821f-c2e582a4d322",
+    "term": "Acho",
+    "definition": "Puerto Rican exclamation expressing surprise or emphasis",
+    "standard_equivalent": null,
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "exclamation"
+  },
+  {
+    "slang_id": "15520f15-4678-46e4-8e7a-4c1a56293f63",
+    "term": "adió",
+    "definition": "goodbye",
+    "standard_equivalent": "adiós",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "945424df-141a-4a36-bb6b-cdc087ba48e8",
+    "term": "aldea'",
+    "definition": "villages",
+    "standard_equivalent": "aldeas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "68edc462-b592-46b9-8340-7bd425355446",
+    "term": "alguito",
+    "definition": "something little",
+    "standard_equivalent": "algito/algo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "eb82af93-d100-4e61-9b7a-5fdaabad8ea5",
+    "term": "año'",
+    "definition": "years",
+    "standard_equivalent": "años",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "3331460e-70b6-46f1-9dc8-2a6f746cc3ed",
+    "term": "anormale'",
+    "definition": "crazy ones/wild ones",
+    "standard_equivalent": "anormales",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "4ed45739-4953-48de-b028-45ca8bf48ec2",
+    "term": "bailaíta",
+    "definition": "little dance",
+    "standard_equivalent": "bailadita",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "e916b5b6-fd17-4445-908c-bbb6222fd4fe",
+    "term": "bajamo",
+    "definition": "we take down",
+    "standard_equivalent": "bajamos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "5eef4f29-57ef-40e5-ab13-811a02247946",
+    "term": "bandi",
+    "definition": "gangsters/thugs",
+    "standard_equivalent": "bandidos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "833c1c27-c317-411e-9e3a-2db820fe8ff0",
+    "term": "barrio'",
+    "definition": "neighborhoods",
+    "standard_equivalent": "barrios",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2641c2f9-7ce9-4044-bf53-7287ceaeeb3d",
+    "term": "bellaqueo",
+    "definition": "sexual behavior/horniness",
+    "standard_equivalent": "comportamiento sexual",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "79d3c5c9-e178-49cb-b7af-62d0c9a2c9ae",
+    "term": "bellaquita",
+    "definition": "sexually mischievous girl",
+    "standard_equivalent": "traviesa sexual",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ef466c07-33b6-4904-8cb9-483406f8994f",
+    "term": "bellaquito",
+    "definition": "naughty/mischievous",
+    "standard_equivalent": "travieso",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ddb6ba7c-01ba-463e-b27b-fb71f6d3ecb2",
+    "term": "besarno'",
+    "definition": "kiss each other",
+    "standard_equivalent": "besarnos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f71706c6-753d-4e4f-a13c-49cdaf9fd0e0",
+    "term": "besitos",
+    "definition": "little kisses (diminutive)",
+    "standard_equivalent": "besos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f2411a1e-55f0-4e37-ae42-bc13258b8f8f",
+    "term": "bestie",
+    "definition": "best friend",
+    "standard_equivalent": "mejor amiga",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d5f943c1-8046-4e18-b645-d3ee0d607f76",
+    "term": "bichota",
+    "definition": "female boss/badass woman",
+    "standard_equivalent": "female big bug",
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ed6087bb-302d-4fdf-a97f-90c30e46787b",
+    "term": "bichote",
+    "definition": "big shot/boss",
+    "standard_equivalent": "jefe/capo",
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "16f4de5b-6b18-4e36-93a2-3526e0f3e36f",
+    "term": "bienvenía'",
+    "definition": "welcome",
+    "standard_equivalent": "bienvenidas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "eff77c06-542b-4a2a-a4a0-172055c1cb03",
+    "term": "blanquita",
+    "definition": "little white girl - term of endearment",
+    "standard_equivalent": null,
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "d43639a4-0af5-476a-a232-df21b3b932cd",
+    "term": "blanquito",
+    "definition": "little white one (term of endearment)",
+    "standard_equivalent": "blanco",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "4bc20c8f-9e82-43d0-b179-26f3282c5900",
+    "term": "blin-blin",
+    "definition": "bling-bling, shiny",
+    "standard_equivalent": "brillante",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f40e2131-3815-4f07-9f3c-541e8ad1eee1",
+    "term": "brother'",
+    "definition": "brothers/friends",
+    "standard_equivalent": "hermanos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "78df125d-a339-411d-9570-5c1ac6ebd780",
+    "term": "cabrón",
+    "definition": "dude/man - can be positive or negative depending on context",
+    "standard_equivalent": null,
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "8f05b5ee-3eec-4f9b-8bef-d328c5134a60",
+    "term": "Canale'",
+    "definition": "Canales (place name)",
+    "standard_equivalent": "Canales",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "9c6dba84-57f2-4b09-be0e-f0f1401fcb9f",
+    "term": "cancione",
+    "definition": "songs",
+    "standard_equivalent": "canciones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ae168bf4-47e1-4309-b344-ac718fd80d70",
+    "term": "cañita",
+    "definition": "rum",
+    "standard_equivalent": "ron",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d7dc7acc-3118-4aef-a777-abd42b64f77e",
+    "term": "caserío'",
+    "definition": "public housing projects",
+    "standard_equivalent": "caseríos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "4f4dcbea-45a4-4965-a8a2-c4be95d8a702",
+    "term": "castillo'",
+    "definition": "castles",
+    "standard_equivalent": "castillos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c21fe506-ec5f-4d5c-97c2-733ea3750e80",
+    "term": "chamaquito",
+    "definition": "little boy/young man",
+    "standard_equivalent": "muchacho pequeño",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d8128553-b7c1-4572-9b3a-fb5578123045",
+    "term": "chavo'",
+    "definition": "money",
+    "standard_equivalent": "chavos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b6773d1f-6839-4b91-9eb3-07e64eaa1dc1",
+    "term": "chinchorrear",
+    "definition": "to go bar hopping",
+    "standard_equivalent": "chinchorrear",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "5d0372d7-f793-4e9a-adb9-deb8bc7ef972",
+    "term": "chingao",
+    "definition": "had sex",
+    "standard_equivalent": "tenido sexo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "3669891e-3f14-4fcd-be54-0a243ba49cf7",
+    "term": "cojón",
+    "definition": "balls, testicles",
+    "standard_equivalent": null,
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "aaef4bcd-8c9c-4bee-9f89-d12b3ca11c27",
+    "term": "cojone'",
+    "definition": "damn/hell",
+    "standard_equivalent": "carajo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "eff86fea-4baf-4ba4-a13e-b4f9bc94818f",
+    "term": "colonizao",
+    "definition": "colonized",
+    "standard_equivalent": "colonizado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bd732816-f226-47cd-8f75-5f38aeab24ca",
+    "term": "conoce'",
+    "definition": "you know",
+    "standard_equivalent": "conozcas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7d0b6719-e8f5-4df8-877b-461709c6cb9c",
+    "term": "contestacione",
+    "definition": "answers",
+    "standard_equivalent": "contestaciones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b67128f6-aee2-4578-a46a-b18b889fc00f",
+    "term": "corazoncitos",
+    "definition": "little hearts (diminutive)",
+    "standard_equivalent": "corazones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2de49098-10d0-4e95-b696-ea7bf7884be0",
+    "term": "corazone",
+    "definition": "hearts",
+    "standard_equivalent": "corazones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b5b672f0-e847-4ecc-9c29-58e77eb44c5b",
+    "term": "corillo",
+    "definition": "crew/group of friends - Puerto Rican slang",
+    "standard_equivalent": null,
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "33b58dd1-4910-435f-a9a0-29ae59749955",
+    "term": "crea'",
+    "definition": "you believe",
+    "standard_equivalent": "creas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c039912e-a0bf-4028-aafb-c1f4cfdf3a73",
+    "term": "crecí'a",
+    "definition": "grown up",
+    "standard_equivalent": "crecida",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "830c472e-102a-4b95-90b1-d7f2db65c317",
+    "term": "cree'",
+    "definition": "believe",
+    "standard_equivalent": "crees",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "83d8b5c2-2b72-4a28-84e4-6ee5b1c75a36",
+    "term": "criamo",
+    "definition": "we grew up",
+    "standard_equivalent": "criamos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8d3bd468-6c76-440d-b976-612971b5f575",
+    "term": "cuida'o",
+    "definition": "careful/watch out",
+    "standard_equivalent": "cuidado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b703674b-b131-4e65-a35d-35be2cac75bf",
+    "term": "cuidao",
+    "definition": "careful",
+    "standard_equivalent": "cuidado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "942c3e21-2429-49b4-8b67-a656fd41b459",
+    "term": "curarla'",
+    "definition": "to heal them",
+    "standard_equivalent": "curarlas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "91e1bb2d-1493-45ae-b56d-ab97044e904b",
+    "term": "damo",
+    "definition": "we give",
+    "standard_equivalent": "damos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "e6c0df35-3232-4d5c-907b-805229c722f5",
+    "term": "deo",
+    "definition": "finger",
+    "standard_equivalent": "dedo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "0c6f0598-a6d0-4827-a23e-284daf18ce0d",
+    "term": "despué",
+    "definition": "after",
+    "standard_equivalent": "después",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ac380c21-bf4d-465e-a56c-a9093eac7264",
+    "term": "diabla",
+    "definition": "female devil/wild woman",
+    "standard_equivalent": "diablesa",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "71d8e489-ff3c-4251-b9fa-586f6807cd34",
+    "term": "diablo'",
+    "definition": "hell",
+    "standard_equivalent": "diablos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "69123a6f-813a-42c8-a26b-74ed1c75a48f",
+    "term": "diantre",
+    "definition": "damn",
+    "standard_equivalent": "diablo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "39bb5823-606e-4e02-810a-03fe01363650",
+    "term": "dice'",
+    "definition": "you say",
+    "standard_equivalent": "dices",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "81e12dd3-6c5e-4ce3-a340-537e6121760b",
+    "term": "dimo",
+    "definition": "we gave",
+    "standard_equivalent": "dimos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c1da2a6f-0b03-4cf9-a829-a180138af81c",
+    "term": "do'",
+    "definition": "two",
+    "standard_equivalent": "dos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "6ca7dfe0-c527-45f1-9468-3399ab7a6b71",
+    "term": "dominao",
+    "definition": "dominated",
+    "standard_equivalent": "dominado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8a1cadb4-e948-4828-9d8e-8f026db4d697",
+    "term": "e'",
+    "definition": "is",
+    "standard_equivalent": "es",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "289472fc-b15f-45a9-9b09-15a10d5b77f0",
+    "term": "embichá",
+    "definition": "rebellious/wild",
+    "standard_equivalent": "rebelde",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d5e2a4d5-bf49-48f0-a191-0675a45aea3e",
+    "term": "enamorao",
+    "definition": "in love",
+    "standard_equivalent": "enamorado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d40bdc6b-3cc3-49a7-a144-7d0d639e3aaf",
+    "term": "enchulao",
+    "definition": "hooked/attached",
+    "standard_equivalent": "enganchado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "de62a42b-089e-4769-bdab-01a22956dbc1",
+    "term": "enemigo'",
+    "definition": "enemies",
+    "standard_equivalent": "enemigos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "894e84ad-c777-491e-b4b4-2ea35bfe3f34",
+    "term": "enoje'",
+    "definition": "get angry",
+    "standard_equivalent": "enojes",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "183642ea-4639-419a-b2cb-4b6e472e3cf8",
+    "term": "entonce",
+    "definition": "then",
+    "standard_equivalent": "entonces",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "e7531daa-dacc-49bc-82f9-675269137f67",
+    "term": "envía'",
+    "definition": "you send",
+    "standard_equivalent": "envías",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "789e51e0-3848-45cc-847f-b08e9d90e2cc",
+    "term": "enviciao",
+    "definition": "addicted",
+    "standard_equivalent": "enviciado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "16c1259a-b1f8-49b4-809d-8db2b6ee0b69",
+    "term": "envuelto'",
+    "definition": "wrapped up in",
+    "standard_equivalent": "envueltos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d0de2ef2-001a-4e28-a520-d2d550b406b7",
+    "term": "ere",
+    "definition": "you are",
+    "standard_equivalent": "eres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "fbba0f50-5a9c-473d-8b4d-7a1ff8de3551",
+    "term": "ere'",
+    "definition": "you are",
+    "standard_equivalent": "eres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "374451b4-ffed-4a99-9b15-06c4d4e66987",
+    "term": "esbaratá",
+    "definition": "destroyed/messed up - Puerto Rican variant",
+    "standard_equivalent": "desbaratada",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "adjective"
+  },
+  {
+    "slang_id": "e43f228d-5617-4344-a2f3-a2cbcdd50c4d",
+    "term": "escrín",
+    "definition": "screen (anglicism)",
+    "standard_equivalent": "screen",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "85e9178d-a330-4d46-81b1-4c2ae194fcdd",
+    "term": "eso'",
+    "definition": "those",
+    "standard_equivalent": "esos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2c48ee90-f864-4704-903d-6dc54b83e0fd",
+    "term": "estaba'",
+    "definition": "you were",
+    "standard_equivalent": "estabas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d7e9a249-20cf-4076-bc89-7bc68385aae9",
+    "term": "estacione",
+    "definition": "seasons",
+    "standard_equivalent": "estaciones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8cb87964-7a7d-42bf-954d-e0ed14b95003",
+    "term": "estamo",
+    "definition": "we are",
+    "standard_equivalent": "estamos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b862b430-3483-4bd7-9033-f399c215aff6",
+    "term": "esté'",
+    "definition": "you are",
+    "standard_equivalent": "estés",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "15e9aad5-71ca-4851-8812-ee8523cd0755",
+    "term": "estemo",
+    "definition": "we are",
+    "standard_equivalent": "estemos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b659b34e-8fc0-4ad4-b385-16670d510bfd",
+    "term": "fichá",
+    "definition": "watched/monitored",
+    "standard_equivalent": "vigilada",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f9da6ab4-00fb-49f1-b9ed-7f2af6813854",
+    "term": "finde",
+    "definition": "weekend",
+    "standard_equivalent": "fin de semana",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "649f8550-b605-4582-86cf-5a203e793827",
+    "term": "fotito'",
+    "definition": "little photos",
+    "standard_equivalent": "fotitos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "60b2754c-6099-4772-9808-8d9e1d0507e6",
+    "term": "fotitos",
+    "definition": "little photos",
+    "standard_equivalent": "fotitas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d07c2ef3-60d2-43fd-8034-302a1d457673",
+    "term": "fue-",
+    "definition": "whip/beating",
+    "standard_equivalent": "fuete",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "0c1a778f-1e3d-4705-ac11-03760e059e3c",
+    "term": "galla",
+    "definition": "woman/girl",
+    "standard_equivalent": "mujer",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f9513aaf-7058-4e79-9939-9c2c6b80a302",
+    "term": "garete",
+    "definition": "out of control",
+    "standard_equivalent": "descontrol",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bf66eb12-c61f-4c13-9682-34543ba03e9d",
+    "term": "gata'",
+    "definition": "women/girls",
+    "standard_equivalent": "mujeres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2e7fcdeb-6707-4458-938a-dee23a0f7a59",
+    "term": "gatas",
+    "definition": "women/girls",
+    "standard_equivalent": "mujeres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "53a0046c-df49-4400-9c9b-55d670b15932",
+    "term": "ghosteó",
+    "definition": "ghosted/ignored",
+    "standard_equivalent": "ignoró/desapareció",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2836799e-32d8-465e-bd44-333208d98f18",
+    "term": "girla'",
+    "definition": "girls",
+    "standard_equivalent": "chicas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "3b7655a9-76e4-4785-b0b3-15b20a7101f9",
+    "term": "grillete",
+    "definition": "chains/inhibitions",
+    "standard_equivalent": "cadenas/inhibiciones",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "439f7feb-92f0-4589-aedc-1bd87b35a739",
+    "term": "güiro",
+    "definition": "musical instrument, but here used metaphorically",
+    "standard_equivalent": "güiro",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bc20eafd-fa21-494b-8fef-4c1916e0fa0c",
+    "term": "hace'",
+    "definition": "you do",
+    "standard_equivalent": "haces",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bd03769b-2bde-4b5b-bcad-340e5e110f01",
+    "term": "hacía'",
+    "definition": "you used to make",
+    "standard_equivalent": "hacías",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c38be5d2-5ce9-48e3-b771-8c89a28e063d",
+    "term": "herida'",
+    "definition": "wounds",
+    "standard_equivalent": "heridas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b2a96b66-3a44-4357-af23-80094aa47a36",
+    "term": "hipnotizao",
+    "definition": "hypnotized",
+    "standard_equivalent": "hipnotizado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "fd41d3dd-b859-4b95-9f23-68033407f572",
+    "term": "hookear",
+    "definition": "to get hooked",
+    "standard_equivalent": "engancharse",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7fea1ec6-ac9a-4682-bfca-314d52fd8581",
+    "term": "huele'",
+    "definition": "you smell",
+    "standard_equivalent": "hueles",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2f2c5012-4638-4eff-ad90-48eced96e77a",
+    "term": "iguale'",
+    "definition": "the same",
+    "standard_equivalent": "iguales",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ee2158c5-71f7-44d1-8daa-e670dc94d2ab",
+    "term": "jalone'e",
+    "definition": "pulls of",
+    "standard_equivalent": "jalones de",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b3720bc2-d671-48df-a539-f3f645fdb964",
+    "term": "jangueando",
+    "definition": "partying/hanging out",
+    "standard_equivalent": "saliendo de fiesta",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "fc7bda3b-275a-4be4-a336-117b84ea3ac2",
+    "term": "janguear",
+    "definition": "to party/hang out",
+    "standard_equivalent": "salir de fiesta",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "eea479d1-7305-4464-9a85-09d7e9e9cee5",
+    "term": "jangueo",
+    "definition": "party/hanging out",
+    "standard_equivalent": "fiesta",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "195ab938-51a7-4811-8949-4e50baf4b887",
+    "term": "jíbara",
+    "definition": "female Puerto Rican rural farmer/mountain person",
+    "standard_equivalent": "campesina",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7e3a922d-964a-4495-892b-93c4cb778150",
+    "term": "jíbaro",
+    "definition": "Puerto Rican rural farmer/mountain person",
+    "standard_equivalent": "campesino",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "5638c933-cf1e-408c-9eda-e9bb25b60f13",
+    "term": "juntito'",
+    "definition": "together (diminutive)",
+    "standard_equivalent": "juntitos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "04c9d05b-f509-40c3-bca3-321c781989e9",
+    "term": "la'",
+    "definition": "the",
+    "standard_equivalent": "las",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f15fd226-7a5f-40f7-bc0f-90f819e55781",
+    "term": "labio'",
+    "definition": "lips",
+    "standard_equivalent": "labios",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2cd40f27-1bcf-4638-a10e-bca83d818f59",
+    "term": "lao",
+    "definition": "side",
+    "standard_equivalent": "lado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "01dd3776-f501-461e-af53-6afa071c872d",
+    "term": "lelolai",
+    "definition": "traditional Puerto Rican folk chant/expression",
+    "standard_equivalent": "no standard equivalent",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "669ab873-496a-448f-81c5-ee65e84cbfd7",
+    "term": "lía'",
+    "definition": "you roll/get involved",
+    "standard_equivalent": "lías",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c00e3579-075a-4bc1-b498-04f75b099832",
+    "term": "lista'e",
+    "definition": "list of",
+    "standard_equivalent": "lista de",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "385383e7-da74-449d-af01-ef9dda24d968",
+    "term": "llame'",
+    "definition": "you call",
+    "standard_equivalent": "llames",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8d87e0bc-94ef-40cf-a439-266e6f5111b6",
+    "term": "lo'",
+    "definition": "the",
+    "standard_equivalent": "los",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f8768e02-9bda-44c6-bdd6-a537ff40cbb3",
+    "term": "loquita",
+    "definition": "little crazy girl (affectionate)",
+    "standard_equivalent": "loca pequeña",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "78857dbf-7da1-4e0a-bc2d-30d825843b77",
+    "term": "lowkey",
+    "definition": "discreetly/quietly",
+    "standard_equivalent": "low key",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "38f28d0b-505d-48ec-9086-40c2456348a3",
+    "term": "lu'",
+    "definition": "light",
+    "standard_equivalent": "luz",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "4e9a7026-3f75-4f86-9ca7-7b4c383f268b",
+    "term": "má'",
+    "definition": "more",
+    "standard_equivalent": "más",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "9195240d-6719-4f46-af2e-caaa1aebc8e7",
+    "term": "mahón",
+    "definition": "jeans",
+    "standard_equivalent": "jeans",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "e11314bd-4b42-4888-9b73-f411395fd78f",
+    "term": "mai",
+    "definition": "mom",
+    "standard_equivalent": "mami",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ea94dfcb-23c5-4f55-9256-57c1e4723915",
+    "term": "malcriá",
+    "definition": "spoiled/bratty",
+    "standard_equivalent": "malcriada",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ae85d98f-b464-419b-88b2-23aeca56b9b2",
+    "term": "matá",
+    "definition": "beating/hit - dropped 'd' ending",
+    "standard_equivalent": "matada",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "d9fb2529-5b97-4627-bc79-bceda2c0b57e",
+    "term": "me'",
+    "definition": "month",
+    "standard_equivalent": "mes",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "22967b60-9639-4a3c-ba6c-20cbe4463b97",
+    "term": "mira'",
+    "definition": "you look",
+    "standard_equivalent": "miras",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "fefb941d-0e6e-4e16-9fa2-a9d7c3053763",
+    "term": "miramo",
+    "definition": "we look",
+    "standard_equivalent": "miramos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "9945b9b8-71b0-483a-a2d2-b5f2124ce90e",
+    "term": "modale'",
+    "definition": "manners",
+    "standard_equivalent": "modales",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "07bfd13d-8f91-4450-8fca-dad269c61ce6",
+    "term": "moja'",
+    "definition": "you get wet",
+    "standard_equivalent": "mojas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "daa9dae6-acf1-4f97-a479-581072ebc248",
+    "term": "mojaíta",
+    "definition": "a little wet (diminutive)",
+    "standard_equivalent": "mojadita",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "68533132-9ace-4399-b3b6-f2f652412091",
+    "term": "molí'a",
+    "definition": "ground/crushed",
+    "standard_equivalent": "molida",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "9fe868d8-35ec-47b4-96bb-3d4eaa20af10",
+    "term": "mosquito'",
+    "definition": "mosquitoes",
+    "standard_equivalent": "mosquitos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "85c75681-29d6-496b-bbc7-9ff716f8fa35",
+    "term": "muchacho'",
+    "definition": "guys/boys",
+    "standard_equivalent": "muchachos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d720998e-a236-469d-87b6-4a1f94a61eb1",
+    "term": "mueve'",
+    "definition": "you move",
+    "standard_equivalent": "mueves",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "31a28080-b400-485a-bbc2-77502c2d7850",
+    "term": "necesita'",
+    "definition": "you need",
+    "standard_equivalent": "necesitas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bd76d7a2-9727-4626-ae83-a752fa8937aa",
+    "term": "obligao",
+    "definition": "for sure/definitely",
+    "standard_equivalent": "obligado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "943b0a90-895e-4eef-a922-f8858f26cf59",
+    "term": "OC",
+    "definition": "official car/transportation",
+    "standard_equivalent": "OC",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d62491fc-8b12-41e6-a782-480f434c6e14",
+    "term": "ojitos",
+    "definition": "little eyes (diminutive)",
+    "standard_equivalent": "ojos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "6651e17c-2b05-47d6-8102-d85385ed37c2",
+    "term": "ojo'",
+    "definition": "eyes (dropped final 's')",
+    "standard_equivalent": "ojos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "1bddb443-5391-4015-901d-1315e2fd866d",
+    "term": "ola'",
+    "definition": "waves",
+    "standard_equivalent": "olas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "fea8baf8-e200-4444-9582-4f7e2720d6be",
+    "term": "olvide'",
+    "definition": "forget (dropped final 's')",
+    "standard_equivalent": "olvides",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "db09b75e-3f0a-4c35-9289-650fa8373434",
+    "term": "onde",
+    "definition": "where",
+    "standard_equivalent": "donde",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "34eb798e-1f71-49e0-a335-071106ec0b9c",
+    "term": "orilla'",
+    "definition": "shores (dropped final 's')",
+    "standard_equivalent": "orillas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "4c0a0e6c-c8b8-4871-b968-7e96916c921b",
+    "term": "p'acá",
+    "definition": "over here - phonetic contraction",
+    "standard_equivalent": "para acá",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "phrase"
+  },
+  {
+    "slang_id": "ed27b51d-ea49-41ab-a79d-915e4c2c6af6",
+    "term": "p'allá",
+    "definition": "over there",
+    "standard_equivalent": "para allá",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "637b268c-122a-48ed-8bc1-d574a82a5fa1",
+    "term": "p'atrá",
+    "definition": "back",
+    "standard_equivalent": "para atrás",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c5e67ce2-0ad1-4b31-8fb6-8bfb381f94a4",
+    "term": "pa",
+    "definition": "for/to - phonetic contraction (lowercase variant)",
+    "standard_equivalent": "para",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "preposition"
+  },
+  {
+    "slang_id": "b506cc42-dc79-4190-bce6-0b5c64b4fd0a",
+    "term": "Pa",
+    "definition": "to/for - phonetic contraction",
+    "standard_equivalent": "Para",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "preposition"
+  },
+  {
+    "slang_id": "8a97da46-0668-4962-9b71-7a278c9219ee",
+    "term": "pa-",
+    "definition": "to/for",
+    "standard_equivalent": "para",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "df06151f-754f-4c01-bb13-b0f1e9e72361",
+    "term": "pa'",
+    "definition": "for/to",
+    "standard_equivalent": "para",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "167d8f3a-98be-4143-aee6-e64d10092608",
+    "term": "pa'cá",
+    "definition": "over here",
+    "standard_equivalent": "para acá",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "45b67013-3d3c-4f6e-80f4-6faa56e9c5cc",
+    "term": "pa'l",
+    "definition": "for the - phonetic contraction",
+    "standard_equivalent": "para el",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "phrase"
+  },
+  {
+    "slang_id": "7a17a9ab-63a7-49a4-8d6c-dc66e582c799",
+    "term": "pa'trá",
+    "definition": "backwards",
+    "standard_equivalent": "para atrás",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "146d0559-10d1-4ee5-ad56-206867601add",
+    "term": "parao",
+    "definition": "standing/erect",
+    "standard_equivalent": "parado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "71291c0c-46a8-4065-aac7-ba39653bbb38",
+    "term": "patá'",
+    "definition": "kicks - contracted form",
+    "standard_equivalent": "patadas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "noun"
+  },
+  {
+    "slang_id": "21bc9171-e3a8-4801-a813-638c52e3c7a2",
+    "term": "pelao",
+    "definition": "bare/exposed - dropped 'd' ending",
+    "standard_equivalent": "pelado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "adjective"
+  },
+  {
+    "slang_id": "2a74de14-83b6-4ff2-bbb2-609dfada9525",
+    "term": "peleao",
+    "definition": "fighting",
+    "standard_equivalent": "peleando",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2d7d4f38-b361-49ab-be1f-06977d44a694",
+    "term": "perico",
+    "definition": "cocaine (slang)",
+    "standard_equivalent": "perico",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c424b351-ff58-4a9f-a250-c6fa77f7ccd3",
+    "term": "perreá-rear",
+    "definition": "to dance reggaeton",
+    "standard_equivalent": "perrear",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "96b3a2b2-0992-408f-ac88-ee2d7b213d5f",
+    "term": "pichaera",
+    "definition": "Puerto Rican slang for trouble/mess",
+    "standard_equivalent": "pichaera",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "010e3648-d60b-49f5-811f-176d95c58c35",
+    "term": "pichar",
+    "definition": "to ignore",
+    "standard_equivalent": "ignorar",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "1a5e3148-2037-4fac-849e-b79af1b67ada",
+    "term": "picharon",
+    "definition": "they didn't come/failed to deliver",
+    "standard_equivalent": "they pitched",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "a862c615-03f8-4b31-b626-3a7ffa0369cc",
+    "term": "piquete",
+    "definition": "swag/attitude/style",
+    "standard_equivalent": "estilo/actitud",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "78b371e4-3c6a-4ac6-a303-f55a634176b7",
+    "term": "pisao",
+    "definition": "stepped on/encountered",
+    "standard_equivalent": "pisado",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "622c8da8-e90c-4efa-b094-923d6603b781",
+    "term": "Pitorro",
+    "definition": "homemade rum",
+    "standard_equivalent": "ron casero",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "0974da70-56b5-41d8-aad4-4a7482afe1c1",
+    "term": "playita",
+    "definition": "little beach (diminutive)",
+    "standard_equivalent": "playa",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b79b0bf4-b66b-4836-bcab-fc629d32caef",
+    "term": "pregunta'",
+    "definition": "questions",
+    "standard_equivalent": "preguntas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "677b37ac-fece-41c1-a825-f620b7d50d2e",
+    "term": "prendí'a",
+    "definition": "lit/on fire",
+    "standard_equivalent": "prendida",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "62d0879b-a2e0-47b4-898f-0aaf678be9db",
+    "term": "problema'",
+    "definition": "problems",
+    "standard_equivalent": "problemas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c2bdbe46-9a27-4559-80ca-aed2d052f17b",
+    "term": "puñeta",
+    "definition": "damn/shit",
+    "standard_equivalent": "carajo",
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "37d909e5-b7b8-4a3b-92db-34014e70c8ba",
+    "term": "quemé",
+    "definition": "smoking",
+    "standard_equivalent": "quemando",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "f856349b-40be-48f2-8ac0-866f5a627ffb",
+    "term": "quiere'",
+    "definition": "you want",
+    "standard_equivalent": "quieres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "969ea263-ceb7-4c13-af67-7865eff63e35",
+    "term": "rica'",
+    "definition": "attractive/hot",
+    "standard_equivalent": "ricas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "1050124c-7a65-4aa6-87c9-5ce91e7641c8",
+    "term": "rosita",
+    "definition": "pink drug",
+    "standard_equivalent": "droga rosa",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "b7b74356-d52f-474a-8bd7-c96d05ddaf81",
+    "term": "rulay",
+    "definition": "relaxed/chill",
+    "standard_equivalent": "relajada",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "89b33f82-86e4-4787-b599-9ec5f2af05b7",
+    "term": "sale'",
+    "definition": "you go out",
+    "standard_equivalent": "sales",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c36c1047-ca8b-4b57-b302-f7a6c2840dce",
+    "term": "SanSe",
+    "definition": "San Juan, Puerto Rico (Old San Juan area)",
+    "standard_equivalent": "SanSe",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2ca309c5-9896-400f-99c2-7a3efd631bd5",
+    "term": "sentimiento'",
+    "definition": "feelings",
+    "standard_equivalent": "sentimientos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bdd7be74-6f72-459f-8bbc-72eaa3569c3e",
+    "term": "sepa'",
+    "definition": "you know",
+    "standard_equivalent": "sepas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7e23b655-8f62-47c2-b320-1b3941f9c8b9",
+    "term": "sienta'",
+    "definition": "feel",
+    "standard_equivalent": "sientas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "75342d59-b478-42b4-9616-d69f84ebceed",
+    "term": "singue",
+    "definition": "have sex",
+    "standard_equivalent": "tenga sexo",
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8fca588e-9cb0-4fba-8ae6-b60a250b5c4f",
+    "term": "somo",
+    "definition": "we are",
+    "standard_equivalent": "somos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "abac492a-8f0c-4a60-97ab-a71da99217bc",
+    "term": "stalkeándote",
+    "definition": "checking your social media obsessively",
+    "standard_equivalent": "stalking you",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "08ecae9b-32a6-4bd0-ab44-c5dba21c007d",
+    "term": "su'",
+    "definition": "his/her/their (phonetic contraction)",
+    "standard_equivalent": "sus",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "889e5d10-7b7a-47ce-87d8-b68d70468747",
+    "term": "sudaíta",
+    "definition": "a little sweaty (diminutive)",
+    "standard_equivalent": "sudadita",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c5da2ee9-a8cf-4411-a784-1a8dccf94089",
+    "term": "suelta'",
+    "definition": "loose/free",
+    "standard_equivalent": "suelta",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "05f3f35c-7376-4caa-bcf4-755274231675",
+    "term": "suelte'",
+    "definition": "let go (dropped final 's')",
+    "standard_equivalent": "sueltes",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "2c707bf5-1c56-4a9b-aa65-41fa8688a300",
+    "term": "supiera'",
+    "definition": "you knew",
+    "standard_equivalent": "supieras",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "6d0f9607-96f7-4bb0-892a-3a7d72a6bd55",
+    "term": "tas",
+    "definition": "you are",
+    "standard_equivalent": "estás",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "270eb6c6-37c8-46ec-9283-12ece920075e",
+    "term": "tenía'",
+    "definition": "you had",
+    "standard_equivalent": "tenías",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "ce2b7b34-2f18-4620-afcf-8c8d18297225",
+    "term": "tiempo'",
+    "definition": "times",
+    "standard_equivalent": "tiempos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "9ae654a7-1346-4961-9d1c-fca56bc1cb00",
+    "term": "tiene'",
+    "definition": "you have",
+    "standard_equivalent": "tienes",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "39f8507e-6932-4a0f-866e-722f86ca87af",
+    "term": "tique",
+    "definition": "money",
+    "standard_equivalent": "dinero",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7636d1fa-f731-410e-aaeb-6c8e06e8a509",
+    "term": "to",
+    "definition": "all - shortened form",
+    "standard_equivalent": "todo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "adjective"
+  },
+  {
+    "slang_id": "2cdf53be-f2d2-4205-84ce-fea9209b8dc2",
+    "term": "to'",
+    "definition": "all/every",
+    "standard_equivalent": "todo",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "d75fa93c-76a9-42dc-aed4-56bcf88c857a",
+    "term": "to's",
+    "definition": "all",
+    "standard_equivalent": "todos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "69c48de4-fa7a-46ff-8a9a-d0b8308e0e10",
+    "term": "toa",
+    "definition": "all",
+    "standard_equivalent": "todas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "03cc7983-8e3d-4669-9236-ffde4856a0f7",
+    "term": "toas",
+    "definition": "all",
+    "standard_equivalent": "todas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "aff4c709-4c4e-46f6-adac-304544ff6eea",
+    "term": "toda'",
+    "definition": "all (feminine plural) - dropped 's' ending",
+    "standard_equivalent": "todas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "adjective"
+  },
+  {
+    "slang_id": "f27df868-1347-4e1f-a7c5-f949852453de",
+    "term": "totito",
+    "definition": "female intimate part",
+    "standard_equivalent": "parte íntima femenina",
+    "formality": "vulgar",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "54e160be-a1b6-4b94-87f0-fab2d6329023",
+    "term": "Toy",
+    "definition": "I am - phonetic contraction",
+    "standard_equivalent": "Estoy",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "verb"
+  },
+  {
+    "slang_id": "4ce1ab6b-d6bb-46c7-8778-1a84ba34af96",
+    "term": "traje'e",
+    "definition": "outfit of",
+    "standard_equivalent": "traje de",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "7ec470da-21cd-41e9-b3f6-b12b50787a9b",
+    "term": "tre",
+    "definition": "three",
+    "standard_equivalent": "tres",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "16fd7f5d-857c-4a30-a180-840820c5a61b",
+    "term": "tusi",
+    "definition": "pink cocaine/2C-B drug",
+    "standard_equivalent": "droga rosa",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "8ed73875-18ab-41ea-b08f-fffd1f6d6f6e",
+    "term": "tuya'",
+    "definition": "yours",
+    "standard_equivalent": "tuyas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "5dffa24a-e47e-4b75-965f-3f4b928cba00",
+    "term": "Va'a",
+    "definition": "You are going to",
+    "standard_equivalent": "Vas a",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "c3fc0120-b56f-4eb9-bb1c-7c7e7d578f7b",
+    "term": "vacilara",
+    "definition": "to have fun/enjoy",
+    "standard_equivalent": "disfrutara",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "63290731-5d46-4c33-9a58-79817835ad76",
+    "term": "Vamo",
+    "definition": "let's go - dropped 's' ending",
+    "standard_equivalent": "Vamos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "verb"
+  },
+  {
+    "slang_id": "4a20e149-129f-4605-9a5e-0b0f8f144f89",
+    "term": "vamo'",
+    "definition": "let's go",
+    "standard_equivalent": "vamos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "6526ef09-2be7-4e7d-ad5f-643e5330dce1",
+    "term": "vámono",
+    "definition": "let's go",
+    "standard_equivalent": "vámonos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "54a934ce-bb11-45f9-8596-4f91ab584d5e",
+    "term": "ve'",
+    "definition": "time",
+    "standard_equivalent": "vez",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "bce7480a-b743-4494-bde7-5eb6809cac8d",
+    "term": "venta'",
+    "definition": "sales",
+    "standard_equivalent": "ventas",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "99d333e1-1cdf-4726-b7dc-408fea3847ea",
+    "term": "verdá",
+    "definition": "truth",
+    "standard_equivalent": "verdad",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "0afbf47f-605c-4ab9-83ef-ce5599355f88",
+    "term": "viéndono",
+    "definition": "seeing us",
+    "standard_equivalent": "viéndonos",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "680bd6d3-fc95-461f-9eb7-023f5c1a3b13",
+    "term": "viera'",
+    "definition": "you saw",
+    "standard_equivalent": "vieras",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  },
+  {
+    "slang_id": "60418847-e905-4f44-885c-2a0c136d5d40",
+    "term": "vo'a",
+    "definition": "I'm going to - phonetic contraction",
+    "standard_equivalent": "voy a",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": "phrase"
+  },
+  {
+    "slang_id": "6144c9e6-6dcd-473f-bf4e-58fd72ef5b10",
+    "term": "wileá",
+    "definition": "wild/crazy",
+    "standard_equivalent": "wild/loca",
+    "formality": "informal",
+    "is_approved": false,
+    "region": "Puerto Rico",
+    "part_of_speech": null
+  }
+]

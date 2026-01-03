@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** December 30, 2025
+**Last Updated:** January 2, 2026
 **Maintainer:** Peter + Claude
 
 ---
@@ -31,12 +31,147 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2026-01-02 - Word-Level Vocabulary Architecture Migration
+
+### Overview
+Major architecture migration from song-level vocabulary linking (`song_lemmas`) to word-level linking (`song_line_words`). This enables precise word positions for inline highlights and accurate phrase/slang occurrence tracking.
+
+### Added
+
+#### New Database Tables
+- **`albums`** - Album-level organization with metadata (title, artist, difficulty, dialect, themes)
+- **`song_line_words`** - Word-level vocabulary linking with positions and grammatical info (spaCy)
+- **`song_line_phrase_occurrences`** - Tracks phrase positions within lines (start/end word indices)
+- **`song_line_slang_occurrences`** - Tracks slang positions within lines (start/end word indices)
+
+#### Backfill Scripts
+- **`scripts/backfill_song_line_words.py`** - Tokenizes all song lines into words linked to lemmas
+- **`scripts/backfill_phrase_slang_occurrences.py`** - Detects phrase/slang positions with word boundaries
+
+#### Import Pipeline Updates (`scripts/import_lyrics.py`)
+- **Phase 7: Extract Words** - Creates `song_line_words` records with spaCy NLP
+- **Phase 8: Detect Occurrences** - Creates phrase/slang occurrence records with positions
+- Phases renumbered: Fix Translations is now Phase 9
+
+### Changed
+
+#### Updated Database Tables
+- **`songs`** - Added `album_id` foreign key (nullable for backward compatibility)
+- **`song_lines`** - Added `is_reviewed` and `reviewed_at` columns for QA tracking
+
+### Deprecated
+- **`song_lemmas`** - Replaced by `song_line_words` for word-level linking
+
+### Technical Details
+
+#### Backfill Results
+- **2,019 word records** created from existing song lines
+- **263 new lemmas** auto-created during tokenization
+- **14 phrase occurrences** detected
+- **61 slang occurrences** detected
+
+#### Word Boundary Matching
+Fixed false positive matching (e.g., "Pa" inside "paso", "to" inside "Toca"):
+- Regex word boundary matching: `(?:^|[^\w])pattern(?:$|[^\w])`
+- Short terms (< 3 chars) require exact word match
+
+#### spaCy Processing
+- Uses `es_core_news_sm` model for Spanish NLP
+- POS filtering: NOUN, VERB, ADJ, ADV, PROPN
+- Lemma formatting: `el/la` + noun based on gender, verbs as infinitive
+- Gender detection via spaCy morphology + heuristics
+
+### Files Created
+- `supabase/migrations/20260102_create_albums_table.sql`
+- `scripts/backfill_song_line_words.py`
+- `scripts/backfill_phrase_slang_occurrences.py`
+
+### Files Modified
+- `scripts/import_lyrics.py` - Added Phase 7 and Phase 8
+- `docs/34_LYRICS_IMPORT_PIPELINE.md` - Updated with new phases
+- `docs/32_LYRICS_DATABASE_SPEC.md` - Added new tables, updated schema diagram
+
+### Architecture Benefits
+1. **Precise word positions** - Enable inline vocabulary highlights
+2. **Per-word grammatical info** - POS, morphology, gender from spaCy
+3. **Phrase/slang positions** - Multi-word expression highlighting
+4. **Resume capability** - Scripts skip already-processed lines
+
+---
+
+## 2026-01-02 - Bad Bunny "Debí Tirar Más Fotos" Album Import
+
+### Overview
+Complete lyrics import pipeline created and executed for Bad Bunny's album "Debí Tirar Más Fotos" - the first full album in the Voquab lyrics learning system.
+
+### Added
+- **`scripts/import_lyrics.py`** - 8-phase lyrics import pipeline
+- **`docs/34_LYRICS_IMPORT_PIPELINE.md`** - Complete pipeline documentation
+- **`scripts/song_mappings.json`** - Song ID mappings for database linking
+- **`scripts/vocabulary_analysis.json`** - AI-generated vocabulary analysis
+- **`scripts/translation_fixes.json`** - Log of AI translation corrections
+
+### Import Statistics
+| Metric | Count |
+|--------|-------|
+| Songs imported | 17 |
+| Total lines | 922 |
+| Learnable lines | 909 |
+| Skippable (vocalizations) | 13 |
+| Slang terms created | 215 |
+| Phrases linked | 118 |
+| Lemmas linked | 292 |
+| Translation fixes | 311 |
+
+### 8-Phase Import Process
+1. **Parse** (`--write`) - Extract sections and lines from album text file
+2. **Translate** (`--translate`) - Bulk DeepL translation of Spanish lyrics
+3. **Flag** (`--flag-skippable`) - Detect vocalizations (oh, eh, yeah, etc.)
+4. **Analyze** (`--analyze`) - AI slang/phrase detection with Claude API
+5. **Insert Vocab** (`--insert-vocab`) - Create slang_terms, phrases, song links
+6. **Extract Lemmas** (`--extract-lemmas`) - spaCy NLP + gender heuristics
+7. **Fix Translations** (`--fix-translations`) - AI review and correction pass
+
+### Key Technical Decisions
+- **spaCy over API for lemmas**: Faster, free, works offline
+- **Heuristic gender detection**: Spanish word endings (95%+ accuracy for common patterns)
+- **Incremental saves**: Process one song at a time, commit before next
+- **Slang/lemma separation**: Slang terms excluded from lemma extraction to prevent duplicates
+- **Phonetic spellings as slang**: Dropped-letter pronunciations (pa', año') stored in slang_terms
+
+### Vocabulary Overlap
+- 17.2% of El Principito lemmas appear in Bad Bunny lyrics
+- 287 shared lemmas, 5 song-only lemmas created
+
+### Files Changed
+- **Database**: songs, song_sections, song_lines, slang_terms, song_slang, song_lemmas, phrases, song_phrases tables populated
+- **Documentation**: 32_LYRICS_DATABASE_SPEC.md updated with actual counts
+
+### Lessons Learned
+1. **DeepL struggles with PR slang**: Many mistranslations required AI correction pass
+2. **Claude API timeouts**: Need retry logic and JSON extraction fallbacks
+3. **Gender determination**: spaCy morphology + ending heuristics beats API calls
+4. **Phonetic spellings**: 80 of 215 slang terms are dropped-letter pronunciations
+
+---
+
 ## 2025-12-30 - AdminRoute Component for Admin Access Control
 
 ### Added
 - **`src/components/AdminRoute.jsx`** - New route protection component for admin pages
 
-### How It Works
+### Changed
+- **`src/App.jsx`** - Admin routes now wrapped with `<AdminRoute>` instead of being unprotected
+- **`src/pages/Admin.jsx`** - Removed password authentication logic (now handled by AdminRoute)
+
+### Removed (from Admin.jsx)
+- Password login screen and form
+- `VITE_ADMIN_PASSWORD` environment variable dependency
+- `sessionStorage` authentication persistence
+- Logout button (users log out via main app)
+- `useState`/`useEffect` hooks for auth state
+
+### How AdminRoute Works
 1. Checks if user is authenticated (via `useAuth` context)
 2. Queries `user_settings.is_admin` for the logged-in user
 3. Shows loading spinner while checking both auth and admin status
@@ -44,19 +179,16 @@ Working on final polish and testing before MVP launch.
 5. Redirects to `/dashboard` if authenticated but not admin
 6. Renders children if user has `is_admin = true`
 
-### Usage
-```jsx
-// In App.jsx route definitions
-<Route path="/admin/*" element={
-  <AdminRoute>
-    <AdminLayout />
-  </AdminRoute>
-} />
-```
+### Security Model
+- **Database**: `user_settings.is_admin` boolean column (manually granted)
+- **Client**: `AdminRoute` component for UX protection
+- **Server**: RLS policies enforce admin-only operations
 
-### Related Components
-- `ProtectedRoute.jsx` - Only checks authentication (any logged-in user)
-- `AdminRoute.jsx` - Checks authentication AND admin flag in `user_settings`
+### Route Protection Components
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `ProtectedRoute` | `src/components/ProtectedRoute.jsx` | Auth check only |
+| `AdminRoute` | `src/components/AdminRoute.jsx` | Auth + admin flag check |
 
 ---
 

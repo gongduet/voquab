@@ -1,0 +1,2753 @@
+[
+  {
+    "lemma_id": "a136e442-3fdb-48d7-8707-eb5107a92506",
+    "lemma_text": "enviar",
+    "definitions": [
+      "send"
+    ],
+    "part_of_speech": null,
+    "gender": null
+  },
+  {
+    "lemma_id": "9415733d-44eb-4c61-bb0b-344b3eba34a8",
+    "lemma_text": "extrañar",
+    "definitions": [
+      "miss"
+    ],
+    "part_of_speech": null,
+    "gender": null
+  },
+  {
+    "lemma_id": "efac4fe3-deb4-4d5e-a7d4-0bd35c005267",
+    "lemma_text": "lindo",
+    "definitions": [
+      "nice"
+    ],
+    "part_of_speech": null,
+    "gender": null
+  },
+  {
+    "lemma_id": "f5ca953b-8d45-48f5-a33d-db04a16d575d",
+    "lemma_text": "meter",
+    "definitions": [
+      "enter"
+    ],
+    "part_of_speech": null,
+    "gender": null
+  },
+  {
+    "lemma_id": "cf735e80-12d3-4a3a-aca5-f36b0f59eec8",
+    "lemma_text": "perreo",
+    "definitions": [
+      "perreo (reggaeton dancing style)"
+    ],
+    "part_of_speech": null,
+    "gender": null
+  },
+  {
+    "lemma_id": "0d530e08-0ae6-4453-ae86-0c21242e3b5d",
+    "lemma_text": "blanco",
+    "definitions": [
+      "white"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "148890b3-bcc5-471b-94b0-d18e31aae350",
+    "lemma_text": "bonito",
+    "definitions": [
+      "nice"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "c18dcf4d-36a3-48e8-8880-7dd4b6054f20",
+    "lemma_text": "borracho",
+    "definitions": [
+      "drunk"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "20176ca8-4409-4608-ae36-c6c5a1138a88",
+    "lemma_text": "ciego",
+    "definitions": [
+      "blind"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "6a917bdf-bf88-4f2d-b81b-dab8e305de59",
+    "lemma_text": "contento",
+    "definitions": [
+      "happy"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "56de9d6d-faf8-47ee-b69f-858864d1c63a",
+    "lemma_text": "difícil",
+    "definitions": [
+      "difficult",
+      "hard"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "a9b2d6af-36c1-4793-903a-d00f195b6010",
+    "lemma_text": "doble",
+    "definitions": [
+      "double"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "64237ad9-ff04-4f1e-a0c1-a28062795e63",
+    "lemma_text": "entero",
+    "definitions": [
+      "whole",
+      "entire"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "3b3f7b06-3a9c-481a-943f-c87226ce75cc",
+    "lemma_text": "feliz",
+    "definitions": [
+      "happy"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "325295d0-a885-4339-b262-93f862090674",
+    "lemma_text": "feo",
+    "definitions": [
+      "ugly"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "3024f802-6c1c-4583-b29c-89e44c58cef1",
+    "lemma_text": "grande",
+    "definitions": [
+      "big",
+      "large"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "0b71360f-684e-45e2-9e38-433d2870fda1",
+    "lemma_text": "hecho",
+    "definitions": [
+      "fact"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "85345ceb-ef26-4362-99ef-1e2b3c85d282",
+    "lemma_text": "hermoso",
+    "definitions": [
+      "beautiful",
+      "lovely"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "49d94a2c-32b7-4e1a-8feb-55e640358ee9",
+    "lemma_text": "igual",
+    "definitions": [
+      "equal",
+      "the same"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "acb58fa5-f897-4162-a6c8-7c3b13415d36",
+    "lemma_text": "importante",
+    "definitions": [
+      "important"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "fcfafc1c-e328-486e-83dc-9d8029c50368",
+    "lemma_text": "lleno",
+    "definitions": [
+      "full"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "bf351785-c470-4756-bddb-6bddad5bfb50",
+    "lemma_text": "loco",
+    "definitions": [
+      "crazy"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "e6fe3ce7-ad0d-4197-84f1-eadcfd42f7da",
+    "lemma_text": "malo",
+    "definitions": [
+      "bad",
+      "naughty",
+      "ill"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "6e228bc6-fbf6-450b-a5e8-82464594a7b7",
+    "lemma_text": "mayor",
+    "definitions": [
+      "older"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "dc3476d7-3dcd-4a95-8573-879b837db70f",
+    "lemma_text": "mejor",
+    "definitions": [
+      "better",
+      "best"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "085025b5-072f-430e-a248-b401392cc8a1",
+    "lemma_text": "menor",
+    "definitions": [
+      "minor"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "a6342d97-0117-4c77-aad9-a3724952af88",
+    "lemma_text": "muerto",
+    "definitions": [
+      "dead"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "5e7a0d99-794b-4b20-bd24-96cc9ead7ce0",
+    "lemma_text": "nuevo",
+    "definitions": [
+      "new"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "eeea6464-62bb-4424-993b-e8d1e288faf0",
+    "lemma_text": "peligroso",
+    "definitions": [
+      "dangerous",
+      "risky"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "da5ca8a0-2eb9-4b5f-b87c-d7d43f2a5768",
+    "lemma_text": "perfecto",
+    "definitions": [
+      "perfect"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "bf637d3b-714f-4125-8272-e99fe679c586",
+    "lemma_text": "pesado",
+    "definitions": [
+      "heavy"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "e44c2d23-1983-44e6-bbee-a8459eb67584",
+    "lemma_text": "precioso",
+    "definitions": [
+      "beautiful",
+      "lovely",
+      "precious",
+      "charming"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "94c276fe-b823-424a-85da-bd2b9b874e9d",
+    "lemma_text": "primero",
+    "definitions": [
+      "first"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "f1ac75c3-d8bf-4eba-8ab6-3323a0a21fdd",
+    "lemma_text": "real",
+    "definitions": [
+      "real",
+      "royal"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "b50c0545-6636-46c1-b8f3-ffd3561a1342",
+    "lemma_text": "rico",
+    "definitions": [
+      "rich"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "6c435af9-8a8d-4bb3-8525-249ae9043c1a",
+    "lemma_text": "rojo",
+    "definitions": [
+      "red"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "759d8aa5-1d72-4524-bd88-c6eecc106e72",
+    "lemma_text": "segundo",
+    "definitions": [
+      "second"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "7567ae79-6aea-41fa-b29f-624afcc57ef2",
+    "lemma_text": "sencillo",
+    "definitions": [
+      "simple",
+      "modest"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "cf22b1ca-f7e5-4c71-a1d6-ef9cea3d3b14",
+    "lemma_text": "serio",
+    "definitions": [
+      "serious"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "7057c2bd-7e07-4cf4-8b12-39092c067ef3",
+    "lemma_text": "solo",
+    "definitions": [
+      "only",
+      "alone",
+      "single"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "9fd876c3-534c-42fb-9e80-7edfb1048e5a",
+    "lemma_text": "suelto",
+    "definitions": [
+      "loose"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "89ddecc4-ac66-4bf4-b354-1fddbc3015c7",
+    "lemma_text": "tranquilo",
+    "definitions": [
+      "quiet"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "3ae71bba-976d-410b-b451-cab5587aab87",
+    "lemma_text": "triste",
+    "definitions": [
+      "sad",
+      "gloomy",
+      "miserable"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "92c9f74e-c792-4d3f-95c4-fa780325a5aa",
+    "lemma_text": "vacío",
+    "definitions": [
+      "vacuum"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "f81c5473-1197-4d65-b45c-a662305c7658",
+    "lemma_text": "verde",
+    "definitions": [
+      "green"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "a6a0681e-8362-4f6f-985e-d2fcdd6848bf",
+    "lemma_text": "viejo",
+    "definitions": [
+      "old"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "47287228-c886-45e0-8526-658caeea5005",
+    "lemma_text": "vivo",
+    "definitions": [
+      "live"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "e20db4a0-229d-4ade-b4c4-edcc7059c541",
+    "lemma_text": "último",
+    "definitions": [
+      "last"
+    ],
+    "part_of_speech": "ADJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "a090a84f-05b6-4a38-99f5-2704afc7db2a",
+    "lemma_text": "abajo",
+    "definitions": [
+      "below"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "25eaf9d1-6b50-4e80-aa0d-acdeb921fcab",
+    "lemma_text": "adelante",
+    "definitions": [
+      "forward"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "101534cc-ef92-46aa-bc54-a5218879b30a",
+    "lemma_text": "adentro",
+    "definitions": [
+      "inside"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "c286473f-7b94-4328-ac90-4284290e96db",
+    "lemma_text": "ahora",
+    "definitions": [
+      "now"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "40a6a9bc-a85f-43e5-82f0-d54782088ec1",
+    "lemma_text": "ahí",
+    "definitions": [
+      "there"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "5bbcd5c1-392a-49f4-93b8-cc63dd290a63",
+    "lemma_text": "allá",
+    "definitions": [
+      "there",
+      "over there"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "5a231456-23c0-4aa6-9190-2ebe4363f956",
+    "lemma_text": "antes",
+    "definitions": [
+      "before"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "075ba30f-3dd1-4072-9fb3-75e200afe78c",
+    "lemma_text": "aquí",
+    "definitions": [
+      "here"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "4c095d05-f79d-44df-bf20-736e10be74a8",
+    "lemma_text": "así",
+    "definitions": [
+      "like this",
+      "like that"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "dabc7a7d-dac5-4004-aa3e-d4ba8d13f97d",
+    "lemma_text": "aún",
+    "definitions": [
+      "still"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "ef632529-0ebd-4396-b16b-b27b1c1efe37",
+    "lemma_text": "bien",
+    "definitions": [
+      "good",
+      "well"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "f2172b51-11b8-4e74-b738-fbb759aaab16",
+    "lemma_text": "cerca",
+    "definitions": [
+      "near",
+      "nearby"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "92d00910-5a28-4d3f-8572-f5962701c6c7",
+    "lemma_text": "dentro",
+    "definitions": [
+      "inside"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "1d7c39ac-3a32-4a00-b49c-1de8eb6af4de",
+    "lemma_text": "después",
+    "definitions": [
+      "afterward",
+      "later",
+      "then",
+      "next"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "f9a2a5fd-3e0a-45b5-bcee-fab4e86db3e4",
+    "lemma_text": "encima",
+    "definitions": [
+      "on",
+      "on top of",
+      "above",
+      "over"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "1cf45fc3-11e2-499b-bcfc-34e662ee7970",
+    "lemma_text": "fuera",
+    "definitions": [
+      "outside"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "dee76e4d-2528-41a3-8834-2686c476d4c7",
+    "lemma_text": "hoy",
+    "definitions": [
+      "today"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "86e57659-d32d-492a-86ff-8f230d2aafc2",
+    "lemma_text": "jamás",
+    "definitions": [
+      "never",
+      "ever"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "51d6cced-ebc5-4e88-9c2c-13fb6a06c687",
+    "lemma_text": "luego",
+    "definitions": [
+      "then",
+      "later"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "33c935ca-8006-4dd4-954c-e9b60d184a98",
+    "lemma_text": "mañana",
+    "definitions": [
+      "tomorrow"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "ce8e7bcf-b2b6-46de-8f4d-345dc24ed239",
+    "lemma_text": "mucho",
+    "definitions": [
+      "much",
+      "a lot"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "96b19c91-8979-44aa-b319-40b3a62cd245",
+    "lemma_text": "más",
+    "definitions": [
+      "more"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "34439117-0b27-4b24-abbb-42d32d43df52",
+    "lemma_text": "no",
+    "definitions": [
+      "no"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "129f22ba-50b3-455e-b43b-6b837416264a",
+    "lemma_text": "nunca",
+    "definitions": [
+      "never"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "f65e3e91-a66f-4c80-9eef-b23b2f85c8cd",
+    "lemma_text": "poco",
+    "definitions": [
+      "little",
+      "not much"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "b203dda5-958d-4bce-9fe2-9de96044f26b",
+    "lemma_text": "siempre",
+    "definitions": [
+      "always"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "27ede3f1-595b-41bc-a5a4-a32100093c54",
+    "lemma_text": "solamente",
+    "definitions": [
+      "only"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "ec32fc45-f18c-4251-861d-a648a08f9091",
+    "lemma_text": "sí",
+    "definitions": [
+      "yes"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "63b9afc0-87a2-440f-8659-e6748695296a",
+    "lemma_text": "también",
+    "definitions": [
+      "also",
+      "too",
+      "as well"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "a602d14a-359b-4aca-a290-6c6802e54f1e",
+    "lemma_text": "tampoco",
+    "definitions": [
+      "also"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "3291245a-f1c2-4696-9b2a-4c342b79609e",
+    "lemma_text": "tanto",
+    "definitions": [
+      "so much",
+      "so often"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "81984f74-8a95-4e04-bb16-8b3deb68346e",
+    "lemma_text": "todavía",
+    "definitions": [
+      "still"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "3c3bed03-754e-4da8-98b1-e35fb4e02877",
+    "lemma_text": "ya",
+    "definitions": [
+      "already"
+    ],
+    "part_of_speech": "ADV",
+    "gender": null
+  },
+  {
+    "lemma_id": "ae8fa7d4-7cdf-4a90-8afc-459daca530cf",
+    "lemma_text": "poder",
+    "definitions": [
+      "to be able to"
+    ],
+    "part_of_speech": "AUX",
+    "gender": null
+  },
+  {
+    "lemma_id": "d27e3bb3-f391-4483-a1d5-987d79892744",
+    "lemma_text": "saber",
+    "definitions": [
+      "to know"
+    ],
+    "part_of_speech": "AUX",
+    "gender": null
+  },
+  {
+    "lemma_id": "19d0daee-96c2-4f3e-b8a2-4c4aefa6eb72",
+    "lemma_text": "ni",
+    "definitions": [
+      "neither, nor"
+    ],
+    "part_of_speech": "CCONJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "c6601086-6e1e-4c6f-97b3-16ac31cb195e",
+    "lemma_text": "bueno",
+    "definitions": [
+      "good"
+    ],
+    "part_of_speech": "INTJ",
+    "gender": null
+  },
+  {
+    "lemma_id": "521016be-82f4-40cd-9085-6f7d78dbf355",
+    "lemma_text": "el amor",
+    "definitions": [
+      "the love"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "e0e5d699-b356-4516-96d9-d1d6ecd79142",
+    "lemma_text": "el arte",
+    "definitions": [
+      "the art"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "65994b51-d6b6-4389-98d5-f67b8f042d1b",
+    "lemma_text": "el año",
+    "definitions": [
+      "the year"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "91f10624-81d3-4eb0-a203-1edc4181775e",
+    "lemma_text": "el bicho",
+    "definitions": [
+      "the bug"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "047ac327-5b90-441c-881c-3a6d97d3c6a9",
+    "lemma_text": "el cambio",
+    "definitions": [
+      "the change"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "b308d9bc-6968-44a5-8901-ec9a0df40efb",
+    "lemma_text": "el camino",
+    "definitions": [
+      "the way",
+      "the path"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "e1ac60de-2298-4a3c-af0a-7426f41b915c",
+    "lemma_text": "el cielo",
+    "definitions": [
+      "the sky",
+      "heaven"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "ad8a160e-72af-4dfa-af65-40798450655c",
+    "lemma_text": "el corazón",
+    "definitions": [
+      "the heart"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "5b82a1f2-0a40-488d-864e-847e58a74deb",
+    "lemma_text": "el cuadro",
+    "definitions": [
+      "the picture"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "32555e73-5e27-4a28-93d7-3331014c5fd6",
+    "lemma_text": "el cuero",
+    "definitions": [
+      "the leather"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "5d8bc980-7d34-4f18-a93f-58da65552b27",
+    "lemma_text": "el cuidado",
+    "definitions": [
+      "the care"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "ebcad0a9-de4a-4a51-bcce-f22ab513ee17",
+    "lemma_text": "el daño",
+    "definitions": [
+      "the damage"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "b2a9ef3b-4764-47f4-b5d4-f3a5c56fff32",
+    "lemma_text": "el día",
+    "definitions": [
+      "the day"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "333226f8-aef5-4da1-a7a1-b29c78e3887a",
+    "lemma_text": "el experto",
+    "definitions": [
+      "the expert"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "38f6a5ee-6fd0-42d0-b5e3-69c8abeeb64d",
+    "lemma_text": "el frío",
+    "definitions": [
+      "the cold"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "09fe9bcc-55b2-4954-b67d-19d7bcc96f16",
+    "lemma_text": "el fuego",
+    "definitions": [
+      "the fire"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "f8867ad5-02d0-4eb0-bb82-439aacb0cd2b",
+    "lemma_text": "el juego",
+    "definitions": [
+      "the game"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "2dcf3974-a3a1-4670-b222-c8588286b82d",
+    "lemma_text": "el labio",
+    "definitions": [
+      "the lip"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "eaf3e014-a329-4117-bbec-fd2b2b87537c",
+    "lemma_text": "el lado",
+    "definitions": [
+      "the side"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "dadc5c1f-cf61-482d-b011-8e44161df9da",
+    "lemma_text": "el lápiz",
+    "definitions": [
+      "the pencil"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "81b419bc-b8c9-4f49-9dd3-c9df2d1c9504",
+    "lemma_text": "el mal",
+    "definitions": [
+      "the wrong",
+      "the evil",
+      "the bad thing"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "66dc76ae-e55a-4730-a62b-a980be0b0718",
+    "lemma_text": "el miedo",
+    "definitions": [
+      "the fear"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "7d20f181-fb9b-4752-977d-5dc33ac2bf2c",
+    "lemma_text": "el mundo",
+    "definitions": [
+      "the world"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "fc32c1ba-ea4c-4685-a3b5-a59602b45030",
+    "lemma_text": "el noches",
+    "definitions": [
+      "the evenings"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "12e53855-6c9b-4c97-800b-5c10f16d5f1b",
+    "lemma_text": "el nombre",
+    "definitions": [
+      "the name"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "5f701019-ad59-4af0-a044-926601f90465",
+    "lemma_text": "el número",
+    "definitions": [
+      "the number"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "010075df-b431-43bb-8f24-81b605a47754",
+    "lemma_text": "el ojo",
+    "definitions": [
+      "the eye"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "c1ed8133-1de9-4b24-96f7-fd3c6ba439ac",
+    "lemma_text": "el oro",
+    "definitions": [
+      "the gold"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "8bba06a0-f1b5-4f66-a45b-a01df112e72c",
+    "lemma_text": "el paso",
+    "definitions": [
+      "the step",
+      "the way"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "d430f432-9208-4497-abda-df4567bc1c01",
+    "lemma_text": "el placer",
+    "definitions": [
+      "the pleasure"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "e42e62cd-5d0a-4292-8c1b-7eb8869ee0de",
+    "lemma_text": "el pozo",
+    "definitions": [
+      "the well"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "4dddc9ca-155a-46f3-877f-239af7341397",
+    "lemma_text": "el problema",
+    "definitions": [
+      "the problem"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "a6cf0368-98dc-4d2a-89b7-a58ec131d311",
+    "lemma_text": "el rayo",
+    "definitions": [
+      "the lightning",
+      "the ray",
+      "the beam"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "9bdd3057-a03e-4e06-bff4-cce3688c5489",
+    "lemma_text": "el recuerdo",
+    "definitions": [
+      "the memory"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "34a4e48c-a161-4bbd-b086-aa84b9d77c1f",
+    "lemma_text": "el rey",
+    "definitions": [
+      "the king"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "96a6d05f-2fcc-41b1-b0c1-fc418e908db4",
+    "lemma_text": "el rostro",
+    "definitions": [
+      "the face"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "85f36280-3f5f-4dc7-ba21-238f67cc229a",
+    "lemma_text": "el río",
+    "definitions": [
+      "the river"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "6b028fcb-3d8d-4876-a41b-0e19ce42684b",
+    "lemma_text": "el sentimiento",
+    "definitions": [
+      "the feeling"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "403b8725-3a11-4695-a26f-8a5382b45ff6",
+    "lemma_text": "el sol",
+    "definitions": [
+      "the sun"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "51c379ed-335e-4df8-85b0-54a7e8a78a42",
+    "lemma_text": "el sueño",
+    "definitions": [
+      "the dream"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "2c5c7a10-549f-4ec3-8366-2f654ec6f9d7",
+    "lemma_text": "el suspiro",
+    "definitions": [
+      "the sigh"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "ce66ec72-d483-4227-9c30-6db340309bb6",
+    "lemma_text": "el tanto",
+    "definitions": [
+      "the both"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "a0626193-0c6b-4d42-ad4a-8edf060e8272",
+    "lemma_text": "el tiempo",
+    "definitions": [
+      "the time"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "0fbbfbe2-aec6-4fdf-9837-3746f9be5e31",
+    "lemma_text": "el tiro",
+    "definitions": [
+      "the shooting"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "b2081fbd-42c2-4329-96d9-6fcfdfeb0dce",
+    "lemma_text": "el traje",
+    "definitions": [
+      "the suit",
+      "the dress"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "4ab2aecf-a468-4d36-bdae-91b51f91c6e5",
+    "lemma_text": "el viaje",
+    "definitions": [
+      "the trip",
+      "the journey"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "102a669e-c1c3-4bfb-86e7-077b606e0c00",
+    "lemma_text": "el viento",
+    "definitions": [
+      "the wind"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "M"
+  },
+  {
+    "lemma_id": "a8bab1c1-de9f-416a-862c-83a5d0c42c4a",
+    "lemma_text": "la arena",
+    "definitions": [
+      "the sand"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "e9b5575f-af7e-4500-aa5d-c6b91803b7b6",
+    "lemma_text": "la boca",
+    "definitions": [
+      "the mouth"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "61f4b00c-31a1-4b85-93a4-15ce5bfc6856",
+    "lemma_text": "la caja",
+    "definitions": [
+      "the box"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "d2e4d829-0277-46d9-9753-5785249eb369",
+    "lemma_text": "la casa",
+    "definitions": [
+      "the house",
+      "the home"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "3be7ee29-a985-432e-baa4-c08244c33352",
+    "lemma_text": "la cosa",
+    "definitions": [
+      "the thing"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "1dc28e56-d769-41b4-9534-5398f3cedee5",
+    "lemma_text": "la cuerda",
+    "definitions": [
+      "the rope",
+      "the string",
+      "the cord"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "59ababab-be96-4465-96cc-4b0aa00b84e8",
+    "lemma_text": "la estrella",
+    "definitions": [
+      "the star"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "bd0e7374-a4a6-4735-a13a-2696612b68ad",
+    "lemma_text": "la felicidad",
+    "definitions": [
+      "the happiness"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "cca525be-1ef6-43d6-ab15-49141cb914b2",
+    "lemma_text": "la fiesta",
+    "definitions": [
+      "the party"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "d0d0caae-4e22-404b-8ab3-7c3a0d8d373b",
+    "lemma_text": "la frente",
+    "definitions": [
+      "the forehead"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "d66881e8-e855-4d83-b0f4-8b010804c3ba",
+    "lemma_text": "la gente",
+    "definitions": [
+      "the people"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "1e53d19f-0c6f-4122-8c02-a1c37654fee4",
+    "lemma_text": "la gracia",
+    "definitions": [
+      "the grace",
+      "the charm",
+      "the thanks"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "3fc5b29b-72f6-4966-8930-de4b8366a52d",
+    "lemma_text": "la historia",
+    "definitions": [
+      "the history",
+      "the story"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "dd5a9f58-8953-483a-8163-221924086cfe",
+    "lemma_text": "la hora",
+    "definitions": [
+      "the time"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "07fbcc76-c8c2-48a5-b33b-f21ba6293d2e",
+    "lemma_text": "la idea",
+    "definitions": [
+      "the idea"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "db9679b2-baec-4294-a31c-a0e0993061cb",
+    "lemma_text": "la isla",
+    "definitions": [
+      "the island"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "4dae2ae7-fd2f-42c9-8d49-e61bd35d9a06",
+    "lemma_text": "la luna",
+    "definitions": [
+      "the moon"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "fe5d10d3-fc8d-4c32-a890-3c686fd7a445",
+    "lemma_text": "la luz",
+    "definitions": [
+      "the light"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "9a593bdd-f852-446e-946c-21e8a2ab73ab",
+    "lemma_text": "la mano",
+    "definitions": [
+      "the hand"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "86f6af69-7dd7-4a74-921a-f0956b643c91",
+    "lemma_text": "la mañana",
+    "definitions": [
+      "morning",
+      "tomorrow"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "6208f710-3c62-4f39-9c8e-3fe7812ce5d4",
+    "lemma_text": "la montaña",
+    "definitions": [
+      "the mountain"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "c5ff711b-2c54-48a6-a087-f4b8b5501035",
+    "lemma_text": "la muerte",
+    "definitions": [
+      "the death"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "20f77f4c-192b-4ed3-bee6-9b3590d19285",
+    "lemma_text": "la muñeca",
+    "definitions": [
+      "the doll"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "20d8ff17-f3ce-4f95-89e0-f13af8194c88",
+    "lemma_text": "la máquina",
+    "definitions": [
+      "the machine"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "985d95f2-8a29-4b79-8024-590f9c62b455",
+    "lemma_text": "la música",
+    "definitions": [
+      "the music"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "657e925d-bdf7-47db-994f-0b21512e0348",
+    "lemma_text": "la noche",
+    "definitions": [
+      "the night"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "38753895-e90f-49e9-b080-b759c25ebb5e",
+    "lemma_text": "la nota",
+    "definitions": [
+      "the note"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "30a56a9f-4a56-4933-b4f2-74a14f7f6785",
+    "lemma_text": "la obra",
+    "definitions": [
+      "the work"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "4446343f-35ab-4ba3-8339-81d91e9c330d",
+    "lemma_text": "la parte",
+    "definitions": [
+      "the part",
+      "the share"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "4d7d14ca-1f41-470e-bb09-5e8a6bd6516c",
+    "lemma_text": "la pena",
+    "definitions": [
+      "the penalty",
+      "the sentence",
+      "the sorrow",
+      "the shame"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "cd22f4ec-f273-4b8a-8033-7fe9291ded54",
+    "lemma_text": "la persona",
+    "definitions": [
+      "the person"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "ab5a632b-946d-4a53-a325-486b78605341",
+    "lemma_text": "la pregunta",
+    "definitions": [
+      "the question"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "4e7c184f-75f1-4f2c-959e-43dcebe7c42f",
+    "lemma_text": "la silla",
+    "definitions": [
+      "the chair",
+      "the seat"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "b0039f2c-8c30-4c7d-9fce-1ef2b648c900",
+    "lemma_text": "la sonrisa",
+    "definitions": [
+      "the smile"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "7d84b1ee-3bd8-4366-a0cb-57cecf8b4185",
+    "lemma_text": "la suerte",
+    "definitions": [
+      "the luck"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "15aa31be-75dc-4b39-b580-526d9fb35623",
+    "lemma_text": "la tarde",
+    "definitions": [
+      "the afternoon"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "871ee6a3-d17a-40c6-ae6e-13247e6fd249",
+    "lemma_text": "la tranquila",
+    "definitions": [
+      "the quiet"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "dc6aad57-dd0d-4ae7-bc0c-ec8622dc35b4",
+    "lemma_text": "la tristeza",
+    "definitions": [
+      "the sadness"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "131271e9-3681-4c4c-ad27-c83602b2333e",
+    "lemma_text": "la verdad",
+    "definitions": [
+      "the truth"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "525354b8-3393-4f7c-b253-4b28b5290f9f",
+    "lemma_text": "la vez",
+    "definitions": [
+      "the time"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "dac1ed31-3c92-40e4-bc5e-a5d568e002fc",
+    "lemma_text": "la vida",
+    "definitions": [
+      "the life"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "e2cb3bbc-3cae-45ad-8973-2db0d574c42e",
+    "lemma_text": "la voz",
+    "definitions": [
+      "the voice"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "18b93352-6861-46f7-a22d-ffb84569c4ff",
+    "lemma_text": "la vuelta",
+    "definitions": [
+      "the turn"
+    ],
+    "part_of_speech": "NOUN",
+    "gender": "F"
+  },
+  {
+    "lemma_id": "bb429cee-2b8c-43b0-9b42-0736fa0a2417",
+    "lemma_text": "algo",
+    "definitions": [
+      "something"
+    ],
+    "part_of_speech": "PRON",
+    "gender": null
+  },
+  {
+    "lemma_id": "1b0a81fc-8ef5-4396-9a66-0d7940fae8f3",
+    "lemma_text": "mismo",
+    "definitions": [
+      "same"
+    ],
+    "part_of_speech": "PRON",
+    "gender": null
+  },
+  {
+    "lemma_id": "c5be1f4b-0430-4ee7-9ca5-0f09ebfc05df",
+    "lemma_text": "tuyo",
+    "definitions": [
+      "yours"
+    ],
+    "part_of_speech": "PRON",
+    "gender": null
+  },
+  {
+    "lemma_id": "06bfe213-a136-429e-8dee-23f82bc28295",
+    "lemma_text": "acabar",
+    "definitions": [
+      "to finish",
+      "to finish off",
+      "to end",
+      "to put a stop to"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "5e941bf0-1e70-4e3b-8e9f-d79c1b240755",
+    "lemma_text": "alcanzar",
+    "definitions": [
+      "to reach"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "965d7a89-d05c-4110-8109-2bc517dd82bb",
+    "lemma_text": "amar",
+    "definitions": [
+      "to love"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "6b09a1ea-c374-4acb-8cfc-bb8c5ebdda37",
+    "lemma_text": "andar",
+    "definitions": [
+      "to walk",
+      "to go"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4d14cbb6-6f3c-4bdc-9405-e88db5febdc9",
+    "lemma_text": "aplaudir",
+    "definitions": [
+      "to clap"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "488f9f14-6e4c-41ba-8aa5-b0798879e85b",
+    "lemma_text": "apretar",
+    "definitions": [
+      "to press"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "0d4b5028-0c10-4032-bf79-3792f405b9ef",
+    "lemma_text": "arrepentir",
+    "definitions": [
+      "to regret"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a69baed8-d706-4356-8c35-fe4a67370565",
+    "lemma_text": "ayudar",
+    "definitions": [
+      "to help"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "ec2ee0c6-a0f4-4a22-86a1-8f0db1fde750",
+    "lemma_text": "bailar",
+    "definitions": [
+      "to dance"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "8bd4fde3-8dd4-48d6-8b79-04aa2ecc13cd",
+    "lemma_text": "bajar",
+    "definitions": [
+      "to go down",
+      "to lower"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "1ca34aca-78e0-4335-bab7-60b8822f708b",
+    "lemma_text": "beber",
+    "definitions": [
+      "to drink"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "c9d116ef-1a1b-4dc0-815a-0766414402fd",
+    "lemma_text": "brillar",
+    "definitions": [
+      "to shine"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4e364015-dd60-4ad7-9191-972974f4f51c",
+    "lemma_text": "buscar",
+    "definitions": [
+      "to look for",
+      "to search"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "ea3b80aa-1b6a-4a28-9246-3c553b5e51f0",
+    "lemma_text": "caer",
+    "definitions": [
+      "to fall"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "99b71e56-39fb-474e-838e-66b262e3b941",
+    "lemma_text": "cambiar",
+    "definitions": [
+      "to change",
+      "to swap"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4a9148ca-2c25-490d-a01e-26aa44c02bbd",
+    "lemma_text": "caminar",
+    "definitions": [
+      "to walk"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "15eed817-db49-4af1-9d9a-c4e49eb50aeb",
+    "lemma_text": "cantar",
+    "definitions": [
+      "to sing"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "8fdf4b79-2a9f-407e-963a-066695027f56",
+    "lemma_text": "cazar",
+    "definitions": [
+      "to hunt"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "1b64c82a-b8b0-41b5-a3f5-13426bb5c044",
+    "lemma_text": "coger",
+    "definitions": [
+      "to take",
+      "to grab"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "9a633f55-d55b-4c65-bcb2-a8549b69f54c",
+    "lemma_text": "comer",
+    "definitions": [
+      "to eat",
+      "to have lunch/dinner"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "67f700f7-ff0d-415b-a6ee-dd58d78e8218",
+    "lemma_text": "conocer",
+    "definitions": [
+      "to know",
+      "to meet"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "ad0856f1-713e-480d-b5d3-d8505d2b4d61",
+    "lemma_text": "contar",
+    "definitions": [
+      "to count",
+      "to tell"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "13ba4b28-4888-4455-a441-70eb804896b0",
+    "lemma_text": "convertir",
+    "definitions": [
+      "to convert"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "6ca5c8bf-c2da-408d-a165-e97515e9e1c7",
+    "lemma_text": "correr",
+    "definitions": [
+      "to run"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a57ae09f-ee78-4334-8248-6b7e0a913b4f",
+    "lemma_text": "crear",
+    "definitions": [
+      "to create"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b70ec8b8-d368-4467-8056-f7378b38c7f2",
+    "lemma_text": "creer",
+    "definitions": [
+      "to believe",
+      "to think"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "32915716-b72a-498d-bf8c-fea322d3bced",
+    "lemma_text": "cumplir",
+    "definitions": [
+      "to comply"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "c9aad9e8-d813-4ff1-8c58-6bd996ab34d0",
+    "lemma_text": "dar",
+    "definitions": [
+      "to give"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "363e6e73-6ddf-436a-b3dc-6dd676239ac2",
+    "lemma_text": "deber",
+    "definitions": [
+      "must, to owe"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "0c7bb6c2-8816-4ab0-97f1-c642526920a1",
+    "lemma_text": "decir",
+    "definitions": [
+      "to say",
+      "to tell"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "922a07e8-6848-46ce-804a-b643a2d0974b",
+    "lemma_text": "dejar",
+    "definitions": [
+      "to leave",
+      "to let",
+      "to lend"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "df484a83-6e78-4f4e-ae4b-aaeca87a3d6b",
+    "lemma_text": "despertar",
+    "definitions": [
+      "to wake up",
+      "to awaken"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "471490bf-0c1b-403b-8f82-12d93c68d7d7",
+    "lemma_text": "dibujar",
+    "definitions": [
+      "to draw",
+      "to sketch"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "ced1101d-4b84-4644-9265-4753406638dd",
+    "lemma_text": "disfrutar",
+    "definitions": [
+      "to enjoy"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "fb81d33a-1699-4ae0-b70b-199c745476b7",
+    "lemma_text": "dormir",
+    "definitions": [
+      "to sleep"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "7d6d0b7a-3dfa-40e0-9acc-6fe0f97314c9",
+    "lemma_text": "echar",
+    "definitions": [
+      "to throw",
+      "to put"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "2b9f5693-74ff-43e6-b4e8-340679d5f603",
+    "lemma_text": "emocionar",
+    "definitions": [
+      "to move",
+      "to touch"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "9840f9a2-a71c-49cc-aa05-96e1e0dfb6c2",
+    "lemma_text": "enseñar",
+    "definitions": [
+      "to show",
+      "to teach",
+      "to point out"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "384eda08-b61d-473a-bf0f-859816a209f9",
+    "lemma_text": "envejecer",
+    "definitions": [
+      "to age"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "96f9ff5c-84c3-4b7c-8c97-e472b46cb703",
+    "lemma_text": "esconder",
+    "definitions": [
+      "to hide"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "182c7c29-e232-44fb-b8f4-4967a7208084",
+    "lemma_text": "escribir",
+    "definitions": [
+      "to write"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "77e92c81-63be-4957-a36b-5e53fa49679d",
+    "lemma_text": "escuchar",
+    "definitions": [
+      "to listen"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "688c88e2-7179-431d-96d0-e4e751bea5de",
+    "lemma_text": "esperar",
+    "definitions": [
+      "to wait",
+      "to wait for",
+      "to expect"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "7319275e-19c9-4582-ae4e-083a82ff1d7f",
+    "lemma_text": "estar",
+    "definitions": [
+      "to be"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "7ebbf627-2cf1-4488-85c6-064700c53a03",
+    "lemma_text": "evitar",
+    "definitions": [
+      "to avoid"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "58d85f38-3f91-416c-a7f9-855045fa059b",
+    "lemma_text": "existir",
+    "definitions": [
+      "to exist",
+      "to live"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4153d4a6-ddfe-45ba-ba5e-0c3b63008ad0",
+    "lemma_text": "ganar",
+    "definitions": [
+      "to earn",
+      "to win"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "8b6eb72a-3550-425d-961b-52bb6932e2c7",
+    "lemma_text": "golpear",
+    "definitions": [
+      "to hit",
+      "to strike"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "2678cb14-d81e-4f37-a5bd-1edf194b612c",
+    "lemma_text": "gritar",
+    "definitions": [
+      "to shout",
+      "to scream"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "03ebdccf-621a-4ba1-8c5d-357c515f2f01",
+    "lemma_text": "gustar",
+    "definitions": [
+      "to like"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "adf40355-c0ee-4ffb-bd7a-56e2046811b3",
+    "lemma_text": "hablar",
+    "definitions": [
+      "to talk",
+      "to speak",
+      "to call"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "c5847203-e6cf-4df8-b7dd-f50554233752",
+    "lemma_text": "hacer",
+    "definitions": [
+      "to make",
+      "to do"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "684cd525-914b-4faa-b011-a6992baf1aa9",
+    "lemma_text": "importar",
+    "definitions": [
+      "to matter",
+      "to import"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "253763c5-c13a-4cb7-8878-4fdd297f6cbf",
+    "lemma_text": "inventar",
+    "definitions": [
+      "to invent"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "427bd6cd-8aeb-4563-9734-70b4946e2f6d",
+    "lemma_text": "ir",
+    "definitions": [
+      "to go",
+      "to come"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a86addfa-dbf1-41c4-af3c-723724fed9df",
+    "lemma_text": "jugar",
+    "definitions": [
+      "to play"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a8c2527c-fa07-4d8a-bc76-f817739c49a6",
+    "lemma_text": "llamar",
+    "definitions": [
+      "to call"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a575d755-1c73-4987-b5cd-5d78872493c4",
+    "lemma_text": "llegar",
+    "definitions": [
+      "to get to",
+      "to arrive",
+      "to reach"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b4c285ed-23fe-4e44-be19-9c7c3411d4d0",
+    "lemma_text": "llenar",
+    "definitions": [
+      "to fill"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "739ec86e-a190-49ae-be9a-64c5aa8143ce",
+    "lemma_text": "llevar",
+    "definitions": [
+      "to take",
+      "to carry",
+      "to transport",
+      "to bring"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b6bf8a0c-3be6-4310-a328-6d11a3a77be8",
+    "lemma_text": "llorar",
+    "definitions": [
+      "to cry"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "3e4b7705-cffb-4872-af8f-36df76d71e53",
+    "lemma_text": "marchar",
+    "definitions": [
+      "to go"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "996a6763-957c-4f5d-99a5-8a94f67d5db1",
+    "lemma_text": "matar",
+    "definitions": [
+      "to kill"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "0e71f47a-5a4b-428b-ad69-44e1239f1b35",
+    "lemma_text": "medir",
+    "definitions": [
+      "to measure"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "e48e051d-f015-43c4-b383-bb934a93e535",
+    "lemma_text": "meditar",
+    "definitions": [
+      "to meditate",
+      "to ponder"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "3d938407-eb91-4529-a3c9-f975d0f8c530",
+    "lemma_text": "mentar",
+    "definitions": [
+      "to lie"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "f3d85a2e-d2d7-4fc5-94c9-c31c44b624fb",
+    "lemma_text": "mentir",
+    "definitions": [
+      "to lying"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "2bc23c04-f791-4481-96f1-77707ab97a7a",
+    "lemma_text": "mirar",
+    "definitions": [
+      "to look",
+      "to look at",
+      "to watch"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "61bdb711-6227-4d9f-bab5-73be6daa6097",
+    "lemma_text": "molestar",
+    "definitions": [
+      "to bother"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "fe6cda03-68df-48bd-9577-6ace8c60ebf8",
+    "lemma_text": "mostrar",
+    "definitions": [
+      "to show"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "11b2e02b-bba0-45eb-ae68-69755ee9366f",
+    "lemma_text": "mover",
+    "definitions": [
+      "to move"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "505f556f-6dfb-4d36-b4b2-7015fdd3072a",
+    "lemma_text": "nacer",
+    "definitions": [
+      "to born"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "498fed53-1881-472a-9175-aaa7815a4763",
+    "lemma_text": "necesitar",
+    "definitions": [
+      "to need"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "93893234-a10d-48d9-8b65-b3acaeffde27",
+    "lemma_text": "oler",
+    "definitions": [
+      "to smell"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "47f8adb1-6274-42f5-bf01-19d766eb4bf4",
+    "lemma_text": "olvidar",
+    "definitions": [
+      "to forget",
+      "to leave behind"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "6360f3f0-b974-4881-97a9-3b049881a2f6",
+    "lemma_text": "parecer",
+    "definitions": [
+      "to look like",
+      "to seem"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b979511c-2dc4-4071-a437-c068db566284",
+    "lemma_text": "partir",
+    "definitions": [
+      "to leave"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "0bc2d497-e95c-4493-ab91-7b6f6bf51d71",
+    "lemma_text": "pasar",
+    "definitions": [
+      "to go to"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "85eb6654-0d36-4c1f-a93c-9075ec903e38",
+    "lemma_text": "pedir",
+    "definitions": [
+      "to ask"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4a39263c-61ff-4ba5-9778-d7d1533e94b1",
+    "lemma_text": "pensar",
+    "definitions": [
+      "to think"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "710c22f1-90b8-4bbb-8fab-296bd384e48e",
+    "lemma_text": "perder",
+    "definitions": [
+      "to lose",
+      "to miss"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "fa932b62-5775-4c2e-b6d8-650c3e0651b0",
+    "lemma_text": "poner",
+    "definitions": [
+      "to put",
+      "to set"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "017c0d36-c061-489c-acca-f018d4a554ce",
+    "lemma_text": "preguntar",
+    "definitions": [
+      "to ask",
+      "to inquire"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "1b01dce1-26a4-4f4d-b509-ba6640c85661",
+    "lemma_text": "quedar",
+    "definitions": [
+      "to stay",
+      "to remain",
+      "to be left"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "46a83f18-75c1-4f99-9551-c302cdd58e0e",
+    "lemma_text": "querer",
+    "definitions": [
+      "to want"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "f8bcd8b6-2577-4080-84f4-bf7c6cfd662b",
+    "lemma_text": "quitar",
+    "definitions": [
+      "to remove"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "f096f049-1312-457e-9927-68365ea19821",
+    "lemma_text": "recoger",
+    "definitions": [
+      "to pick up"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "d2393404-1a6b-4807-a9bf-05cb225a6d85",
+    "lemma_text": "reconocer",
+    "definitions": [
+      "to recognize"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "bd367cfe-5188-4423-8f98-650390d266bc",
+    "lemma_text": "recordar",
+    "definitions": [
+      "to remember",
+      "to remind"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "cc4bab12-e4a1-49d8-b231-43443be70b9d",
+    "lemma_text": "reír",
+    "definitions": [
+      "to laugh"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "fcedd90b-20ef-4294-88c3-c1a328a7c710",
+    "lemma_text": "sacar",
+    "definitions": [
+      "to take out",
+      "to get out",
+      "to release"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "13222ab7-377a-493d-abad-df384743d9bb",
+    "lemma_text": "salir",
+    "definitions": [
+      "to leave",
+      "to go out",
+      "to exit"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "d49f3c3e-c794-4bf7-ae6c-9dacd5b3dae6",
+    "lemma_text": "seguir",
+    "definitions": [
+      "to carry on",
+      "to follow",
+      "to pursue"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4b465871-01c9-47bf-98d3-f7f5a5ec46c5",
+    "lemma_text": "sentar",
+    "definitions": [
+      "to sit"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "440a9e11-127b-44c7-aeda-a9f3ec5d1cf5",
+    "lemma_text": "sentir",
+    "definitions": [
+      "to feel",
+      "to hear",
+      "to be sorry"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "1f99f7f2-02a8-4e82-82d7-802865c6705b",
+    "lemma_text": "significar",
+    "definitions": [
+      "to mean"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "67104233-cef9-4ee8-ba81-6774593ffd15",
+    "lemma_text": "soltar",
+    "definitions": [
+      "to let go of",
+      "to release",
+      "to let out"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "f5a65fb4-a677-4eff-b9be-8c252158213b",
+    "lemma_text": "sonar",
+    "definitions": [
+      "to sonar"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "0c885a9b-7ad8-4e5f-92de-8c601b37144f",
+    "lemma_text": "soñar",
+    "definitions": [
+      "to dreaming"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "929a40a1-21fc-458a-a0cd-a9cd05632300",
+    "lemma_text": "subir",
+    "definitions": [
+      "to up"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "87f5f7b4-3a75-4361-9759-e842b9b615ca",
+    "lemma_text": "sufrir",
+    "definitions": [
+      "to suffer"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "3f917e2d-e4af-4c50-b062-08f63ad04fde",
+    "lemma_text": "tener",
+    "definitions": [
+      "to have",
+      "to hold"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "cd90478d-4d4a-4dec-b280-60f332be6e67",
+    "lemma_text": "terminar",
+    "definitions": [
+      "to finish",
+      "to end"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "14b56d5a-6056-4628-b8e5-6b77fcc78d55",
+    "lemma_text": "tirar",
+    "definitions": [
+      "to throw"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "860dcede-f809-4986-90cb-646ce64bf53a",
+    "lemma_text": "tocar",
+    "definitions": [
+      "to touch"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b2740f99-9c06-4848-8fad-566ef8dea7a2",
+    "lemma_text": "trabajar",
+    "definitions": [
+      "to work"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "2c73ef54-985f-4a11-b282-6c8c081afbf7",
+    "lemma_text": "vacilar",
+    "definitions": [
+      "to hesitate",
+      "to waver",
+      "to vacillate"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "b838c8b9-bcf4-4e0b-8faa-85d659cbc352",
+    "lemma_text": "valer",
+    "definitions": [
+      "to cost",
+      "to be worth"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "e148ae98-1f53-44e9-ab1b-617fac99c2fe",
+    "lemma_text": "vender",
+    "definitions": [
+      "to sell"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "19e47344-55ec-4636-8d75-4c2dfe165ddc",
+    "lemma_text": "vengar",
+    "definitions": [
+      "to avenge"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "af22c833-f891-43d0-a586-5ff04a364401",
+    "lemma_text": "venir",
+    "definitions": [
+      "to come"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "a992776d-b62b-41c9-9232-f44ce1a773fb",
+    "lemma_text": "ver",
+    "definitions": [
+      "to see"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "4a6a0288-1969-4c9b-a164-cb76b340be40",
+    "lemma_text": "vivir",
+    "definitions": [
+      "to live",
+      "to be alive"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  },
+  {
+    "lemma_id": "da93d226-1fe3-40df-a4f2-3dea3c0db048",
+    "lemma_text": "volver",
+    "definitions": [
+      "to return",
+      "to come back",
+      "to go back",
+      "to turn"
+    ],
+    "part_of_speech": "VERB",
+    "gender": null
+  }
+]

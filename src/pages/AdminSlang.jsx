@@ -19,7 +19,9 @@ import {
   CheckCircle,
   Circle,
   MessageCircle,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 
 export default function AdminSlang() {
@@ -41,6 +43,12 @@ export default function AdminSlang() {
   const [error, setError] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [searchInput, setSearchInput] = useState(searchTerm)
+
+  // Pagination
+  const [page, setPage] = useState(0)
+  const [totalCount, setTotalCount] = useState(0)
+  const pageSize = 50
 
   // Stats
   const [stats, setStats] = useState({
@@ -72,18 +80,57 @@ export default function AdminSlang() {
     setError(null)
 
     try {
-      const { data, error: fetchError } = await supabase
+      // Build query with filters
+      let query = supabase
         .from('slang_terms')
-        .select('*')
-        .order('term')
+        .select('*', { count: 'exact' })
+
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`term.ilike.%${searchTerm}%,definition.ilike.%${searchTerm}%`)
+      }
+
+      // Apply region filter
+      if (filterRegion !== 'all') {
+        query = query.eq('region', filterRegion)
+      }
+
+      // Apply formality filter
+      if (filterFormality !== 'all') {
+        query = query.eq('formality', filterFormality)
+      }
+
+      // Apply approval status filter
+      if (filterApproved === 'approved') {
+        query = query.eq('is_approved', true)
+      } else if (filterApproved === 'unapproved') {
+        query = query.eq('is_approved', false)
+      }
+
+      // Apply sorting
+      query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+
+      // Apply pagination
+      const from = page * pageSize
+      const to = from + pageSize - 1
+      query = query.range(from, to)
+
+      const { data, error: fetchError, count } = await query
 
       if (fetchError) throw fetchError
 
       setSlangTerms(data || [])
+      setTotalCount(count || 0)
 
-      // Extract unique regions
-      const uniqueRegions = [...new Set(data?.map(s => s.region).filter(Boolean))]
-      setRegions(uniqueRegions)
+      // Fetch unique regions for filter dropdown (only once)
+      if (regions.length === 0) {
+        const { data: allSlang } = await supabase
+          .from('slang_terms')
+          .select('region')
+
+        const uniqueRegions = [...new Set(allSlang?.map(s => s.region).filter(Boolean))]
+        setRegions(uniqueRegions)
+      }
 
     } catch (err) {
       console.error('Error fetching slang terms:', err)
@@ -91,17 +138,38 @@ export default function AdminSlang() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [searchTerm, filterRegion, filterFormality, filterApproved, sortBy, sortOrder, page, pageSize, regions.length])
 
   useEffect(() => {
     fetchSlangTerms()
   }, [fetchSlangTerms])
 
+  // Update stats based on current page data and total count
   useEffect(() => {
-    const total = slangTerms.length
     const approved = slangTerms.filter(s => s.is_approved).length
-    setStats({ total, approved, unapproved: total - approved })
-  }, [slangTerms])
+    setStats({ total: totalCount, approved, unapproved: slangTerms.length - approved })
+  }, [slangTerms, totalCount])
+
+  // Debounce search input - wait 300ms after user stops typing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== searchTerm) {
+        updateFilter('search', searchInput)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchInput, searchTerm, updateFilter])
+
+  // Sync searchInput when URL changes (e.g., clear filters button)
+  useEffect(() => {
+    setSearchInput(searchTerm)
+  }, [searchTerm])
+
+  // Reset to page 0 when filters change
+  useEffect(() => {
+    setPage(0)
+  }, [searchTerm, filterRegion, filterFormality, filterApproved, sortBy, sortOrder])
 
   const toggleApproved = useCallback(async (slang) => {
     const newValue = !slang.is_approved
@@ -119,68 +187,26 @@ export default function AdminSlang() {
     }
   }, [])
 
-  // Filter slang terms
-  const filteredTerms = slangTerms.filter(slang => {
-    // Search
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase()
-      const matchesTerm = slang.term?.toLowerCase().includes(search)
-      const matchesDef = slang.definition?.toLowerCase().includes(search)
-      if (!matchesTerm && !matchesDef) return false
-    }
-
-    // Region filter
-    if (filterRegion !== 'all' && slang.region !== filterRegion) return false
-
-    // Formality filter
-    if (filterFormality !== 'all' && slang.formality !== filterFormality) return false
-
-    // Approval status
-    if (filterApproved === 'approved' && !slang.is_approved) return false
-    if (filterApproved === 'unapproved' && slang.is_approved) return false
-
-    return true
-  })
-
-  // Sort slang terms
-  const sortedTerms = [...filteredTerms].sort((a, b) => {
-    let comparison = 0
-    switch (sortBy) {
-      case 'term':
-        comparison = (a.term || '').localeCompare(b.term || '')
-        break
-      case 'region':
-        comparison = (a.region || '').localeCompare(b.region || '')
-        break
-      case 'formality':
-        comparison = (a.formality || '').localeCompare(b.formality || '')
-        break
-      default:
-        comparison = 0
-    }
-    return sortOrder === 'asc' ? comparison : -comparison
-  })
-
-  // Keyboard navigation
+  // Keyboard navigation (uses slangTerms which is already filtered/sorted server-side)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
 
-      const currentIndex = sortedTerms.findIndex(s => s.slang_id === selectedId)
+      const currentIndex = slangTerms.findIndex(s => s.slang_id === selectedId)
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          if (currentIndex < sortedTerms.length - 1) {
-            setSelectedId(sortedTerms[currentIndex + 1].slang_id)
-          } else if (currentIndex === -1 && sortedTerms.length > 0) {
-            setSelectedId(sortedTerms[0].slang_id)
+          if (currentIndex < slangTerms.length - 1) {
+            setSelectedId(slangTerms[currentIndex + 1].slang_id)
+          } else if (currentIndex === -1 && slangTerms.length > 0) {
+            setSelectedId(slangTerms[0].slang_id)
           }
           break
         case 'ArrowUp':
           e.preventDefault()
           if (currentIndex > 0) {
-            setSelectedId(sortedTerms[currentIndex - 1].slang_id)
+            setSelectedId(slangTerms[currentIndex - 1].slang_id)
           }
           break
         case 'Enter':
@@ -194,15 +220,7 @@ export default function AdminSlang() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sortedTerms, selectedId, navigate])
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-neutral-400">Loading slang terms...</div>
-      </div>
-    )
-  }
+  }, [slangTerms, selectedId, navigate])
 
   if (error) {
     return (
@@ -233,12 +251,12 @@ export default function AdminSlang() {
       {/* Filters */}
       <div className="flex flex-wrap gap-4 items-end">
         {/* Search */}
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search slang..."
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -318,9 +336,34 @@ export default function AdminSlang() {
         )}
       </div>
 
-      {/* Count */}
-      <div className="text-sm text-neutral-500">
-        {sortedTerms.length} slang terms
+      {/* Count + Pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-neutral-500">
+          {totalCount > 0
+            ? `Showing ${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount.toLocaleString()} slang terms`
+            : '0 slang terms'}
+        </div>
+        {totalCount > pageSize && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-sm text-neutral-600">
+              Page {page + 1} of {Math.ceil(totalCount / pageSize)}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * pageSize >= totalCount}
+              className="p-1.5 rounded text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Keyboard hints */}
@@ -356,7 +399,19 @@ export default function AdminSlang() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {sortedTerms.map((slang) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-neutral-400">
+                    Loading slang terms...
+                  </td>
+                </tr>
+              ) : slangTerms.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-neutral-400">
+                    No slang terms match your filters
+                  </td>
+                </tr>
+              ) : slangTerms.map((slang) => (
                 <tr
                   key={slang.slang_id}
                   onClick={() => setSelectedId(slang.slang_id)}
@@ -428,13 +483,6 @@ export default function AdminSlang() {
             </tbody>
           </table>
         </div>
-
-        {sortedTerms.length === 0 && (
-          <div className="px-6 py-12 text-center">
-            <MessageCircle size={48} className="mx-auto text-neutral-300 mb-4" />
-            <p className="text-neutral-500 text-sm">No slang terms match your filters</p>
-          </div>
-        )}
       </div>
     </div>
   )

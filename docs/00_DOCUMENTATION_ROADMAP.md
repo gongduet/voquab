@@ -116,14 +116,16 @@ These support scaling and future expansion.
 | 30 | CHAPTER_IMPORT_CHECKLIST.md | ✅ | 10-12 | Step-by-step import process |
 | 30 | FSRS_ARCHITECTURE.md | ✅ | 8-10 | FSRS algorithm details |
 | 31 | SENTENCE_COMPREHENSION.md | ✅ | 10-12 | Reading mode spec |
+| 32 | LYRICS_DATABASE_SPEC.md | ✅ | 12-15 | Lyrics schema and import |
+| 34 | LYRICS_IMPORT_PIPELINE.md | ✅ | 10-12 | Song lyrics import workflow |
 | 99 | LIVING_CHANGELOG.md | ✅ | Growing | Claude Code updates log |
 
 ---
 
 ## GRAND TOTAL
 
-**All Documentation:** 28 documents  
-**Estimated Total Pages:** ~200-250 pages  
+**All Documentation:** 32 documents
+**Estimated Total Pages:** ~220-280 pages
 **Critical Path (Tier 1):** 8 documents, ~60 pages
 
 ---
@@ -429,7 +431,7 @@ These support scaling and future expansion.
 
 ## CURRENT STATUS
 
-**Completed:** 28/30 documents (93%)
+**Completed:** 30/32 documents (94%)
 
 **All Tiers Complete:**
 - Tier 1: 8/8 ✅
@@ -437,15 +439,17 @@ These support scaling and future expansion.
 - Tier 3: 4/4 ✅
 - Tier 4: 5/5 ✅
 - Tier 5: 3/4 ✅ (missing ONBOARDING.md)
-- Living Docs: 6/7 ✅ (missing TECHNICAL_DEBT.md)
+- Living Docs: 8/9 ✅ (missing TECHNICAL_DEBT.md)
 
 **Remaining:**
 - 25_TECHNICAL_DEBT.md
 - 26_ONBOARDING.md
 
-**Last Updated:** December 25, 2025
+**Last Updated:** January 2, 2026
 
 ### Major Milestones
+- **Jan 2026:** Bad Bunny album imported (17 songs, 922 lines, 215 slang terms)
+- **Jan 2026:** Lyrics import pipeline complete (34_LYRICS_IMPORT_PIPELINE.md)
 - **Dec 2025:** Admin Suite Phase 2 Complete (Lemmas, Phrases, Sentences management)
 - **Dec 2025:** FSRS algorithm implemented for spaced repetition
 - **Dec 2025:** Sentence comprehension (Reading Mode) implemented

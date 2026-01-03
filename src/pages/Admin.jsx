@@ -1,4 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
+import { DashboardHeader } from '../components/dashboard'
 
 /**
  * Admin Dashboard - Admin interface for content management
@@ -8,9 +12,130 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
  * Features:
  * - Tab navigation for different admin functions
  * - Nested routes via Outlet
+ * - Voquab header bar for consistent navigation
  */
 export default function Admin() {
   const location = useLocation()
+  const { user } = useAuth()
+  const [headerData, setHeaderData] = useState({
+    streak: 0,
+    username: '',
+    loading: true
+  })
+
+  // Fetch minimal user data for header
+  useEffect(() => {
+    async function fetchHeaderData() {
+      if (!user?.id) return
+
+      try {
+        // Fetch display_name from user_profiles
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single()
+
+        // Calculate streak from user_review_history (same logic as Dashboard.jsx)
+        const streak = await calculateStreakFromHistory(user.id)
+
+        setHeaderData({
+          streak,
+          username: profile?.display_name || user.email?.split('@')[0] || '',
+          loading: false
+        })
+      } catch (error) {
+        console.error('Error fetching header data:', error)
+        setHeaderData(prev => ({ ...prev, loading: false }))
+      }
+    }
+
+    fetchHeaderData()
+  }, [user?.id, user?.email])
+
+  /**
+   * Calculate streak from user_review_history - matches Dashboard.jsx logic exactly
+   * Counts consecutive days with activity, starting from today (or yesterday if no activity today)
+   */
+  async function calculateStreakFromHistory(userId) {
+    // Helper to format date as YYYY-MM-DD in local time
+    const formatLocalDate = (date) => {
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+
+    console.log('[Admin] calculateStreakFromHistory called with userId:', userId)
+
+    // Get reviews from last 70 days
+    const seventyDaysAgo = new Date()
+    seventyDaysAgo.setDate(seventyDaysAgo.getDate() - 70)
+
+    console.log('[Admin] Querying reviews since:', seventyDaysAgo.toISOString())
+
+    const { data: reviews, error } = await supabase
+      .from('user_review_history')
+      .select('reviewed_at, lemma_id, phrase_id')
+      .eq('user_id', userId)
+      .gte('reviewed_at', seventyDaysAgo.toISOString())
+
+    console.log('[Admin] Query result - error:', error, 'reviews count:', reviews?.length)
+
+    if (error || !reviews) {
+      console.log('[Admin] Returning 0 due to error or no reviews')
+      return 0
+    }
+
+    // Group by date, counting unique lemmas + phrases per day
+    const activityByDate = {}
+    for (const review of reviews) {
+      const dateStr = formatLocalDate(new Date(review.reviewed_at))
+      if (!activityByDate[dateStr]) {
+        activityByDate[dateStr] = { lemmas: new Set(), phrases: new Set() }
+      }
+      if (review.lemma_id) activityByDate[dateStr].lemmas.add(review.lemma_id)
+      if (review.phrase_id) activityByDate[dateStr].phrases.add(review.phrase_id)
+    }
+
+    // Build activity map for streak calculation
+    const activityMap = new Map()
+    for (const [date, sets] of Object.entries(activityByDate)) {
+      activityMap.set(date, sets.lemmas.size + sets.phrases.size)
+    }
+
+    console.log('[Admin] Activity dates:', [...activityMap.keys()].slice(0, 10))
+
+    // Calculate streak - don't break if today has no activity yet
+    let calculatedStreak = 0
+    const today = new Date()
+    const todayStr = formatLocalDate(today)
+    const hasTodayActivity = activityMap.has(todayStr) && activityMap.get(todayStr) > 0
+
+    console.log('[Admin] Today:', todayStr, 'hasTodayActivity:', hasTodayActivity)
+
+    // If today has activity, include it and count backwards
+    // If today has no activity, start from yesterday
+    const startOffset = hasTodayActivity ? 0 : 1
+
+    console.log('[Admin] startOffset:', startOffset)
+
+    for (let i = startOffset; i < 60; i++) {
+      const checkDate = new Date(today)
+      checkDate.setDate(today.getDate() - i)
+      const checkDateStr = formatLocalDate(checkDate)
+
+      if (activityMap.has(checkDateStr) && activityMap.get(checkDateStr) > 0) {
+        calculatedStreak++
+      } else {
+        console.log('[Admin] Streak broken at:', checkDateStr, 'i:', i)
+        break
+      }
+    }
+
+    console.log('[Admin] Final calculated streak:', calculatedStreak)
+    return calculatedStreak
+  }
 
   // Determine active tab based on current route
   const isLemmasActive = location.pathname === '/admin/common-words' || location.pathname.startsWith('/admin/lemmas/')
@@ -21,6 +146,8 @@ export default function Admin() {
   const isSentenceDeepDive = location.pathname.startsWith('/admin/sentences/') && location.pathname !== '/admin/sentences'
   const isSongsActive = location.pathname === '/admin/songs' || location.pathname.startsWith('/admin/songs/')
   const isSongDeepDive = location.pathname.startsWith('/admin/songs/') && location.pathname !== '/admin/songs'
+  const isLinesActive = location.pathname === '/admin/song-lines' || location.pathname.startsWith('/admin/song-lines/')
+  const isLineDeepDive = location.pathname.startsWith('/admin/song-lines/') && location.pathname !== '/admin/song-lines'
   const isSlangActive = location.pathname === '/admin/slang' || location.pathname.startsWith('/admin/slang/')
   const isSlangDeepDive = location.pathname.startsWith('/admin/slang/') && location.pathname !== '/admin/slang'
 
@@ -33,13 +160,23 @@ export default function Admin() {
     : isSentencesActive ? 'Sentences'
     : isSongDeepDive ? 'Song Details'
     : isSongsActive ? 'Songs'
+    : isLineDeepDive ? 'Line Details'
+    : isLinesActive ? 'Lines'
     : isSlangDeepDive ? 'Slang Details'
     : isSlangActive ? 'Slang'
     : 'Dashboard'
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Header - Notion style */}
+      {/* Main App Header */}
+      <DashboardHeader
+        streak={headerData.streak}
+        username={headerData.username}
+        loading={headerData.loading}
+        isAdmin={true}
+      />
+
+      {/* Admin Header - Notion style */}
       <header className="border-b border-neutral-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 py-4">
           {/* Top row: Breadcrumb + Back link */}
@@ -75,6 +212,8 @@ export default function Admin() {
             {currentPage === 'Sentence Details' && 'Complete sentence breakdown with words, lemmas, and phrases'}
             {currentPage === 'Songs' && 'Manage songs for lyrics-based learning'}
             {currentPage === 'Song Details' && 'Edit song metadata, sections, and linked slang'}
+            {currentPage === 'Lines' && 'Review song lines, translations, and vocabulary'}
+            {currentPage === 'Line Details' && 'Edit line translation and view linked vocabulary'}
             {currentPage === 'Slang' && 'Manage slang terms, definitions, and cultural context'}
             {currentPage === 'Slang Details' && 'Edit slang term details and view linked songs'}
           </p>
@@ -125,6 +264,16 @@ export default function Admin() {
               }`}
             >
               Songs
+            </Link>
+            <Link
+              to="/admin/song-lines"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isLinesActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Lines
             </Link>
             <Link
               to="/admin/slang"

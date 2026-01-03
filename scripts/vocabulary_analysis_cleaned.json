@@ -1,0 +1,2170 @@
+{
+  "existing_slang_matched": [
+    {
+      "term": "pa",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "pa'l",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "cabrón",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "vo'a",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "to",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "p'acá",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "vamo",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "acho",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "corillo",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "Toy",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "patá'",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "toda'",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "matá",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "toy",
+      "found_in": "Eoo"
+    }
+  ],
+  "new_slang_to_create": [
+    {
+      "term": "diabla",
+      "standard": "diablesa",
+      "meaning": "female devil/wild woman",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "loquita",
+      "standard": "loca pequeña",
+      "meaning": "little crazy girl (affectionate)",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "dime",
+      "standard": "dime",
+      "meaning": "tell me",
+      "found_in": "Baile Inolvidable",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "chamaquito",
+      "standard": "muchacho pequeño",
+      "meaning": "little boy/young man",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "bellaquito",
+      "standard": "travieso",
+      "meaning": "naughty/mischievous",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "term": "mama",
+      "standard": "besa",
+      "meaning": "kisses",
+      "found_in": "Baile Inolvidable",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "enamorao",
+      "standard": "enamorado",
+      "meaning": "in love",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "Va'a",
+      "standard": "Vas a",
+      "meaning": "You are going to",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "pa'trá",
+      "standard": "para atrás",
+      "meaning": "backwards",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "adió",
+      "standard": "adiós",
+      "meaning": "goodbye",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "ere",
+      "standard": "eres",
+      "meaning": "you are",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "na",
+      "standard": "nada",
+      "meaning": "nothing",
+      "found_in": "Bokete",
+      "_flag": "too_short"
+    },
+    {
+      "term": "tuya'",
+      "standard": "tuyas",
+      "meaning": "yours",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "viéndono",
+      "standard": "viéndonos",
+      "meaning": "seeing us",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "corazone",
+      "standard": "corazones",
+      "meaning": "hearts",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "cancione",
+      "standard": "canciones",
+      "meaning": "songs",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "estacione",
+      "standard": "estaciones",
+      "meaning": "seasons",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "pregunta'",
+      "standard": "preguntas",
+      "meaning": "questions",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "contestacione",
+      "standard": "contestaciones",
+      "meaning": "answers",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "fotitos",
+      "standard": "fotitas",
+      "meaning": "little photos",
+      "found_in": "Bokete"
+    },
+    {
+      "term": "estamo",
+      "standard": "estamos",
+      "meaning": "we are",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "sepa'",
+      "standard": "sepas",
+      "meaning": "you know",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "'tan",
+      "standard": "están",
+      "meaning": "they are",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "p'allá",
+      "standard": "para allá",
+      "meaning": "over there",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "Canale'",
+      "standard": "Canales",
+      "meaning": "Canales (place name)",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "pichaera",
+      "standard": "pichaera",
+      "meaning": "Puerto Rican slang for trouble/mess",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "to's",
+      "standard": "todos",
+      "meaning": "all",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "anormale'",
+      "standard": "anormales",
+      "meaning": "crazy ones/wild ones",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "muchacho'",
+      "standard": "muchachos",
+      "meaning": "guys/boys",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "verdá",
+      "standard": "verdad",
+      "meaning": "truth",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "cuidao",
+      "standard": "cuidado",
+      "meaning": "careful",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "chinchorrear",
+      "standard": "chinchorrear",
+      "meaning": "to go bar hopping",
+      "found_in": "Café con Ron"
+    },
+    {
+      "term": "combo",
+      "standard": "combo",
+      "meaning": "group/crew",
+      "found_in": "Café con Ron",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "güiro",
+      "standard": "güiro",
+      "meaning": "musical instrument, but here used metaphorically",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "perico",
+      "standard": "perico",
+      "meaning": "cocaine (slang)",
+      "found_in": "DTMF"
+    },
+    {
+      "term": "to'",
+      "standard": "todo",
+      "meaning": "all/every",
+      "found_in": "El Clúb"
+    },
+    {
+      "term": "sentimiento'",
+      "standard": "sentimientos",
+      "meaning": "feelings",
+      "found_in": "El Clúb"
+    },
+    {
+      "term": "pa-",
+      "standard": "para",
+      "meaning": "to/for",
+      "found_in": "El Clúb"
+    },
+    {
+      "term": "loco",
+      "standard": "muy",
+      "meaning": "very/really",
+      "found_in": "El Clúb",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "ghosteó",
+      "standard": "ignoró/desapareció",
+      "meaning": "ghosted/ignored",
+      "found_in": "El Clúb"
+    },
+    {
+      "term": "jangueando",
+      "standard": "saliendo de fiesta",
+      "meaning": "partying/hanging out",
+      "found_in": "El Clúb"
+    },
+    {
+      "term": "mami",
+      "standard": "bebé/amor",
+      "meaning": "baby/babe",
+      "found_in": "El Clúb",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "caserío'",
+      "standard": "caseríos",
+      "meaning": "public housing projects",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "barrio'",
+      "standard": "barrios",
+      "meaning": "neighborhoods",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "tas",
+      "standard": "estás",
+      "meaning": "you are",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "venta'",
+      "standard": "ventas",
+      "meaning": "sales",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "bestie",
+      "standard": "mejor amiga",
+      "meaning": "best friend",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "fit",
+      "standard": "en forma",
+      "meaning": "in good shape/attractive",
+      "found_in": "Eoo",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "lista'e",
+      "standard": "lista de",
+      "meaning": "list of",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "parao",
+      "standard": "parado",
+      "meaning": "standing/erect",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "sienta'",
+      "standard": "sientas",
+      "meaning": "feel",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "wileá",
+      "standard": "wild/loca",
+      "meaning": "wild/crazy",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "obligao",
+      "standard": "obligado",
+      "meaning": "for sure/definitely",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "BM",
+      "standard": "BMW",
+      "meaning": "BMW car",
+      "found_in": "Eoo",
+      "_flag": "too_short"
+    },
+    {
+      "term": "AP",
+      "standard": "Audemars Piguet",
+      "meaning": "expensive watch brand",
+      "found_in": "Eoo",
+      "_flag": "too_short"
+    },
+    {
+      "term": "bellaqueo",
+      "standard": "comportamiento sexual",
+      "meaning": "sexual behavior/horniness",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "criamo",
+      "standard": "criamos",
+      "meaning": "we grew up",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "envuelto'",
+      "standard": "envueltos",
+      "meaning": "wrapped up in",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "bichote",
+      "standard": "jefe/capo",
+      "meaning": "big shot/boss",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "somo",
+      "standard": "somos",
+      "meaning": "we are",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "iguale'",
+      "standard": "iguales",
+      "meaning": "the same",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "bandi",
+      "standard": "bandidos",
+      "meaning": "gangsters/thugs",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "puñeta",
+      "standard": "carajo",
+      "meaning": "damn/shit",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "tiempo'",
+      "standard": "tiempos",
+      "meaning": "times",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "deo",
+      "standard": "dedo",
+      "meaning": "finger",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "jangueo",
+      "standard": "fiesta",
+      "meaning": "party/hanging out",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "quiere'",
+      "standard": "quieres",
+      "meaning": "you want",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "llame'",
+      "standard": "llames",
+      "meaning": "you call",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "mira'",
+      "standard": "miras",
+      "meaning": "you look",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "do'",
+      "standard": "dos",
+      "meaning": "two",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "bajamo",
+      "standard": "bajamos",
+      "meaning": "we take down",
+      "found_in": "Eoo"
+    },
+    {
+      "term": "pa'",
+      "standard": "para",
+      "meaning": "for/to",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "me'",
+      "standard": "mes",
+      "meaning": "month",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "malcriá",
+      "standard": "malcriada",
+      "meaning": "spoiled/bratty",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "cree'",
+      "standard": "crees",
+      "meaning": "believe",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "suelta'",
+      "standard": "suelta",
+      "meaning": "loose/free",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "sale'",
+      "standard": "sales",
+      "meaning": "you go out",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "perreá-rear",
+      "standard": "perrear",
+      "meaning": "to dance reggaeton",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "fotito'",
+      "standard": "fotitos",
+      "meaning": "little photos",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "má'",
+      "standard": "más",
+      "meaning": "more",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "entonce",
+      "standard": "entonces",
+      "meaning": "then",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "esté'",
+      "standard": "estés",
+      "meaning": "you are",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "enoje'",
+      "standard": "enojes",
+      "meaning": "get angry",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "chavo'",
+      "standard": "chavos",
+      "meaning": "money",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "pichar",
+      "standard": "ignorar",
+      "meaning": "to ignore",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "embichá",
+      "standard": "rebelde",
+      "meaning": "rebellious/wild",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "fichá",
+      "standard": "vigilada",
+      "meaning": "watched/monitored",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "mai",
+      "standard": "mami",
+      "meaning": "mom",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "crecí'a",
+      "standard": "crecida",
+      "meaning": "grown up",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "enemigo'",
+      "standard": "enemigos",
+      "meaning": "enemies",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "term": "labio'",
+      "standard": "labios",
+      "meaning": "lips",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "pisao",
+      "standard": "pisado",
+      "meaning": "stepped on/encountered",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "envía'",
+      "standard": "envías",
+      "meaning": "you send",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "e'",
+      "standard": "es",
+      "meaning": "is",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "hace'",
+      "standard": "haces",
+      "meaning": "you do",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "hipnotizao",
+      "standard": "hipnotizado",
+      "meaning": "hypnotized",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "colonizao",
+      "standard": "colonizado",
+      "meaning": "colonized",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "diablo'",
+      "standard": "diablos",
+      "meaning": "hell",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "enchulao",
+      "standard": "enganchado",
+      "meaning": "hooked/attached",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "enviciao",
+      "standard": "enviciado",
+      "meaning": "addicted",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "totito",
+      "standard": "parte íntima femenina",
+      "meaning": "female intimate part",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "ta",
+      "standard": "está",
+      "meaning": "it is",
+      "found_in": "Kloufrens",
+      "_flag": "too_short"
+    },
+    {
+      "term": "lo'",
+      "standard": "los",
+      "meaning": "the",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "hacía'",
+      "standard": "hacías",
+      "meaning": "you used to make",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "galla",
+      "standard": "mujer",
+      "meaning": "woman/girl",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "ma",
+      "standard": "mama",
+      "meaning": "baby/girl",
+      "found_in": "Kloufrens",
+      "_flag": "too_short"
+    },
+    {
+      "term": "bicho",
+      "standard": "nada",
+      "meaning": "nothing (Puerto Rican slang)",
+      "found_in": "La Mudanza",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "jalone'e",
+      "standard": "jalones de",
+      "meaning": "pulls of",
+      "found_in": "La Mudanza"
+    },
+    {
+      "term": "pa'cá",
+      "standard": "para acá",
+      "meaning": "over here",
+      "found_in": "La Mudanza"
+    },
+    {
+      "term": "alguito",
+      "standard": "algito/algo",
+      "meaning": "something little",
+      "found_in": "La Mudanza"
+    },
+    {
+      "term": "su'",
+      "standard": "sus",
+      "meaning": "his/her/their (phonetic contraction)",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "orilla'",
+      "standard": "orillas",
+      "meaning": "shores (dropped final 's')",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "ojo'",
+      "standard": "ojos",
+      "meaning": "eyes (dropped final 's')",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "suelte'",
+      "standard": "sueltes",
+      "meaning": "let go (dropped final 's')",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "olvide'",
+      "standard": "olvides",
+      "meaning": "forget (dropped final 's')",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "jíbaro",
+      "standard": "campesino",
+      "meaning": "Puerto Rican rural farmer/mountain person",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "jíbara",
+      "standard": "campesina",
+      "meaning": "female Puerto Rican rural farmer/mountain person",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "lelolai",
+      "standard": "no standard equivalent",
+      "meaning": "traditional Puerto Rican folk chant/expression",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "term": "piquete",
+      "standard": "estilo/actitud",
+      "meaning": "swag/attitude/style",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "gatas",
+      "standard": "mujeres",
+      "meaning": "women/girls",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "buena",
+      "standard": "atractiva",
+      "meaning": "hot/attractive",
+      "found_in": "Nuevayol",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "bueno",
+      "standard": "atractivo",
+      "meaning": "good-looking/attractive",
+      "found_in": "Nuevayol",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "cañita",
+      "standard": "ron",
+      "meaning": "rum",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "rulay",
+      "standard": "relajada",
+      "meaning": "relaxed/chill",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "tusi",
+      "standard": "droga rosa",
+      "meaning": "pink cocaine/2C-B drug",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "rosita",
+      "standard": "droga rosa",
+      "meaning": "pink drug",
+      "found_in": "Nuevayol"
+    },
+    {
+      "term": "break",
+      "standard": "descanso",
+      "meaning": "break/rest",
+      "found_in": "Perfumito Nuevo",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "lao",
+      "standard": "lado",
+      "meaning": "side",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "mueve'",
+      "standard": "mueves",
+      "meaning": "you move",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "huele'",
+      "standard": "hueles",
+      "meaning": "you smell",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "modale'",
+      "standard": "modales",
+      "meaning": "manners",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "dominao",
+      "standard": "dominado",
+      "meaning": "dominated",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "la'",
+      "standard": "las",
+      "meaning": "the",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "chingao",
+      "standard": "tenido sexo",
+      "meaning": "had sex",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "ve'",
+      "standard": "vez",
+      "meaning": "time",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "crea'",
+      "standard": "creas",
+      "meaning": "you believe",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "conoce'",
+      "standard": "conozcas",
+      "meaning": "you know",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "cojone'",
+      "standard": "carajo",
+      "meaning": "damn/hell",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "tiene'",
+      "standard": "tienes",
+      "meaning": "you have",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "peleao",
+      "standard": "peleando",
+      "meaning": "fighting",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "despué",
+      "standard": "después",
+      "meaning": "after",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "mahón",
+      "standard": "jeans",
+      "meaning": "jeans",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "bellaquita",
+      "standard": "traviesa sexual",
+      "meaning": "sexually mischievous girl",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "diablo",
+      "standard": "wow",
+      "meaning": "damn/wow",
+      "found_in": "Perfumito Nuevo",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "diantre",
+      "standard": "diablo",
+      "meaning": "damn",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "dimo",
+      "standard": "dimos",
+      "meaning": "we gave",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "damo",
+      "standard": "damos",
+      "meaning": "we give",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "term": "cuida'o",
+      "standard": "cuidado",
+      "meaning": "careful/watch out",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "ere'",
+      "standard": "eres",
+      "meaning": "you are",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "brother'",
+      "standard": "hermanos",
+      "meaning": "brothers/friends",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "tenía'",
+      "standard": "tenías",
+      "meaning": "you had",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "cuero",
+      "standard": "mujer",
+      "meaning": "woman (derogatory)",
+      "found_in": "Pitorro de Coco",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "vacilara",
+      "standard": "disfrutara",
+      "meaning": "to have fun/enjoy",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "Pitorro",
+      "standard": "ron casero",
+      "meaning": "homemade rum",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "bailaíta",
+      "standard": "bailadita",
+      "meaning": "little dance",
+      "found_in": "Turista"
+    },
+    {
+      "term": "herida'",
+      "standard": "heridas",
+      "meaning": "wounds",
+      "found_in": "Turista"
+    },
+    {
+      "term": "año'",
+      "standard": "años",
+      "meaning": "years",
+      "found_in": "Turista"
+    },
+    {
+      "term": "curarla'",
+      "standard": "curarlas",
+      "meaning": "to heal them",
+      "found_in": "Turista"
+    },
+    {
+      "term": "supiera'",
+      "standard": "supieras",
+      "meaning": "you knew",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "vámono",
+      "standard": "vámonos",
+      "meaning": "let's go",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "onde",
+      "standard": "donde",
+      "meaning": "where",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "estaba'",
+      "standard": "estabas",
+      "meaning": "you were",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "quemé",
+      "standard": "quemando",
+      "meaning": "smoking",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "girla'",
+      "standard": "chicas",
+      "meaning": "girls",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "p'atrá",
+      "standard": "para atrás",
+      "meaning": "back",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "mе",
+      "standard": "me",
+      "meaning": "me",
+      "found_in": "Veldá",
+      "_flag": "too_short"
+    },
+    {
+      "term": "toas",
+      "standard": "todas",
+      "meaning": "all",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "lu'",
+      "standard": "luz",
+      "meaning": "light",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "viera'",
+      "standard": "vieras",
+      "meaning": "you saw",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "hookear",
+      "standard": "engancharse",
+      "meaning": "to get hooked",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "joder",
+      "standard": "arruinar",
+      "meaning": "to mess up",
+      "found_in": "Veldá",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "moja'",
+      "standard": "mojas",
+      "meaning": "you get wet",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "rica'",
+      "standard": "ricas",
+      "meaning": "attractive/hot",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "janguear",
+      "standard": "salir de fiesta",
+      "meaning": "to party/hang out",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "tre",
+      "standard": "tres",
+      "meaning": "three",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "prendí'a",
+      "standard": "prendida",
+      "meaning": "lit/on fire",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "molí'a",
+      "standard": "molida",
+      "meaning": "ground/crushed",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "tique",
+      "standard": "dinero",
+      "meaning": "money",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "fue-",
+      "standard": "fuete",
+      "meaning": "whip/beating",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "finde",
+      "standard": "fin de semana",
+      "meaning": "weekend",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "lía'",
+      "standard": "lías",
+      "meaning": "you roll/get involved",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "bienvenía'",
+      "standard": "bienvenidas",
+      "meaning": "welcome",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "singue",
+      "standard": "tenga sexo",
+      "meaning": "have sex",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "toa",
+      "standard": "todas",
+      "meaning": "all",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "gata'",
+      "standard": "mujeres",
+      "meaning": "women/girls",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "garete",
+      "standard": "descontrol",
+      "meaning": "out of control",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "grillete",
+      "standard": "cadenas/inhibiciones",
+      "meaning": "chains/inhibitions",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "term": "playita",
+      "standard": "playa",
+      "meaning": "little beach (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "juntito'",
+      "standard": "juntitos",
+      "meaning": "together (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "castillo'",
+      "standard": "castillos",
+      "meaning": "castles",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "aldea'",
+      "standard": "aldeas",
+      "meaning": "villages",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "miramo",
+      "standard": "miramos",
+      "meaning": "we look",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "estemo",
+      "standard": "estemos",
+      "meaning": "we are",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "besitos",
+      "standard": "besos",
+      "meaning": "little kisses (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "escrín",
+      "standard": "screen",
+      "meaning": "screen (anglicism)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "vamo'",
+      "standard": "vamos",
+      "meaning": "let's go",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "besarno'",
+      "standard": "besarnos",
+      "meaning": "kiss each other",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "problema'",
+      "standard": "problemas",
+      "meaning": "problems",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "ola'",
+      "standard": "olas",
+      "meaning": "waves",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "blin-blin",
+      "standard": "brillante",
+      "meaning": "bling-bling, shiny",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "corazoncitos",
+      "standard": "corazones",
+      "meaning": "little hearts (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "bonito",
+      "standard": "bonita",
+      "meaning": "pretty (masculine for feminine)",
+      "found_in": "Weltita",
+      "_flag": "standard_word"
+    },
+    {
+      "term": "mojaíta",
+      "standard": "mojadita",
+      "meaning": "a little wet (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "mosquito'",
+      "standard": "mosquitos",
+      "meaning": "mosquitoes",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "traje'e",
+      "standard": "traje de",
+      "meaning": "outfit of",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "eso'",
+      "standard": "esos",
+      "meaning": "those",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "ojitos",
+      "standard": "ojos",
+      "meaning": "little eyes (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "sudaíta",
+      "standard": "sudadita",
+      "meaning": "a little sweaty (diminutive)",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "necesita'",
+      "standard": "necesitas",
+      "meaning": "you need",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "dice'",
+      "standard": "dices",
+      "meaning": "you say",
+      "found_in": "Weltita"
+    },
+    {
+      "term": "OC",
+      "standard": "OC",
+      "meaning": "official car/transportation",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "stalkeándote",
+      "standard": "stalking you",
+      "meaning": "checking your social media obsessively",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "SanSe",
+      "standard": "SanSe",
+      "meaning": "San Juan, Puerto Rico (Old San Juan area)",
+      "found_in": "Kloufrens"
+    },
+    {
+      "term": "picharon",
+      "standard": "they pitched",
+      "meaning": "they didn't come/failed to deliver",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "term": "lowkey",
+      "standard": "low key",
+      "meaning": "discreetly/quietly",
+      "found_in": "Veldá"
+    },
+    {
+      "term": "bichota",
+      "standard": "female big bug",
+      "meaning": "female boss/badass woman",
+      "found_in": "Veldá"
+    }
+  ],
+  "existing_phrases_matched": [
+    {
+      "phrase": "se da caña",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "hablar mierda",
+      "found_in": "DTMF"
+    }
+  ],
+  "new_phrases_to_create": [
+    {
+      "phrase": "me tiro de una",
+      "literal": "I throw myself from one",
+      "actual": "I'll jump/kill myself",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "phrase": "vamos allá",
+      "literal": "let's go there",
+      "actual": "let's do this/here we go",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "phrase": "esto suena cabrón",
+      "literal": "this sounds like a goat",
+      "actual": "this sounds awesome",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "phrase": "me paso en la luna",
+      "literal": "I spend time on the moon",
+      "actual": "I'm always daydreaming/spaced out",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "phrase": "la nueva mama bien",
+      "literal": "the new one kisses well",
+      "actual": "the new girl kisses well",
+      "found_in": "Baile Inolvidable"
+    },
+    {
+      "phrase": "chingando agresivo",
+      "literal": "screwing aggressively",
+      "actual": "having intense/passionate sex",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "Quédate en tu viaje",
+      "literal": "stay on your trip",
+      "actual": "keep doing your thing/stay in your fantasy",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "pichar y olvidar",
+      "literal": "to pitch and forget",
+      "actual": "to move on and forget",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "un boquete en PR",
+      "literal": "a hole in Puerto Rico",
+      "actual": "a small insignificant town in PR",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "no te emocione",
+      "literal": "don't get excited",
+      "actual": "don't get your hopes up",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "eso no es na nuevo",
+      "literal": "that's nothing new",
+      "actual": "that's nothing new/surprising",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "la invitación de la playita se venció",
+      "literal": "the little beach invitation expired",
+      "actual": "the opportunity/invitation to go to the beach is gone",
+      "found_in": "Bokete",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "Un día va'a ponerte vieja",
+      "literal": "one day it will make you old",
+      "actual": "one day you'll get old",
+      "found_in": "Bokete"
+    },
+    {
+      "phrase": "sientan el torque",
+      "literal": "feel the torque",
+      "actual": "feel the power/intensity",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "no le vamo a bajar",
+      "literal": "we're not going to lower it",
+      "actual": "we're not backing down/slowing down",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "chillando goma",
+      "literal": "screaming rubber",
+      "actual": "burning rubber/speeding",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "botando humo",
+      "literal": "throwing smoke",
+      "actual": "smoking/going fast",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "clase 'e loquera",
+      "literal": "class of craziness",
+      "actual": "total craziness",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "no te vayas por risco",
+      "literal": "don't go by cliff",
+      "actual": "don't take the dangerous path",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "en el monte, hoy se rompe",
+      "literal": "in the mountain, today it breaks",
+      "actual": "in the hills, today we party hard",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "el samurai está en brillo",
+      "literal": "the samurai is in shine",
+      "actual": "the car is looking good/clean",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "beberme un galón",
+      "literal": "drink myself a gallon",
+      "actual": "drink heavily",
+      "found_in": "Café con Ron"
+    },
+    {
+      "phrase": "me toque' el güiro",
+      "literal": "you touch my güiro",
+      "actual": "you play along with me/follow my rhythm",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "chequéate a las babies",
+      "literal": "check yourself to the babies",
+      "actual": "check out the girls",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "la dejamos esbaratá",
+      "literal": "we left it broken",
+      "actual": "we tore up the street/partied hard",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "con cojones",
+      "literal": "with testicles",
+      "actual": "a lot/intensely",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "el pecho pelao",
+      "literal": "the chest peeled",
+      "actual": "chest scraped/hurt",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "estoy que choco",
+      "literal": "I am that I crash",
+      "actual": "I'm so drunk I'm stumbling",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "pa la movie",
+      "literal": "for the movie",
+      "actual": "for show/pretending",
+      "found_in": "DTMF"
+    },
+    {
+      "phrase": "me ganaron los sentimiento'",
+      "literal": "the feelings won me",
+      "actual": "I got overwhelmed by emotions",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "pasándola cabrón",
+      "literal": "passing it bastard",
+      "actual": "having an amazing time",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "muerto por dentro",
+      "literal": "dead inside",
+      "actual": "emotionally devastated",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "bien loco",
+      "literal": "very crazy",
+      "actual": "really intensely",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "el futuro me golpeó",
+      "literal": "the future hit me",
+      "actual": "reality hit me hard",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "la vida no me cumplió",
+      "literal": "life didn't fulfill me",
+      "actual": "life didn't give me what I wanted",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "rompe la calle",
+      "literal": "breaks the street",
+      "actual": "dominates/kills it",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "hasta abajo",
+      "literal": "all the way down",
+      "actual": "dance low/twerk",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "pégate, vírate",
+      "literal": "stick yourself, turn yourself",
+      "actual": "get close, turn around (dance)",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "nadie inventa",
+      "literal": "nobody invents",
+      "actual": "nobody messes with us",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "body paintin'",
+      "literal": "body painting",
+      "actual": "sexual act reference",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "chequéate la historia",
+      "literal": "check yourself the history",
+      "actual": "check the track record",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "te vuelves loca",
+      "literal": "you become crazy",
+      "actual": "you go wild",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "no me ronquen",
+      "literal": "don't snore at me",
+      "actual": "don't front/act tough with me",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "anda cazando",
+      "literal": "goes hunting",
+      "actual": "looking to hook up",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "no está datin'",
+      "literal": "is not dating",
+      "actual": "not in a relationship",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "le bajamo el panty",
+      "literal": "we lower the panties",
+      "actual": "sexual reference",
+      "found_in": "Eoo"
+    },
+    {
+      "phrase": "me encojona",
+      "literal": "makes me angry",
+      "actual": "pisses me off",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "no me caes bien",
+      "literal": "you don't fall well to me",
+      "actual": "I don't like you anymore",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "a fuego",
+      "literal": "on fire",
+      "actual": "always good/loyal",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "tirar chavos",
+      "literal": "throw money",
+      "actual": "spend money lavishly",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "pa la calle coge",
+      "literal": "takes to the street",
+      "actual": "heads out partying",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "la tengo fichá",
+      "literal": "I have her filed",
+      "actual": "I'm keeping tabs on her",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "a aplicarla",
+      "literal": "to apply it",
+      "actual": "to act tough/show off",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "a frontear",
+      "literal": "to front",
+      "actual": "to show off/act tough",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "close friend'",
+      "literal": "close friends",
+      "actual": "Instagram close friends feature",
+      "found_in": "Kloufrens"
+    },
+    {
+      "phrase": "Una player profesional",
+      "literal": "A professional player",
+      "actual": "A skilled heartbreaker",
+      "found_in": "Kloufrens"
+    },
+    {
+      "phrase": "circulito verde",
+      "literal": "little green circle",
+      "actual": "online status indicator",
+      "found_in": "Kloufrens"
+    },
+    {
+      "phrase": "Lo que tú diga' me importa poco",
+      "literal": "What you say matters little to me",
+      "actual": "I don't care what you say",
+      "found_in": "La Mudanza",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "Le meto con cojone y con ovario'",
+      "literal": "I put it in with balls and ovaries",
+      "actual": "I go hard with both masculine and feminine strength",
+      "found_in": "La Mudanza",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "A mí me importa un bicho lo que a ti te vale verga",
+      "literal": "To me it matters a bug what to you is worth dick",
+      "actual": "I don't give a damn about what you don't care about",
+      "found_in": "La Mudanza",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "Millonario sin dejar de ser del barrio",
+      "literal": "Millionaire without stopping being from the neighborhood",
+      "actual": "Rich but still keeping my street roots",
+      "found_in": "La Mudanza",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "De aquí nadie me saca",
+      "literal": "From here nobody takes me out",
+      "actual": "Nobody can make me leave this place",
+      "found_in": "La Mudanza"
+    },
+    {
+      "phrase": "pa que sepa",
+      "literal": "so that he/she knows",
+      "actual": "just so you know",
+      "found_in": "La Mudanza"
+    },
+    {
+      "phrase": "lo que le pasó a Hawái",
+      "literal": "what happened to Hawaii",
+      "actual": "being colonized/taken over by outsiders",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "aunque a veces le vaya mal",
+      "literal": "even though sometimes it goes badly for her",
+      "actual": "despite her struggles/hardships",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "aguantándose llorar",
+      "literal": "holding back crying",
+      "actual": "fighting back tears/trying not to cry",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "con Dios se puede hablar",
+      "literal": "with God one can talk",
+      "actual": "you can speak directly to God (being closer to heaven)",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "el corrupto lo echó",
+      "literal": "the corrupt one threw him out",
+      "actual": "corrupt officials forced him to leave",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "son alcohol pa las herida'",
+      "literal": "they are alcohol for the wounds",
+      "actual": "they serve as medicine/comfort for pain",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "pa la tristeza bailar",
+      "literal": "for the sadness to dance",
+      "actual": "dancing away the sadness",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "una que no se dejó",
+      "literal": "one who didn't let herself",
+      "actual": "one who didn't give up/didn't let herself be defeated",
+      "found_in": "Lo Que Le Pasó a Hawaii"
+    },
+    {
+      "phrase": "Con silenciador le robamos las gatas",
+      "literal": "With silencer we steal the cats from him",
+      "actual": "We steal the women quietly/smoothly",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "Con la nota en high",
+      "literal": "With the note in high",
+      "actual": "Being high/under the influence",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "Capea el Dough",
+      "literal": "Cape the dough",
+      "actual": "Handle the money/make money",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "saben la que hay",
+      "literal": "they know the one there is",
+      "actual": "they know what's up/the situation",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "fue que nació el flow",
+      "literal": "was that the flow was born",
+      "actual": "that's when the flow/style began",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "estoy en la mía",
+      "literal": "I am in mine",
+      "actual": "I'm doing my own thing/focused on myself",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "se siente cerquita",
+      "literal": "feels close",
+      "actual": "feels nearby/close to home",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "no te vo'a dar break",
+      "literal": "not going to give you break",
+      "actual": "not going to give you a break/rest",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "te vo'a hacer la rusa",
+      "literal": "going to do the Russian to you",
+      "actual": "going to perform a sexual act",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "va a subir la marea",
+      "literal": "the tide is going to rise",
+      "actual": "things are going to heat up",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "no miro pa'l lao",
+      "literal": "don't look to the side",
+      "actual": "I don't look at anyone else",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "buscarme pa chingar",
+      "literal": "look for me to mess with",
+      "actual": "come find me to hook up",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "con los ojos me quitaste el traje",
+      "literal": "with your eyes you took off my suit",
+      "actual": "you undressed me with your eyes",
+      "found_in": "Perfumito Nuevo",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "me pone en musa",
+      "literal": "puts me in muse",
+      "actual": "inspires me/turns me on",
+      "found_in": "Perfumito Nuevo"
+    },
+    {
+      "phrase": "¿qué vas a hacer si me pego?",
+      "literal": "what will you do if I stick?",
+      "actual": "what will you do if I get close to you?",
+      "found_in": "Perfumito Nuevo",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "hoy le dimo y mañana le damo",
+      "literal": "today we gave and tomorrow we give",
+      "actual": "we're going at it today and tomorrow too",
+      "found_in": "Perfumito Nuevo",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "me trancaste el juego",
+      "literal": "you blocked my game",
+      "actual": "you ruined my chances",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "phrase": "me la montan",
+      "literal": "they mount it on me",
+      "actual": "they give me a hard time",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "phrase": "estoy en un viaje",
+      "literal": "I'm on a trip",
+      "actual": "I'm acting crazy/delusional",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "phrase": "me tenías en las nubes",
+      "literal": "you had me in the clouds",
+      "actual": "you had me on cloud nine",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "phrase": "doble seis y doble cinco",
+      "literal": "double six and double five",
+      "actual": "domino pieces/game reference",
+      "found_in": "Pitorro de Coco"
+    },
+    {
+      "phrase": "En mi vida fuiste turista",
+      "literal": "In my life you were a tourist",
+      "actual": "You only saw the surface of my life",
+      "found_in": "Turista"
+    },
+    {
+      "phrase": "Tú solo viste lo mejor de mí",
+      "literal": "You only saw the best of me",
+      "actual": "You didn't see my struggles or pain",
+      "found_in": "Turista",
+      "_flag": "long_phrase"
+    },
+    {
+      "phrase": "no te tocaba a ti curarla'",
+      "literal": "it wasn't your turn to heal them",
+      "actual": "it wasn't your responsibility to heal them",
+      "found_in": "Turista"
+    },
+    {
+      "phrase": "Si se da, pues se da",
+      "literal": "If it happens, then it happens",
+      "actual": "whatever will be, will be",
+      "found_in": "Turista"
+    },
+    {
+      "phrase": "ningún culo me ajora",
+      "literal": "no ass scares me",
+      "actual": "no one intimidates me",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "close friends",
+      "literal": "close friends",
+      "actual": "Instagram close friends feature",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "de lao",
+      "literal": "from side",
+      "actual": "from the side",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "cuerda floja",
+      "literal": "loose rope",
+      "actual": "tightrope/precarious situation",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "a bellaquear",
+      "literal": "to be naughty",
+      "actual": "to be sexually provocative",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "tas buena",
+      "literal": "you're good",
+      "actual": "you're hot/attractive",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "me crie en la loma",
+      "literal": "I grew up on the hill",
+      "actual": "I'm from the tough neighborhood",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "movie cabrona",
+      "literal": "badass movie",
+      "actual": "awesome scene/situation",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "te la coma",
+      "literal": "eat it to you",
+      "actual": "perform oral sex on you",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "de anime",
+      "literal": "of anime",
+      "actual": "like an anime character",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "metes mano",
+      "literal": "you put hand",
+      "actual": "you're skilled/you get involved",
+      "found_in": "Veldá"
+    },
+    {
+      "phrase": "muero perreando",
+      "literal": "I die dancing reggaeton",
+      "actual": "I love dancing reggaeton intensely",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "nos fuimo al garete",
+      "literal": "we went to the drift",
+      "actual": "we went wild/lost control",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "ponte en cuatro",
+      "literal": "put yourself in four",
+      "actual": "get on all fours",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "dale p'atrá",
+      "literal": "give it backwards",
+      "actual": "back it up/move back",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "estoy suelto",
+      "literal": "I am loose",
+      "actual": "I'm free/single/available",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "puesto pa'l lío",
+      "literal": "ready for trouble",
+      "actual": "ready for action/party",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "que viva la putería",
+      "literal": "long live the whoring",
+      "actual": "let's party wild/celebrate debauchery",
+      "found_in": "Voy a Llevarte Pa' PR"
+    },
+    {
+      "phrase": "de piquito",
+      "literal": "of little beak",
+      "actual": "little kisses",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "pin-pin",
+      "literal": "pin-pin",
+      "actual": "kissing sound/onomatopoeia",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "la flaca",
+      "literal": "the skinny one",
+      "actual": "the girl/girlfriend",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "yo daría lo que fuera",
+      "literal": "I would give whatever it was",
+      "actual": "I would give anything",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "castillos de arena",
+      "literal": "sand castles",
+      "actual": "sandcastles",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "si adentro o afuera",
+      "literal": "if inside or outside",
+      "actual": "whether inside or outside",
+      "found_in": "Weltita"
+    },
+    {
+      "phrase": "To'l mundo",
+      "literal": "Todo el mundo",
+      "actual": "everyone",
+      "found_in": "El Clúb"
+    },
+    {
+      "phrase": "de to",
+      "literal": "de todo",
+      "actual": "everything",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "la seguiste",
+      "literal": "seguiste",
+      "actual": "you continued",
+      "found_in": "Ketu Tecré"
+    },
+    {
+      "phrase": "cuadro 'e",
+      "literal": "cuadro de",
+      "actual": "painting of",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "dando palo",
+      "literal": "teniendo éxito",
+      "actual": "being successful/hitting hard",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "los de cien",
+      "literal": "los ricos",
+      "actual": "the wealthy ones/big money people",
+      "found_in": "Nuevayol"
+    },
+    {
+      "phrase": "te ve'",
+      "literal": "te ves",
+      "actual": "you look",
+      "found_in": "Perfumito Nuevo"
+    }
+  ],
+  "songs_analyzed": 17,
+  "errors": [],
+  "_cleaning_notes": {
+    "moved_phrases_to_slang": 8,
+    "moved_slang_to_phrases": 7,
+    "flagged_for_review": 29,
+    "original_slang_count": 217,
+    "original_phrase_count": 128
+  }
+}
