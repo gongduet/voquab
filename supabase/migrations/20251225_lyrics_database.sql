@@ -172,7 +172,24 @@ CREATE TABLE song_lemmas (
 COMMENT ON TABLE song_lemmas IS 'Links standard vocabulary (lemmas) to songs';
 
 -- ============================================
--- TABLE 7: user_slang_progress
+-- TABLE 7: song_phrases
+-- Junction table linking standard phrases to songs (reuses existing phrases table)
+-- ============================================
+CREATE TABLE song_phrases (
+  song_id UUID NOT NULL REFERENCES songs(song_id) ON DELETE CASCADE,
+  phrase_id UUID NOT NULL REFERENCES phrases(phrase_id) ON DELETE CASCADE,
+
+  -- First occurrence reference
+  first_line_id UUID REFERENCES song_lines(line_id),
+  occurrence_count INTEGER DEFAULT 1,
+
+  PRIMARY KEY (song_id, phrase_id)
+);
+
+COMMENT ON TABLE song_phrases IS 'Links standard phrases to songs';
+
+-- ============================================
+-- TABLE 8: user_slang_progress
 -- FSRS-scheduled progress on slang vocabulary (mirrors user_lemma_progress)
 -- ============================================
 CREATE TABLE user_slang_progress (
@@ -289,6 +306,7 @@ CREATE INDEX idx_song_slang_song ON song_slang(song_id);
 
 -- Song vocabulary
 CREATE INDEX idx_song_lemmas_song ON song_lemmas(song_id);
+CREATE INDEX idx_song_phrases_song ON song_phrases(song_id);
 
 -- User slang progress
 CREATE INDEX idx_slang_progress_due ON user_slang_progress(user_id, due_date);
@@ -297,6 +315,13 @@ CREATE INDEX idx_slang_progress_state ON user_slang_progress(user_id, fsrs_state
 -- User line progress
 CREATE INDEX idx_line_progress_due ON user_line_progress(user_id, due_date);
 CREATE INDEX idx_line_progress_state ON user_line_progress(user_id, fsrs_state);
+
+-- ============================================
+-- ALTER user_settings to add FK to songs
+-- ============================================
+ALTER TABLE user_settings
+  ADD CONSTRAINT user_settings_active_song_id_fkey
+  FOREIGN KEY (active_song_id) REFERENCES songs(song_id);
 
 -- ============================================
 -- End of Lyrics Database Migration

@@ -1,33 +1,38 @@
 /**
- * Sentence Split Service
+ * Sentence Split Service (V2)
  *
- * Handles the complex operation of splitting a single sentence into multiple sentences.
+ * Handles splitting a single sentence into multiple sentences while PRESERVING
+ * word-to-lemma associations (no more lost vocabulary work!).
+ *
  * This involves:
  * 1. Creating new sentences with proper ordering
  * 2. Reordering all subsequent sentences in the chapter
- * 3. Deleting words, fragments, phrase_occurrences for original
- * 4. Generating new words for each new sentence
- * 5. Generating new fragments via AI
- * 6. Recalculating phrase occurrences
- * 7. Cleaning up user progress
- * 8. Deleting original sentence
+ * 3. MIGRATING words to new sentences (preserves lemma_id!)
+ * 4. Deleting fragments (must be regenerated via CLI)
+ * 5. Recalculating phrase occurrences
+ * 6. Cleaning up user progress
+ * 7. Deleting original sentence
+ *
+ * After splitting, run fragment generation CLI:
+ *   python scripts/content_pipeline/generate_fragments.py --sentence-ids <ids>
  */
 
 import { supabase } from '../lib/supabase'
 
 /**
- * Split a sentence into multiple sentences
+ * Split a sentence into multiple sentences (V2 - preserves lemma associations)
  *
  * @param {string} originalSentenceId - The sentence to split
  * @param {Array<{text: string, translation: string, isParagraphStart: boolean}>} newSentences - Array of new sentence data
- * @returns {Promise<{success: boolean, newSentenceIds?: string[], error?: string}>}
+ * @param {string} chapterId - The chapter ID (for phrase occurrence recalculation)
+ * @returns {Promise<{success: boolean, newSentenceIds?: string[], wordsMigrated?: number, error?: string}>}
  */
-export async function splitSentence(originalSentenceId, newSentences) {
-  console.log('[SplitSentence] Starting split operation', { originalSentenceId, newSentences })
+export async function splitSentence(originalSentenceId, newSentences, chapterId) {
+  console.log('[SplitSentence] Starting split operation (v2 - word migration)', { originalSentenceId, newSentences })
 
   try {
-    // Call the database function which bypasses RLS
-    const { data, error } = await supabase.rpc('split_sentence', {
+    // Call the v2 database function which migrates words instead of deleting them
+    const { data, error } = await supabase.rpc('split_sentence_v2', {
       p_original_sentence_id: originalSentenceId,
       p_new_sentences: newSentences.map(s => ({
         text: s.text.trim(),
@@ -43,28 +48,31 @@ export async function splitSentence(originalSentenceId, newSentences) {
     console.log('[SplitSentence] RPC result:', data)
 
     if (!data.success) {
-      throw new Error(data.error || 'Split operation failed')
+      // Include word count mismatch details if available
+      const errorDetails = data.dbWordCount !== undefined
+        ? ` (DB: ${data.dbWordCount}, UI: ${data.uiWordCount})`
+        : ''
+      throw new Error((data.error || 'Split operation failed') + errorDetails)
     }
 
-    // Generate words for each new sentence using database function
-    console.log('[SplitSentence] Generating words for new sentences')
-    for (const sentenceId of (data.newSentenceIds || [])) {
-      const { data: wordResult, error: wordError } = await supabase.rpc('generate_words_for_sentence', {
-        p_sentence_id: sentenceId
-      })
+    // Words are already migrated by v2 function - no need to regenerate
+    console.log('[SplitSentence] Words migrated:', data.wordsMigrated)
 
-      if (wordError) {
-        console.error('[SplitSentence] Error generating words for', sentenceId, wordError)
-      } else {
-        console.log('[SplitSentence] Word generation result:', wordResult)
-      }
+    // Recalculate phrase occurrences for each new sentence
+    console.log('[SplitSentence] Recalculating phrase occurrences')
+    for (let i = 0; i < (data.newSentenceIds || []).length; i++) {
+      const sentenceId = data.newSentenceIds[i]
+      const sentenceText = newSentences[i].text
+      await recalculatePhraseOccurrences(sentenceId, sentenceText, chapterId)
     }
 
     console.log('[SplitSentence] Split complete!')
+    console.log('[SplitSentence] New sentence IDs for fragment generation:', data.newSentenceIds)
 
     return {
       success: true,
       newSentenceIds: data.newSentenceIds,
+      wordsMigrated: data.wordsMigrated,
       message: data.message
     }
 
@@ -75,56 +83,6 @@ export async function splitSentence(originalSentenceId, newSentences) {
       error: error.message
     }
   }
-}
-
-/**
- * Generate word entries for a sentence
- * Parses the sentence text and creates word records
- */
-async function generateWordsForSentence(sentenceId, sentenceText) {
-  // Simple word tokenization - split on whitespace and punctuation boundaries
-  // This is a simplified version - a real implementation might use NLP
-  const words = tokenizeSpanish(sentenceText)
-
-  const wordRecords = words.map((word, index) => ({
-    sentence_id: sentenceId,
-    word_text: word.text,
-    word_position: index + 1,
-    is_punctuation: word.isPunctuation
-  }))
-
-  if (wordRecords.length > 0) {
-    const { error } = await supabase
-      .from('words')
-      .insert(wordRecords)
-
-    if (error) {
-      console.error('[generateWordsForSentence] Error:', error)
-    }
-  }
-}
-
-/**
- * Simple Spanish tokenizer
- * Splits text into words and punctuation
- */
-function tokenizeSpanish(text) {
-  const tokens = []
-  // Match words (including accented chars and ñ) or punctuation
-  const regex = /([a-zA-ZáéíóúüñÁÉÍÓÚÜÑ]+)|([^\s\w])/g
-  let match
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match[1]) {
-      // Word
-      tokens.push({ text: match[1], isPunctuation: false })
-    } else if (match[2]) {
-      // Punctuation
-      tokens.push({ text: match[2], isPunctuation: true })
-    }
-  }
-
-  return tokens
 }
 
 /**

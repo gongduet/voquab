@@ -10,7 +10,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
-import { X, Scissors, AlertTriangle, Check, Pilcrow } from 'lucide-react'
+import { X, Scissors, AlertTriangle, Check, Pilcrow, Copy, CheckCircle, Terminal } from 'lucide-react'
 import { splitSentence } from '../../services/sentenceSplitService'
 
 export default function SentenceSplitter({
@@ -25,6 +25,10 @@ export default function SentenceSplitter({
   const [paragraphStarts, setParagraphStarts] = useState({})
   const [isSplitting, setIsSplitting] = useState(false)
   const [error, setError] = useState(null)
+
+  // Success state - shows IDs and CLI command after split
+  const [splitResult, setSplitResult] = useState(null)
+  const [copiedField, setCopiedField] = useState(null)
 
   // Tokenize sentence into words for display
   const words = useMemo(() => {
@@ -103,11 +107,12 @@ export default function SentenceSplitter({
         isParagraphStart: index > 0 ? (paragraphStarts[index] || false) : false
       }))
 
-      const result = await splitSentence(sentence.sentence_id, newSentencesData)
+      const result = await splitSentence(sentence.sentence_id, newSentencesData, sentence.chapter_id)
 
       if (result.success) {
-        onSplitComplete?.(result.newSentenceIds)
-        onClose()
+        // Store result and show success screen
+        // Note: onSplitComplete is called when user clicks "Done", not here
+        setSplitResult(result)
       } else {
         setError(result.error || 'Split operation failed')
       }
@@ -118,12 +123,35 @@ export default function SentenceSplitter({
     }
   }
 
-  // Reset state when modal opens
+  // Copy text to clipboard
+  const copyToClipboard = async (text, field) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  // Get CLI command for fragment generation
+  const getCliCommand = () => {
+    if (!splitResult?.newSentenceIds) return ''
+    return `python scripts/content_pipeline/generate_fragments.py --sentence-ids ${splitResult.newSentenceIds.join(' ')}`
+  }
+
+  // Reset state when modal closes
   const handleClose = () => {
+    // If split was successful, notify parent before closing
+    if (splitResult?.success) {
+      onSplitComplete?.(splitResult.newSentenceIds)
+    }
     setSplitPoints([])
     setTranslations({})
     setParagraphStarts({})
     setError(null)
+    setSplitResult(null)
+    setCopiedField(null)
     onClose()
   }
 
@@ -159,6 +187,82 @@ export default function SentenceSplitter({
 
           {/* Content */}
           <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+            {/* Success screen - shown after split completes */}
+            {splitResult ? (
+              <div className="space-y-6">
+                {/* Success header */}
+                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div>
+                    <h3 className="font-semibold text-green-800">Split Successful!</h3>
+                    <p className="text-sm text-green-700">{splitResult.message}</p>
+                    {splitResult.wordsMigrated > 0 && (
+                      <p className="text-sm text-green-600 mt-1">
+                        {splitResult.wordsMigrated} words migrated (lemma associations preserved)
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* New sentence IDs */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    New Sentence IDs
+                  </label>
+                  <div className="flex gap-2">
+                    <code className="flex-1 p-3 bg-gray-100 rounded-lg text-sm font-mono text-gray-800 break-all">
+                      {splitResult.newSentenceIds?.join(' ')}
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard(splitResult.newSentenceIds?.join(' '), 'ids')}
+                      className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                      title="Copy IDs"
+                    >
+                      {copiedField === 'ids' ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* CLI command for fragment generation */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Terminal size={14} className="inline mr-1" />
+                    Generate Fragments (run in terminal)
+                  </label>
+                  <div className="flex gap-2">
+                    <code className="flex-1 p-3 bg-gray-800 rounded-lg text-sm font-mono text-green-400 break-all">
+                      {getCliCommand()}
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard(getCliCommand(), 'cli')}
+                      className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+                      title="Copy command"
+                    >
+                      {copiedField === 'cli' ? <Check size={16} className="text-green-400" /> : <Copy size={16} className="text-gray-300" />}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    This will generate AI-powered sentence fragments for each new sentence.
+                  </p>
+                </div>
+
+                {/* Next steps */}
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <div className="flex gap-2">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium mb-1">Next Steps:</p>
+                      <ol className="list-decimal list-inside space-y-1 text-amber-700">
+                        <li>Copy the CLI command above</li>
+                        <li>Run it in your terminal to generate fragments</li>
+                        <li>Verify the sentences display correctly in the app</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Instructions */}
             <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-800">
@@ -254,18 +358,17 @@ export default function SentenceSplitter({
               </div>
             )}
 
-            {/* Warning about data loss */}
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+            {/* Info about what will happen */}
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-amber-800">
+                <CheckCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
                   <p className="font-medium mb-1">This action will:</p>
-                  <ul className="list-disc list-inside space-y-1 text-amber-700">
-                    <li>Delete the original sentence and all its fragments</li>
-                    <li>Delete any user progress on this sentence</li>
-                    <li>Create {resultingSentences.length} new sentences</li>
-                    <li>Regenerate words for each new sentence</li>
-                    <li>Fragments will need to be generated separately</li>
+                  <ul className="list-disc list-inside space-y-1 text-blue-700">
+                    <li><strong>Migrate words</strong> to new sentences (preserves lemma associations!)</li>
+                    <li>Create {resultingSentences.length} new sentences with proper ordering</li>
+                    <li>Delete fragments (regenerate via CLI after split)</li>
+                    <li>Delete user progress on original sentence</li>
                   </ul>
                 </div>
               </div>
@@ -277,41 +380,62 @@ export default function SentenceSplitter({
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
+              </>
+            )}
           </div>
 
           {/* Footer */}
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
-            <div className="text-sm text-gray-500">
-              {splitPoints.length === 0
-                ? 'No split points added'
-                : `${splitPoints.length} split point${splitPoints.length > 1 ? 's' : ''} = ${resultingSentences.length} sentences`
-              }
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSplit}
-                disabled={isSplitting || splitPoints.length === 0}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSplitting ? (
-                  <>
-                    <span className="animate-spin">...</span>
-                    <span>Splitting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Scissors size={16} />
-                    <span>Split Sentence</span>
-                  </>
-                )}
-              </button>
-            </div>
+            {splitResult ? (
+              // Success footer
+              <>
+                <div className="text-sm text-green-600 font-medium">
+                  Split into {splitResult.newSentenceIds?.length} sentences
+                </div>
+                <button
+                  onClick={handleClose}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <Check size={16} />
+                  <span>Done</span>
+                </button>
+              </>
+            ) : (
+              // Normal footer
+              <>
+                <div className="text-sm text-gray-500">
+                  {splitPoints.length === 0
+                    ? 'No split points added'
+                    : `${splitPoints.length} split point${splitPoints.length > 1 ? 's' : ''} = ${resultingSentences.length} sentences`
+                  }
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleClose}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSplit}
+                    disabled={isSplitting || splitPoints.length === 0}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSplitting ? (
+                      <>
+                        <span className="animate-spin">...</span>
+                        <span>Splitting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Scissors size={16} />
+                        <span>Split Sentence</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

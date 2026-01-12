@@ -10,15 +10,21 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import SentenceTable from '../components/admin/SentenceTable'
 import SentenceEditModal from '../components/admin/SentenceEditModal'
 import { Search, ChevronDown, CheckCircle, Circle } from 'lucide-react'
 
 export default function AdminSentences() {
+  // URL-based state for book/chapter selection
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedBookId = searchParams.get('book') || null
+  const selectedChapterId = searchParams.get('chapter') || null
+
   // State
+  const [books, setBooks] = useState([])
   const [chapters, setChapters] = useState([])
-  const [selectedChapterId, setSelectedChapterId] = useState(null)
   const [sentences, setSentences] = useState([])
   const [filteredSentences, setFilteredSentences] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -30,25 +36,112 @@ export default function AdminSentences() {
 
   const tableRef = useRef(null)
 
-  // Fetch chapters on mount
+  // Handlers - defined early so they can be used in useEffects
+  const handleBookChange = useCallback((bookId) => {
+    const newParams = new URLSearchParams(searchParams)
+    if (bookId) {
+      newParams.set('book', bookId)
+    } else {
+      newParams.delete('book')
+    }
+    newParams.delete('chapter') // Reset chapter when book changes
+    setSearchParams(newParams, { replace: true })
+    setSelectedSentenceId(null)
+    setSearchQuery('')
+  }, [searchParams, setSearchParams])
+
+  const handleChapterChange = useCallback((chapterId) => {
+    const newParams = new URLSearchParams(searchParams)
+    if (chapterId) {
+      newParams.set('chapter', chapterId)
+    } else {
+      newParams.delete('chapter')
+    }
+    setSearchParams(newParams, { replace: true })
+    setSelectedSentenceId(null)
+    setSearchQuery('')
+  }, [searchParams, setSearchParams])
+
+  const handleToggleParagraph = useCallback(async (sentenceId, newValue) => {
+    console.log('Toggling paragraph for sentence:', sentenceId, 'to:', newValue)
+
+    // Optimistic update
+    setSentences(prev => prev.map(s =>
+      s.sentence_id === sentenceId
+        ? { ...s, is_paragraph_start: newValue }
+        : s
+    ))
+
+    // Save to database
+    const { data, error } = await supabase
+      .from('sentences')
+      .update({ is_paragraph_start: newValue })
+      .eq('sentence_id', sentenceId)
+      .select()
+
+    console.log('Paragraph toggle result:', { data, error })
+
+    if (error) {
+      console.error('Error updating paragraph start:', error)
+      // Revert on error
+      setSentences(prev => prev.map(s =>
+        s.sentence_id === sentenceId
+          ? { ...s, is_paragraph_start: !newValue }
+          : s
+      ))
+    }
+  }, [])
+
+  // Fetch books on mount
+  useEffect(() => {
+    async function fetchBooks() {
+      const { data, error } = await supabase
+        .from('books')
+        .select('book_id, title')
+        .order('title')
+
+      if (!error && data) {
+        setBooks(data)
+      }
+    }
+    fetchBooks()
+  }, [])
+
+  // Fetch chapters when book selection changes
   useEffect(() => {
     async function fetchChapters() {
-      const { data, error } = await supabase
+      let query = supabase
         .from('chapters')
-        .select('chapter_id, chapter_number, title')
+        .select('chapter_id, chapter_number, title, book_id')
         .order('chapter_number')
+
+      if (selectedBookId) {
+        query = query.eq('book_id', selectedBookId)
+      }
+
+      const { data, error } = await query
 
       if (!error && data) {
         setChapters(data)
-        // Select first chapter by default
-        if (data.length > 0) {
-          setSelectedChapterId(data[0].chapter_id)
+
+        // If current chapter not in filtered list, select first chapter
+        // Note: We intentionally only run this when selectedBookId changes
+        if (data.length > 0 && !data.find(c => c.chapter_id === selectedChapterId)) {
+          const newParams = new URLSearchParams(searchParams)
+          newParams.set('chapter', data[0].chapter_id)
+          setSearchParams(newParams, { replace: true })
+        } else if (data.length === 0) {
+          // No chapters for this book
+          const newParams = new URLSearchParams(searchParams)
+          newParams.delete('chapter')
+          setSearchParams(newParams, { replace: true })
         }
       }
       setIsLoading(false)
     }
     fetchChapters()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBookId])
 
   // Fetch sentences when chapter changes
   useEffect(() => {
@@ -149,15 +242,9 @@ export default function AdminSentences() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [filteredSentences, selectedSentenceId, isModalOpen])
+  }, [filteredSentences, selectedSentenceId, isModalOpen, handleToggleParagraph])
 
-  // Handlers
-  const handleChapterChange = (chapterId) => {
-    setSelectedChapterId(chapterId)
-    setSelectedSentenceId(null)
-    setSearchQuery('')
-  }
-
+  // Additional handlers
   const handleEdit = (sentence) => {
     setEditingSentence(sentence)
     setIsModalOpen(true)
@@ -167,36 +254,6 @@ export default function AdminSentences() {
     setIsModalOpen(false)
     setEditingSentence(null)
   }
-
-  const handleToggleParagraph = useCallback(async (sentenceId, newValue) => {
-    console.log('Toggling paragraph for sentence:', sentenceId, 'to:', newValue)
-
-    // Optimistic update
-    setSentences(prev => prev.map(s =>
-      s.sentence_id === sentenceId
-        ? { ...s, is_paragraph_start: newValue }
-        : s
-    ))
-
-    // Save to database
-    const { data, error } = await supabase
-      .from('sentences')
-      .update({ is_paragraph_start: newValue })
-      .eq('sentence_id', sentenceId)
-      .select()
-
-    console.log('Paragraph toggle result:', { data, error })
-
-    if (error) {
-      console.error('Error updating paragraph start:', error)
-      // Revert on error
-      setSentences(prev => prev.map(s =>
-        s.sentence_id === sentenceId
-          ? { ...s, is_paragraph_start: !newValue }
-          : s
-      ))
-    }
-  }, [])
 
   const handleSaveSentence = useCallback(async (sentenceId, translation) => {
     console.log('Saving sentence:', sentenceId, 'translation:', translation)
@@ -277,18 +334,40 @@ export default function AdminSentences() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4">
+        {/* Book dropdown */}
+        <div className="relative">
+          <select
+            value={selectedBookId || ''}
+            onChange={(e) => handleBookChange(e.target.value || null)}
+            className="appearance-none pl-4 pr-10 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+          >
+            <option value="">All Books</option>
+            {books.map(book => (
+              <option key={book.book_id} value={book.book_id}>
+                {book.title}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        </div>
+
         {/* Chapter dropdown */}
         <div className="relative">
           <select
             value={selectedChapterId || ''}
-            onChange={(e) => handleChapterChange(e.target.value)}
-            className="appearance-none pl-4 pr-10 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+            onChange={(e) => handleChapterChange(e.target.value || null)}
+            disabled={chapters.length === 0}
+            className="appearance-none pl-4 pr-10 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer disabled:bg-gray-100 disabled:text-gray-400"
           >
-            {chapters.map(chapter => (
-              <option key={chapter.chapter_id} value={chapter.chapter_id}>
-                Chapter {chapter.chapter_number}: {chapter.title || 'Untitled'}
-              </option>
-            ))}
+            {chapters.length === 0 ? (
+              <option value="">No chapters</option>
+            ) : (
+              chapters.map(chapter => (
+                <option key={chapter.chapter_id} value={chapter.chapter_id}>
+                  Chapter {chapter.chapter_number}: {chapter.title || 'Untitled'}
+                </option>
+              ))
+            )}
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>

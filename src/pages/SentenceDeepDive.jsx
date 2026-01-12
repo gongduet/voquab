@@ -37,6 +37,20 @@ export default function SentenceDeepDive() {
   // Modal state
   const [reassignWord, setReassignWord] = useState(null)
 
+  // Build URL for back navigation with book/chapter params
+  // Defined early so it can be used in useEffects
+  const buildBackUrl = useCallback(() => {
+    const params = new URLSearchParams()
+    if (sentence?.chapters?.book_id) {
+      params.set('book', sentence.chapters.book_id)
+    }
+    if (sentence?.chapter_id) {
+      params.set('chapter', sentence.chapter_id)
+    }
+    const queryString = params.toString()
+    return `/admin/sentences${queryString ? `?${queryString}` : ''}`
+  }, [sentence])
+
   // Fetch sentence data
   const fetchSentenceData = useCallback(async () => {
     if (!sentenceId) return
@@ -45,13 +59,13 @@ export default function SentenceDeepDive() {
     setError(null)
 
     try {
-      // Fetch sentence with fragments and chapter info
+      // Fetch sentence with fragments and chapter info (including book_id for navigation)
       const { data: sentenceData, error: sentenceError } = await supabase
         .from('sentences')
         .select(`
           *,
           sentence_fragments (*),
-          chapters (chapter_id, chapter_number, title)
+          chapters (chapter_id, chapter_number, title, book_id)
         `)
         .eq('sentence_id', sentenceId)
         .single()
@@ -144,14 +158,15 @@ export default function SentenceDeepDive() {
           }
           break
         case 'Escape':
-          navigate('/admin/sentences')
+          // Navigate back with book/chapter params preserved
+          navigate(buildBackUrl())
           break
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [prevSentenceId, nextSentenceId, navigate])
+  }, [prevSentenceId, nextSentenceId, navigate, buildBackUrl])
 
   // Handlers
   const handleSaveTranslation = useCallback(async (translation) => {
@@ -302,7 +317,7 @@ export default function SentenceDeepDive() {
           to="/admin/sentences"
           className="text-blue-600 hover:text-blue-700"
         >
-          ← Back to Sentences
+          &larr; Back to Sentences
         </Link>
       </div>
     )
@@ -315,7 +330,7 @@ export default function SentenceDeepDive() {
       {/* Back link and navigation */}
       <div className="flex items-center justify-between">
         <Link
-          to="/admin/sentences"
+          to={buildBackUrl()}
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700"
         >
           <ArrowLeft size={16} />

@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 3, 2026 (Header/Settings Redesign)
+**Last Updated:** January 12, 2026 (Admin Sentences Navigation + Book Selector)
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,92 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2026-01-12 - Admin Sentences Navigation & Book Selector
+
+### Added
+
+#### Book Selector Dropdown
+- **Feature:** AdminSentences page now has a book dropdown for multi-book support
+- **Behavior:** Selecting a book filters chapters to only that book
+- **File:** `src/pages/AdminSentences.jsx`
+
+#### URL-Based State for Navigation
+- **Feature:** Book and chapter selection now stored in URL params (`?book=<id>&chapter=<id>`)
+- **Benefit:** Preserves navigation context when going back from sentence detail view
+- **Files:** `src/pages/AdminSentences.jsx`, `src/pages/SentenceDeepDive.jsx`
+
+### Fixed
+
+#### Back Navigation Bug
+- **Issue:** Clicking "Back to Sentences" from sentence detail always returned to Chapter 1
+- **Cause:** AdminSentences used local state that reset on mount
+- **Fix:** Changed to URL-based state with `useSearchParams`; back link now includes book/chapter params
+- **Files:** `src/pages/AdminSentences.jsx`, `src/pages/SentenceDeepDive.jsx`
+
+#### SentenceSplitter Success Modal
+- **Issue:** Success screen never appeared after split - modal closed immediately
+- **Fix:** Moved `onSplitComplete()` call from `handleSplit()` to `handleClose()` so user sees success screen with CLI command first
+- **File:** `src/components/admin/SentenceSplitter.jsx`
+
+#### Missing Phrases in Chapter 1
+- **Issue:** Sentences 7-10 had missing phrase occurrences
+- **Fix:** Added 4 phrase occurrences via SQL:
+  - "de esta manera" (sentence 7)
+  - "obra de arte", "personas mayores", "dar miedo" (sentence 8)
+
+#### Missing Word for Sentence Split
+- **Issue:** Sentence 14 was missing word "2" at position 4, causing word count mismatch on split
+- **Fix:** Created lemma for numeral "2" and inserted missing word
+
+### Technical Notes
+- AdminSentences URL structure: `/admin/sentences?book=<id>&chapter=<id>`
+- SentenceDeepDive builds back URL dynamically from sentence's chapter data
+- Book/chapter context preserved through full navigation flow
+
+---
+
+## 2026-01-12 - Sentence Splitting V2 (Preserves Lemma Associations)
+
+### Overview
+Complete rewrite of the sentence splitting feature. The previous implementation was destructive - it deleted all words and regenerated them with simple exact-match lemma lookup, losing all manual vocabulary work. The new implementation **migrates words** instead of deleting them, preserving lemma associations.
+
+### Changed
+
+#### Sentence Split Service V2
+- **Issue:** Old `split_sentence` function deleted words and created placeholder lemmas with `part_of_speech: 'unknown'` and empty definitions
+- **Solution:** New `split_sentence_v2` function migrates existing words to new sentences, preserving `lemma_id` associations
+- **Algorithm:**
+  1. Validate word counts match between DB and UI
+  2. Create new sentences with temporary high order numbers (avoids constraint violations)
+  3. Migrate words to new sentences by position
+  4. Delete original sentence
+  5. Reorder sentences to correct positions
+- **Files:** `supabase/migrations/20260112_sentence_split_v2.sql`, `src/services/sentenceSplitService.js`
+
+#### SentenceSplitter UI Updates
+- After successful split, displays new sentence IDs prominently
+- Shows CLI command for fragment generation with copy button
+- Updated info panel to reflect that words are migrated (not regenerated)
+- **File:** `src/components/admin/SentenceSplitter.jsx`
+
+### Fixed
+
+#### Chapter 1 Sentence Numbering Gap
+- **Issue:** Chapter 1 had sentence numbering gap (1-9, then 14-32)
+- **Cause:** Previous failed split operation
+- **Fix:** Shifted sentences 14-32 down by 4 to become 10-28 (now sequential 1-28)
+
+#### Chapter 1 Missing Fragments
+- **Issue:** Sentences 7, 8, 9 had 0 fragments (from failed split)
+- **Fix:** Regenerated fragments using existing Python script
+
+### Technical Notes
+- Fragment generation remains manual via CLI: `python scripts/content_pipeline/generate_fragments.py --sentence-ids <ids>`
+- Word count validation ensures safe migration (aborts if mismatch detected)
+- Uses Supabase branching for safe testing before production deployment
 
 ---
 
