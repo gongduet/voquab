@@ -322,6 +322,93 @@ def process_chapter(chapter_number: int, dry_run: bool = False) -> Dict:
     return stats
 
 
+def get_sentences_by_ids(sentence_ids: List[str]) -> List[Dict]:
+    """Fetch specific sentences by their IDs."""
+    supabase = get_supabase()
+    result = supabase.table('sentences').select(
+        'sentence_id, sentence_order, sentence_text, sentence_translation'
+    ).in_('sentence_id', sentence_ids).order('sentence_order').execute()
+
+    return result.data or []
+
+
+def process_sentences(sentence_ids: List[str], dry_run: bool = False) -> Dict:
+    """
+    Process specific sentences by ID.
+    Returns stats dict.
+    """
+    print(f"\nProcessing {len(sentence_ids)} specific sentences")
+    print("=" * 40)
+
+    sentences = get_sentences_by_ids(sentence_ids)
+
+    if not sentences:
+        print("  ERROR: No sentences found with those IDs")
+        return {'sentences': 0, 'processed': 0, 'fragments': 0, 'skipped': 0, 'errors': 0}
+
+    stats = {
+        'sentences': len(sentences),
+        'processed': 0,
+        'fragments': 0,
+        'skipped': 0,
+        'errors': 0,
+        'translations_generated': 0
+    }
+
+    for sentence in sentences:
+        sentence_id = sentence['sentence_id']
+        sentence_order = sentence['sentence_order']
+        spanish = sentence['sentence_text']
+        english = sentence['sentence_translation']
+
+        # Skip if fragments already exist
+        if has_existing_fragments(sentence_id):
+            print(f"  [{sentence_order}] SKIPPED (fragments exist)")
+            stats['skipped'] += 1
+            continue
+
+        # Generate translation if missing
+        if not english or english.strip() == '':
+            print(f"  [{sentence_order}] Generating translation...")
+            english = translate_sentence(spanish)
+            stats['translations_generated'] += 1
+
+            # Update sentence with translation if not dry run
+            if not dry_run:
+                supabase = get_supabase()
+                supabase.table('sentences').update({
+                    'sentence_translation': english
+                }).eq('sentence_id', sentence_id).execute()
+
+        # Generate fragments
+        fragments = generate_fragments(spanish, english)
+
+        if not fragments:
+            print(f"  [{sentence_order}] ERROR: No fragments generated")
+            stats['errors'] += 1
+            continue
+
+        # Display fragments
+        print(f"  [{sentence_order}] {len(fragments)} fragments:")
+        for frag in fragments:
+            has_note = '*' if frag.get('context_note') else ''
+            print(f"       → \"{frag['es']}\" = \"{frag['en']}\"{has_note}")
+
+        # Insert if not dry run
+        if not dry_run:
+            try:
+                insert_fragments(sentence_id, fragments, spanish)
+            except Exception as e:
+                print(f"       ERROR inserting: {e}")
+                stats['errors'] += 1
+                continue
+
+        stats['processed'] += 1
+        stats['fragments'] += len(fragments)
+
+    return stats
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Generate sentence fragments for reading comprehension'
@@ -330,8 +417,13 @@ def main():
         '--chapters',
         nargs='+',
         type=int,
-        required=True,
         help='Chapter numbers to process (e.g., --chapters 1 2 3)'
+    )
+    parser.add_argument(
+        '--sentence-ids',
+        nargs='+',
+        type=str,
+        help='Specific sentence UUIDs to process'
     )
     parser.add_argument(
         '--dry-run',
@@ -340,6 +432,9 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if not args.chapters and not args.sentence_ids:
+        parser.error('Either --chapters or --sentence-ids is required')
 
     if args.dry_run:
         print("\n" + "=" * 50)
@@ -355,18 +450,27 @@ def main():
         'translations_generated': 0
     }
 
-    for chapter_num in args.chapters:
-        stats = process_chapter(chapter_num, args.dry_run)
-
+    # Process by sentence IDs if provided
+    if args.sentence_ids:
+        stats = process_sentences(args.sentence_ids, args.dry_run)
         for key in total_stats:
             total_stats[key] += stats.get(key, 0)
+    # Otherwise process by chapters
+    elif args.chapters:
+        for chapter_num in args.chapters:
+            stats = process_chapter(chapter_num, args.dry_run)
+            for key in total_stats:
+                total_stats[key] += stats.get(key, 0)
 
     # Print summary
     print("\n")
     print("=" * 50)
     print("SUMMARY")
     print("=" * 50)
-    print(f"  Chapters processed: {len(args.chapters)}")
+    if args.sentence_ids:
+        print(f"  Sentences targeted: {len(args.sentence_ids)}")
+    else:
+        print(f"  Chapters processed: {len(args.chapters)}")
     print(f"  Total sentences: {total_stats['sentences']}")
     print(f"  Processed: {total_stats['processed']}")
     print(f"  Skipped (existing): {total_stats['skipped']}")

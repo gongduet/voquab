@@ -1,11 +1,16 @@
 /**
- * StickyHeader - Shows current chapter name/number
+ * StickyHeader - Shows current chapter name/number with chapter selector dropdown
  *
- * Layout: Exit (left) | Book Title (center) | Chapter (right)
- * Updates as user scrolls past chapter boundaries
+ * Layout: Exit (left) | Book Title (center) | Chapter Dropdown (right)
+ * Features:
+ * - Smooth animated dropdown for chapter selection
+ * - Cascading waterfall animation for chapter items
+ * - Only shows unlocked chapters
+ * - Roman numeral chapter numbers
  */
 
-import { ArrowLeft } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 // Convert number to Roman numeral
@@ -39,14 +44,55 @@ function toRoman(num) {
 
 export default function StickyHeader({
   chapterNumber,
-  bookTitle = 'El Principito'
+  bookTitle = 'El Principito',
+  furthestChapter = 1,
+  onJumpToChapter = null
 }) {
   const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false)
+  const [shouldAnimate, setShouldAnimate] = useState(false)
+  const dropdownRef = useRef(null)
   const romanNumeral = toRoman(chapterNumber)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Trigger cascade animation when opening
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to ensure dropdown is visible before animating items
+      const timer = setTimeout(() => setShouldAnimate(true), 50)
+      return () => clearTimeout(timer)
+    } else {
+      setShouldAnimate(false)
+    }
+  }, [isOpen])
 
   const handleExit = () => {
     navigate('/dashboard')
   }
+
+  const handleChapterSelect = (chapter) => {
+    setIsOpen(false)
+    if (onJumpToChapter && chapter !== chapterNumber) {
+      onJumpToChapter(chapter)
+    }
+  }
+
+  // Generate list of unlocked chapters (1 to furthestChapter)
+  const unlockedChapters = Array.from(
+    { length: furthestChapter },
+    (_, i) => i + 1
+  )
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-neutral-100">
@@ -65,10 +111,77 @@ export default function StickyHeader({
           {bookTitle}
         </h1>
 
-        {/* Right - Chapter */}
-        <span className="text-sm text-neutral-500">
-          {chapterNumber ? `Capítulo ${romanNumeral}` : ''}
-        </span>
+        {/* Right - Chapter Dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            disabled={!onJumpToChapter}
+            className={`
+              flex items-center gap-1 text-sm text-neutral-500
+              px-2 py-1 rounded-md
+              transition-all duration-200
+              ${onJumpToChapter
+                ? 'hover:text-neutral-700 hover:bg-neutral-100 hover:shadow-sm cursor-pointer'
+                : 'cursor-default'
+              }
+              ${isOpen ? 'bg-neutral-100 shadow-sm text-neutral-700' : ''}
+            `}
+          >
+            <span>{chapterNumber ? `Capítulo ${romanNumeral}` : ''}</span>
+            {onJumpToChapter && (
+              <ChevronDown
+                size={14}
+                className={`
+                  transition-transform duration-300 ease-out
+                  ${isOpen ? 'rotate-180' : ''}
+                `}
+              />
+            )}
+          </button>
+
+          {/* Dropdown Menu */}
+          <div
+            className={`
+              absolute top-full right-0 mt-2
+              bg-white/95 backdrop-blur-sm rounded-xl
+              border border-neutral-200/60
+              min-w-[160px] overflow-hidden
+              transition-all duration-300 origin-top-right
+              ${isOpen
+                ? 'opacity-100 scale-100 translate-y-0 shadow-lg shadow-neutral-900/10'
+                : 'opacity-0 scale-95 -translate-y-2 shadow-none pointer-events-none'
+              }
+            `}
+            style={{
+              transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+          >
+            <div className="py-1.5 max-h-[280px] overflow-y-auto">
+              {unlockedChapters.map((chapter, index) => (
+                <button
+                  key={chapter}
+                  onClick={() => handleChapterSelect(chapter)}
+                  className={`
+                    w-full px-4 py-2 text-sm text-left
+                    transition-all duration-250 ease-out
+                    ${chapter === chapterNumber
+                      ? 'bg-amber-50/80 text-amber-700 font-medium'
+                      : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-800'
+                    }
+                  `}
+                  style={{
+                    opacity: shouldAnimate ? 1 : 0,
+                    transform: shouldAnimate ? 'translateY(0)' : 'translateY(-8px)',
+                    transitionDelay: `${index * 40}ms`,
+                    transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
+                  }}
+                >
+                  Capítulo {toRoman(chapter)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </header>
   )

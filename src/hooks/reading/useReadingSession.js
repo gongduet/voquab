@@ -22,9 +22,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import useReadingProgress from './useReadingProgress'
 
-export default function useReadingSession(userId) {
+export default function useReadingSession(userId, propBookId = null) {
   // Core state
-  const [bookId, setBookId] = useState(null)
+  const [bookId, setBookId] = useState(propBookId)
   const [currentChapter, setCurrentChapter] = useState(null) // { chapter_id, chapter_number, title, book_id }
   const [currentSentence, setCurrentSentence] = useState(null)
   const [currentFragmentIndex, setCurrentFragmentIndex] = useState(0)
@@ -73,8 +73,11 @@ export default function useReadingSession(userId) {
     setError(null)
 
     try {
-      // Get book ID for El Principito
-      const bookIdResult = await progress.fetchBookId()
+      // Get book ID - use propBookId if provided, otherwise fetch
+      let bookIdResult = propBookId
+      if (!bookIdResult) {
+        bookIdResult = await progress.fetchBookId()
+      }
       if (!bookIdResult) {
         setError('Could not find book')
         setIsLoading(false)
@@ -133,7 +136,7 @@ export default function useReadingSession(userId) {
       setIsLoading(false)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId])  // progress is memoized in useReadingProgress, safe to exclude
+  }, [userId, propBookId])  // progress is memoized in useReadingProgress, safe to exclude
 
   // Initialize on mount
   useEffect(() => {
@@ -142,10 +145,16 @@ export default function useReadingSession(userId) {
 
   // Fetch preview of next sentence when current sentence changes
   useEffect(() => {
+    // Track if this effect is still active (for cleanup)
+    let isActive = true
+
     if (currentSentence?.sentence_id) {
       console.log('[Preview] Fetching preview for sentence:', currentSentence.sentence_id, 'chapter_id:', currentSentence.chapter_id)
       progress.fetchNextSentencePreview(currentSentence.sentence_id)
         .then(nextSentence => {
+          // Don't update state if component unmounted or effect was cleaned up
+          if (!isActive) return
+
           console.log('[Preview] Result:', nextSentence)
           if (!nextSentence) {
             // End of book
@@ -169,6 +178,7 @@ export default function useReadingSession(userId) {
           }
         })
         .catch((err) => {
+          if (!isActive) return
           console.error('[Preview] Error fetching preview:', err)
           setNextSentencePreview(null)
           setNextChapterPreview(null)
@@ -177,6 +187,11 @@ export default function useReadingSession(userId) {
       console.log('[Preview] No current sentence, clearing previews')
       setNextSentencePreview(null)
       setNextChapterPreview(null)
+    }
+
+    // Cleanup function - marks effect as inactive
+    return () => {
+      isActive = false
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSentence?.sentence_id, currentSentence?.chapter_id])
@@ -312,27 +327,48 @@ export default function useReadingSession(userId) {
       sentencesCompleted: prev.sentencesCompleted + 1
     }))
 
-    // If no next sentence AND not at chapter boundary, it's truly end of book
-    if (!nextSentenceId && !isAtChapterBoundary) {
-      setCurrentSentence(null)
-      // End transition after React processes updates
-      requestAnimationFrame(() => {
-        setIsTransitioning(false)
-      })
+    // If preview wasn't ready, fetch next sentence directly
+    // This handles the race condition where user completes sentence before preview loads
+    let resolvedNextSentenceId = nextSentenceId
+    let resolvedIsAtChapterBoundary = isAtChapterBoundary
+    let resolvedNextChapterNumber = capturedNextChapterPreview
 
-      // Still save to DB in background
-      progress.saveSentenceComplete(completedSentence.sentence_id, score, results)
-      progress.incrementSentencesCompleted(bookId)
-      progress.updateFurthestPosition(bookId, completedSentence.sentence_id)
-      return
+    if (!nextSentenceId && !isAtChapterBoundary) {
+      console.log('[handleSentenceComplete] Preview not ready, fetching next sentence directly...')
+      const directNextSentence = await progress.fetchNextSentencePreview(completedSentence.sentence_id)
+
+      if (directNextSentence) {
+        // Check if it's a chapter boundary
+        if (directNextSentence.chapter_id !== completedSentence.chapter_id) {
+          resolvedIsAtChapterBoundary = true
+          resolvedNextChapterNumber = directNextSentence.chapter_number
+          console.log('[handleSentenceComplete] Direct fetch found chapter boundary:', resolvedNextChapterNumber)
+        } else {
+          resolvedNextSentenceId = directNextSentence.sentence_id
+          console.log('[handleSentenceComplete] Direct fetch found next sentence:', resolvedNextSentenceId)
+        }
+      } else {
+        // Truly end of book
+        console.log('[handleSentenceComplete] Direct fetch confirmed end of book')
+        setCurrentSentence(null)
+        requestAnimationFrame(() => {
+          setIsTransitioning(false)
+        })
+
+        // Still save to DB in background
+        progress.saveSentenceComplete(completedSentence.sentence_id, score, results)
+        progress.incrementSentencesCompleted(bookId)
+        progress.updateFurthestPosition(bookId, completedSentence.sentence_id)
+        return
+      }
     }
 
     // If at chapter boundary, check if next chapter's vocab is ready
-    let nextSentenceIdToFetch = nextSentenceId
-    if (isAtChapterBoundary) {
+    let nextSentenceIdToFetch = resolvedNextSentenceId
+    if (resolvedIsAtChapterBoundary) {
       // Check if next chapter's vocabulary is 100% introduced
-      const vocabStatus = await progress.checkChapterVocabReady(bookId, capturedNextChapterPreview)
-      console.log('[ChapterGate] Vocab status for chapter', capturedNextChapterPreview, ':', vocabStatus)
+      const vocabStatus = await progress.checkChapterVocabReady(bookId, resolvedNextChapterNumber)
+      console.log('[ChapterGate] Vocab status for chapter', resolvedNextChapterNumber, ':', vocabStatus)
 
       if (!vocabStatus.ready) {
         console.log('[ChapterGate] BLOCKING - setting chapterLocked state and returning')
@@ -340,7 +376,7 @@ export default function useReadingSession(userId) {
         // IMPORTANT: Do NOT set currentSentence to null - keep showing the last sentence
         // The chapterLocked state will trigger the locked UI in ReadingPage
         setChapterLocked({
-          chapterNumber: capturedNextChapterPreview,
+          chapterNumber: resolvedNextChapterNumber,
           vocabPercentage: vocabStatus.percentage
         })
         setIsTransitioning(false)
@@ -359,7 +395,7 @@ export default function useReadingSession(userId) {
       }
 
       // Vocab is ready, fetch first sentence of next chapter
-      const firstSentence = await progress.fetchChapterFirstSentence(bookId, capturedNextChapterPreview)
+      const firstSentence = await progress.fetchChapterFirstSentence(bookId, resolvedNextChapterNumber)
       if (firstSentence) {
         nextSentenceIdToFetch = firstSentence.sentence_id
       } else {
@@ -480,12 +516,14 @@ export default function useReadingSession(userId) {
     if (!bookId || isTransitioning) return
 
     setIsLoading(true)
+    setError(null)
 
     try {
       const sentence = await progress.fetchChapterFirstSentence(bookId, chapterNumber)
 
       if (!sentence) {
         console.error('Could not load chapter:', chapterNumber)
+        setError(`Chapter ${chapterNumber} not found or has no sentences`)
         setIsLoading(false)
         return
       }
@@ -519,6 +557,7 @@ export default function useReadingSession(userId) {
 
     } catch (err) {
       console.error('Error jumping to chapter:', err)
+      setError(`Failed to load chapter ${chapterNumber}: ${err.message}`)
       setIsLoading(false)
     }
   }, [bookId, isTransitioning, progress])
@@ -742,6 +781,9 @@ export default function useReadingSession(userId) {
     canSentenceBack,
     canSentenceForward,
     canChapterBack,
-    canChapterForward
+    canChapterForward,
+
+    // Progress tracking
+    furthestChapter: furthestPosition?.chapterNumber || 1
   }
 }

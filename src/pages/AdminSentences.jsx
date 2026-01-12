@@ -266,9 +266,6 @@ export default function AdminSentences() {
     }
   }, [])
 
-  // Get selected chapter info
-  const selectedChapter = chapters.find(c => c.chapter_id === selectedChapterId)
-
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -348,6 +345,22 @@ export default function AdminSentences() {
         onSaveSentence={handleSaveSentence}
         onSaveFragment={handleSaveFragment}
         onToggleParagraph={handleToggleParagraph}
+        onSplitComplete={() => {
+          // Refresh sentences after split
+          if (selectedChapterId) {
+            supabase
+              .from('sentences')
+              .select(`*, sentence_fragments (*)`)
+              .eq('chapter_id', selectedChapterId)
+              .order('sentence_order')
+              .then(({ data }) => {
+                if (data) {
+                  setSentences(data)
+                  setFilteredSentences(data)
+                }
+              })
+          }
+        }}
       />
     </div>
   )

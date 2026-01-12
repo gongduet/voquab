@@ -71,19 +71,20 @@ function groupIntoParagraphs(sentences) {
   return paragraphs
 }
 
-export default function ReadingPage({ chapterNumber }) {
+export default function ReadingPage({ bookId: propBookId, chapterNumber }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const containerRef = useRef(null)
   const activeSentenceRef = useRef(null)
   const standaloneActiveSentenceRef = useRef(null)
+  const hasJumpedToChapterRef = useRef(false)
 
   // Tooltip state
   const [activeTooltipSentence, setActiveTooltipSentence] = useState(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, height: 0 })
 
-  // Reading session hook
-  const session = useReadingSession(user?.id)
+  // Reading session hook - pass propBookId as hint
+  const session = useReadingSession(user?.id, propBookId)
 
   // Scroll management
   const scroll = useScrollToPosition(containerRef)
@@ -94,12 +95,13 @@ export default function ReadingPage({ chapterNumber }) {
     [session.completedSentences]
   )
 
-  // Jump to specific chapter if provided via route
+  // Jump to specific chapter if provided via route (only once)
   useEffect(() => {
-    if (chapterNumber && session.bookId && !session.isLoading) {
+    if (chapterNumber && session.bookId && !session.isLoading && !hasJumpedToChapterRef.current) {
+      hasJumpedToChapterRef.current = true
       session.jumpToChapter(parseInt(chapterNumber, 10))
     }
-  }, [chapterNumber, session.bookId, session.isLoading])
+  }, [chapterNumber, session.bookId, session.isLoading, session.jumpToChapter])
 
   // Auto-scroll to current sentence on load
   useEffect(() => {
@@ -284,6 +286,8 @@ export default function ReadingPage({ chapterNumber }) {
       <StickyHeader
         chapterNumber={session.currentChapter?.chapter_number}
         bookTitle="El Principito"
+        furthestChapter={session.furthestChapter}
+        onJumpToChapter={session.jumpToChapter}
       />
 
       {/* Reading content */}

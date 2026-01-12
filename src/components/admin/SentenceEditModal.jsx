@@ -10,9 +10,10 @@
  */
 
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, Scissors } from 'lucide-react'
 import FragmentEditor from './FragmentEditor'
 import ParagraphToggle from './ParagraphToggle'
+import SentenceSplitter from './SentenceSplitter'
 
 export default function SentenceEditModal({
   sentence,
@@ -20,19 +21,19 @@ export default function SentenceEditModal({
   onClose,
   onSaveSentence,
   onSaveFragment,
-  onToggleParagraph
+  onToggleParagraph,
+  onSplitComplete
 }) {
   const [translation, setTranslation] = useState('')
   const [isParagraphStart, setIsParagraphStart] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [hasChanges, setHasChanges] = useState(false)
+  const [isSplitterOpen, setIsSplitterOpen] = useState(false)
 
   // Initialize state when sentence changes
   useEffect(() => {
     if (sentence) {
       setTranslation(sentence.sentence_translation || '')
       setIsParagraphStart(sentence.is_paragraph_start || false)
-      setHasChanges(false)
     }
   }, [sentence])
 
@@ -53,12 +54,10 @@ export default function SentenceEditModal({
 
   const handleTranslationChange = (e) => {
     setTranslation(e.target.value)
-    setHasChanges(true)
   }
 
   const handleParagraphToggle = () => {
     setIsParagraphStart(!isParagraphStart)
-    setHasChanges(true)
   }
 
   const handleSave = async () => {
@@ -111,15 +110,23 @@ export default function SentenceEditModal({
 
           {/* Content */}
           <div className="px-6 py-4 overflow-y-auto max-h-[calc(90vh-140px)]">
-            {/* Spanish text (read-only) */}
+            {/* Spanish text (read-only) with Split button */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Spanish
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Spanish
+                </label>
+                <button
+                  onClick={() => setIsSplitterOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border border-amber-200"
+                >
+                  <Scissors size={14} />
+                  <span>Split Sentence</span>
+                </button>
+              </div>
               <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-gray-800">{sentence.sentence_text}</p>
               </div>
-              <p className="text-xs text-gray-400 mt-1">(read-only for now)</p>
             </div>
 
             {/* Translation (editable) */}
@@ -196,6 +203,18 @@ export default function SentenceEditModal({
           </div>
         </div>
       </div>
+
+      {/* Sentence Splitter Modal */}
+      <SentenceSplitter
+        sentence={sentence}
+        isOpen={isSplitterOpen}
+        onClose={() => setIsSplitterOpen(false)}
+        onSplitComplete={(newSentenceIds) => {
+          setIsSplitterOpen(false)
+          onClose()
+          onSplitComplete?.(newSentenceIds)
+        }}
+      />
     </div>
   )
 }
