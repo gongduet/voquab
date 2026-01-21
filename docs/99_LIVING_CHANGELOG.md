@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 12, 2026 (Admin Sentences Navigation + Book Selector)
+**Last Updated:** January 21, 2026 (SentenceSplitter venv instructions)
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,19 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2026-01-21 - SentenceSplitter Virtual Environment Instructions
+
+### Added
+
+#### Python Virtual Environment Setup Help
+- **Feature:** SentenceSplitter success screen now includes clear instructions for running the fragment generation CLI command
+- **Always visible:** `source venv/bin/activate` command shown by default
+- **Expandable:** "First time?" toggle reveals one-time setup commands (create venv, install dependencies)
+- **Benefit:** Users no longer need to remember Python environment setup when splitting sentences
+- **File:** `src/components/admin/SentenceSplitter.jsx`
 
 ---
 

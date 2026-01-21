@@ -10,7 +10,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react'
-import { X, Scissors, AlertTriangle, Check, Pilcrow, Copy, CheckCircle, Terminal } from 'lucide-react'
+import { X, Scissors, AlertTriangle, Check, Pilcrow, Copy, CheckCircle, Terminal, ChevronDown, ChevronUp } from 'lucide-react'
 import { splitSentence } from '../../services/sentenceSplitService'
 
 export default function SentenceSplitter({
@@ -29,6 +29,7 @@ export default function SentenceSplitter({
   // Success state - shows IDs and CLI command after split
   const [splitResult, setSplitResult] = useState(null)
   const [copiedField, setCopiedField] = useState(null)
+  const [showSetupHelp, setShowSetupHelp] = useState(false)
 
   // Tokenize sentence into words for display
   const words = useMemo(() => {
@@ -250,11 +251,39 @@ export default function SentenceSplitter({
                 <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <div className="flex gap-2">
                     <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-amber-800">
-                      <p className="font-medium mb-1">Next Steps:</p>
-                      <ol className="list-decimal list-inside space-y-1 text-amber-700">
-                        <li>Copy the CLI command above</li>
-                        <li>Run it in your terminal to generate fragments</li>
+                    <div className="text-sm text-amber-800 w-full">
+                      <p className="font-medium mb-2">Next Steps:</p>
+
+                      {/* Always visible: activate venv */}
+                      <div className="mb-3">
+                        <p className="text-amber-700 mb-1">1. Activate the virtual environment:</p>
+                        <code className="block p-2 bg-gray-800 rounded text-green-400 text-xs font-mono">
+                          source venv/bin/activate
+                        </code>
+                      </div>
+
+                      {/* Expandable: first-time setup */}
+                      <button
+                        onClick={() => setShowSetupHelp(!showSetupHelp)}
+                        className="flex items-center gap-1 text-amber-600 hover:text-amber-800 text-xs mb-2 underline"
+                      >
+                        {showSetupHelp ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {showSetupHelp ? 'Hide first-time setup' : 'First time? Click for setup instructions'}
+                      </button>
+
+                      {showSetupHelp && (
+                        <div className="mb-3 p-2 bg-amber-100 rounded border border-amber-300">
+                          <p className="text-amber-800 font-medium text-xs mb-1">One-time setup (run these first):</p>
+                          <code className="block p-2 bg-gray-800 rounded text-green-400 text-xs font-mono whitespace-pre-wrap">
+{`python3 -m venv venv
+source venv/bin/activate
+pip install anthropic supabase python-dotenv`}
+                          </code>
+                        </div>
+                      )}
+
+                      <ol className="list-decimal list-inside space-y-1 text-amber-700" start={2}>
+                        <li>Copy and run the CLI command above</li>
                         <li>Verify the sentences display correctly in the app</li>
                       </ol>
                     </div>
