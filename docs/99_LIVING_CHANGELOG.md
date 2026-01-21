@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 21, 2026 (SentenceSplitter venv instructions)
+**Last Updated:** January 21, 2026 (Phrase editor JSON fix, batch vocabulary fix)
 **Maintainer:** Peter + Claude
 
 ---
@@ -31,7 +31,7 @@ Working on final polish and testing before MVP launch.
 
 ---
 
-## 2026-01-21 - SentenceSplitter Virtual Environment Instructions
+## 2026-01-21 - SentenceSplitter Virtual Environment Instructions & Phrase Editor Fix
 
 ### Added
 
@@ -41,6 +41,29 @@ Working on final polish and testing before MVP launch.
 - **Expandable:** "First time?" toggle reveals one-time setup commands (create venv, install dependencies)
 - **Benefit:** Users no longer need to remember Python environment setup when splitting sentences
 - **File:** `src/components/admin/SentenceSplitter.jsx`
+
+### Fixed
+
+#### Phrase Definition Editor Saving as String Instead of JSON Array
+- **Issue:** Flashcard loading failed with JSON parse error: `Unexpected token 'o', "now then, w"... is not valid JSON`
+- **Root Cause:** When editing phrase definitions inline on the Sentence Deep Dive page, the save handler stored the text as a plain string instead of converting it back to a JSON array
+- **Impact:** 4 phrases were corrupted with string definitions instead of arrays:
+  - "ahora bien" → "now then, well now, so, yet" (should be `["now then", "well now", "so", "yet"]`)
+  - "a mi vez", "al amanecer", "tener una avería" (similarly malformed)
+- **Fix:** Added helper functions to properly convert between display format (comma-separated string) and storage format (JSON array):
+  - `definitionsToString()`: Converts JSON array to comma-separated string for editing
+  - `stringToDefinitions()`: Converts comma-separated string back to JSON array for saving
+- **Data Fix:** Corrected the 4 malformed phrase definitions in the database
+- **File:** `src/components/admin/PhrasesSection.jsx`
+
+#### Batch Fix: Missing Vocabulary Words (Chapters 8-27)
+- **Issue:** 77 sentences had word count mismatches (sentence text had more words than `words` table)
+- **Root Cause:** Content pipeline had missed some vocabulary words, particularly verb forms like "olerlas", "respondí"
+- **Fix:**
+  - Created 18 new lemmas for missing words (animal, semilla, farol, prisa, charla, cascabel, boa, demás, siquiera, exacto, etc.)
+  - Inserted 95 missing words across multiple chapters
+  - Corrected lemma assignment for "olerlas" (was incorrectly assigned to "oír" instead of "oler")
+- **Result:** All 815 sentences now have correct word counts
 
 ---
 

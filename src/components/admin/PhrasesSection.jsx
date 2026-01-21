@@ -20,15 +20,34 @@ export default function PhrasesSection({ phraseOccurrences, words, sentenceId, c
   const [editedDefinitions, setEditedDefinitions] = useState('')
   const [isDeleting, setIsDeleting] = useState(null)
 
+  // Convert definitions array to display string for editing
+  const definitionsToString = (definitions) => {
+    if (!definitions) return ''
+    if (Array.isArray(definitions)) {
+      return definitions.join(', ')
+    }
+    // Already a string (legacy data)
+    return String(definitions)
+  }
+
+  // Convert comma-separated string back to array for saving
+  const stringToDefinitions = (str) => {
+    if (!str || !str.trim()) return []
+    return str.split(',').map(s => s.trim()).filter(s => s.length > 0)
+  }
+
   const handleStartEdit = (occurrence) => {
     setEditingPhraseId(occurrence.phrases?.phrase_id)
-    setEditedDefinitions(occurrence.phrases?.definitions || '')
+    setEditedDefinitions(definitionsToString(occurrence.phrases?.definitions))
   }
 
   const handleSave = async (phraseId) => {
+    // Convert the edited string back to a JSON array
+    const definitionsArray = stringToDefinitions(editedDefinitions)
+
     const { error } = await supabase
       .from('phrases')
-      .update({ definitions: editedDefinitions })
+      .update({ definitions: definitionsArray })
       .eq('phrase_id', phraseId)
 
     if (!error) {
@@ -165,7 +184,9 @@ export default function PhrasesSection({ phraseOccurrences, words, sentenceId, c
                     </div>
                   ) : (
                     <p className="text-sm text-neutral-600">
-                      {occurrence.phrases?.definitions || (
+                      {occurrence.phrases?.definitions ? (
+                        definitionsToString(occurrence.phrases.definitions)
+                      ) : (
                         <span className="italic text-neutral-400">No definition</span>
                       )}
                     </p>

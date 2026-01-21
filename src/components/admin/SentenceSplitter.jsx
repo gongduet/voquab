@@ -9,9 +9,10 @@
  * - Executes split operation with loading state
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { X, Scissors, AlertTriangle, Check, Pilcrow, Copy, CheckCircle, Terminal, ChevronDown, ChevronUp } from 'lucide-react'
 import { splitSentence } from '../../services/sentenceSplitService'
+import { supabase } from '../../lib/supabase'
 
 export default function SentenceSplitter({
   sentence,
@@ -31,12 +32,59 @@ export default function SentenceSplitter({
   const [copiedField, setCopiedField] = useState(null)
   const [showSetupHelp, setShowSetupHelp] = useState(false)
 
-  // Tokenize sentence into words for display
+  // Pre-flight validation state
+  // TODO: Long-term, consider Option B - fetch DB words directly and display those
+  // instead of re-tokenizing. This would guarantee UI and DB are always in sync.
+  const [dbWordCount, setDbWordCount] = useState(null)
+  const [isLoadingWordCount, setIsLoadingWordCount] = useState(false)
+
+  // Tokenize sentence into vocabulary words for display
+  // Excludes numbers and punctuation-only tokens to match DB word storage
   const words = useMemo(() => {
     if (!sentence?.sentence_text) return []
-    // Split on whitespace but keep track of original spacing
-    return sentence.sentence_text.split(/(\s+)/).filter(w => w.trim())
+    // Split on whitespace, filter out non-vocabulary tokens
+    return sentence.sentence_text
+      .split(/(\s+)/)
+      .filter(w => w.trim())
+      .filter(w => {
+        // Exclude numbers (with optional trailing comma or period)
+        if (/^\d+[,.]?$/.test(w)) return false
+        // Exclude punctuation-only tokens
+        if (/^[—\-.,;:!?¡¿"''""()«»…]+$/.test(w)) return false
+        return true
+      })
   }, [sentence?.sentence_text])
+
+  // Pre-flight validation: fetch DB word count when modal opens
+  useEffect(() => {
+    if (!isOpen || !sentence?.sentence_id) {
+      setDbWordCount(null)
+      return
+    }
+
+    const fetchWordCount = async () => {
+      setIsLoadingWordCount(true)
+      try {
+        const { count, error } = await supabase
+          .from('words')
+          .select('*', { count: 'exact', head: true })
+          .eq('sentence_id', sentence.sentence_id)
+
+        if (error) throw error
+        setDbWordCount(count)
+      } catch (err) {
+        console.error('Failed to fetch word count:', err)
+        setDbWordCount(null)
+      } finally {
+        setIsLoadingWordCount(false)
+      }
+    }
+
+    fetchWordCount()
+  }, [isOpen, sentence?.sentence_id])
+
+  // Check for word count mismatch
+  const wordCountMismatch = dbWordCount !== null && words.length !== dbWordCount
 
   // Calculate resulting sentences based on split points
   const resultingSentences = useMemo(() => {
@@ -299,6 +347,32 @@ pip install anthropic supabase python-dotenv`}
               </p>
             </div>
 
+            {/* Word count mismatch warning */}
+            {wordCountMismatch && (
+              <div className="mb-6 p-4 bg-red-50 rounded-lg border border-red-300">
+                <div className="flex gap-3">
+                  <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-red-800 mb-1">Word Count Mismatch</h4>
+                    <p className="text-sm text-red-700 mb-2">
+                      Database has <strong>{dbWordCount}</strong> words, but UI shows <strong>{words.length}</strong> words.
+                      This sentence cannot be split until the data is fixed.
+                    </p>
+                    <p className="text-xs text-red-600">
+                      A word is likely missing from the database. Check the words table for gaps in word_position.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Loading state for word count check */}
+            {isLoadingWordCount && (
+              <div className="mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-600">Validating word count...</p>
+              </div>
+            )}
+
             {/* Interactive sentence display */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -447,7 +521,7 @@ pip install anthropic supabase python-dotenv`}
                   </button>
                   <button
                     onClick={handleSplit}
-                    disabled={isSplitting || splitPoints.length === 0}
+                    disabled={isSplitting || splitPoints.length === 0 || wordCountMismatch || isLoadingWordCount}
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSplitting ? (
