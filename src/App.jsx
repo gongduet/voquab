@@ -29,6 +29,7 @@ import AdminSongLines from './pages/AdminSongLines'
 import LineDeepDive from './pages/LineDeepDive'
 import AdminSlang from './pages/AdminSlang'
 import SlangDeepDive from './pages/SlangDeepDive'
+import AdminFeedback from './pages/AdminFeedback'
 import Songs from './pages/Songs'
 import SongStudy from './pages/SongStudy'
 import Library from './pages/Library'
@@ -243,6 +244,7 @@ function App() {
             <Route path="song-lines" element={<AdminSongLines />} />
             <Route path="slang" element={<AdminSlang />} />
             <Route path="slang/:slangId" element={<SlangDeepDive />} />
+            <Route path="feedback" element={<AdminFeedback />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

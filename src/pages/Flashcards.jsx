@@ -7,6 +7,7 @@ import FlashcardDisplay from '../components/flashcard/FlashcardDisplay'
 import DifficultyButtons from '../components/flashcard/DifficultyButtons'
 import ChapterCompleteScreen from '../components/flashcard/ChapterCompleteScreen'
 import FloatingFeedback from '../components/flashcard/FloatingFeedback'
+import FeedbackPrompt from '../components/flashcard/FeedbackPrompt'
 import SessionSummary from '../components/flashcard/SessionSummary'
 import LoadingScreen from '../components/flashcard/LoadingScreen'
 
@@ -490,6 +491,14 @@ export default function Flashcards() {
             Tap card to reveal translation
           </p>
         )}
+
+        {/* Feedback prompt for reporting card errors */}
+        <FeedbackPrompt
+          lemmaId={currentCard?.lemma_id}
+          phraseId={currentCard?.phrase_id}
+          cardSide={isFlipped ? 'back' : 'front'}
+          userId={user?.id}
+        />
       </div>
     </div>
   )

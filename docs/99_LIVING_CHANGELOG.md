@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 21, 2026 (Landing page implementation)
+**Last Updated:** January 21, 2026 (Flashcard feedback system)
 **Maintainer:** Peter + Claude
 
 ---
@@ -31,6 +31,44 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2026-01-21 - Flashcard Feedback System
+
+### Added
+
+#### User Feedback Submission
+- **Feature:** Users can report errors on any flashcard during review
+- **Component:** `FeedbackPrompt.jsx` - inline expandable form on flashcard screen
+- **UX:** "Something wrong? Let us know." prompt expands to textarea with slide animation
+- **Data captured:** User ID, lemma/phrase ID, feedback text, card side (front/back)
+
+#### Admin Feedback Management
+- **Feature:** Admin page to review, manage, and resolve user feedback
+- **Route:** `/admin/feedback`
+- **Stats:** Dashboard cards showing total, pending, fixed, won't fix counts
+- **Filters:** Status (pending/fixed/wont_fix), archived state, search by feedback text
+- **Actions:** Mark Fixed, Mark Won't Fix, Archive/Unarchive, Add admin notes
+- **Navigation:** Links to lemma/phrase edit pages for quick fixes
+
+#### Database
+- **Table:** `user_feedback` with RLS policies for user insert and admin full access
+- **Indexes:** On user_id, lemma_id, phrase_id, resolution_status, is_archived, created_at
+
+### Files Created
+```
+src/components/flashcard/FeedbackPrompt.jsx
+src/pages/AdminFeedback.jsx
+supabase/migrations/20260121_user_feedback.sql
+```
+
+### Files Modified
+```
+src/pages/Flashcards.jsx (added FeedbackPrompt integration)
+src/pages/Admin.jsx (added Feedback nav tab and home card)
+src/App.jsx (added /admin/feedback route)
+```
+
+---
+
 ## 2026-01-21 - Marketing Landing Page
 
 ### Added
@@ -43,13 +81,13 @@ Working on final polish and testing before MVP launch.
 #### Landing Page Sections (10 total)
 1. **Header** - Fixed navigation with scroll blur effect, desktop nav links, auth dropdown
 2. **Hero** - Headline "Read Spanish. For Real.", CTA buttons, phone mockup placeholder
-3. **Problem** - 3 pain points about traditional language apps
+3. **Problem** - "A different path to fluency" - 3 value propositions
 4. **HowItWorks** - 3-step process (Pick a Book → Learn in Context → Graduate)
 5. **Experience** - Feature list with phone mockup placeholders
 6. **Journey** - Vocabulary mastery stages visualization with animated progress
-7. **Library** - Content cards (El Principito, Bad Bunny album, coming soon)
+7. **Library** - Content cards (El Principito, Peter Rabbit coming soon, more classics)
 8. **Pricing** - Free tier with feature checklist
-9. **FAQ** - 6 questions with accordion expand/collapse
+9. **FAQ** - 5 questions with accordion expand/collapse
 10. **Footer** - Logo, links, copyright
 
 #### Authentication Components
@@ -103,6 +141,41 @@ src/hooks/landing/
 - `tailwind.config.js` - Added landing colors and font families
 - `src/index.css` - Added landing CSS utilities
 - `src/App.jsx` - Updated routing to use PublicRoute for landing page
+
+### Iterative Design Fixes (same session)
+
+#### Problem Section Reframe
+- Changed headline from "Traditional language apps have it backwards" to "A different path to fluency"
+- Changed subheadline to "Language apps teach conversation. Voquab teaches reading comprehension."
+- Removed colorful emoji icons and card backgrounds
+- Added subtle horizontal dividers between points
+- Reframed 3 points positively: "Learn through literature", "One concept, one card", "Context over repetition"
+
+#### How It Works - Z-Index Fix
+- Fixed connecting line showing through circles
+- Added `z-0` to connecting line, `z-10` to circles
+- Changed circle background from semi-transparent to solid (`bg-landing-bg`)
+
+#### Journey Section - Color Palette Update
+- Changed from rainbow colors (gray, amber, blue, green) to warm progression
+- New palette: `#94a3b8` (light gray) → `#c9a87c` (warm gold) → `#b8734d` (bold coral) → `#7a5c1a` (rich deep gold)
+- Concept: mastery = depth, not brightness
+- Fixed stats to match bar visual (35% mastered = 649 of 1,854 words)
+
+#### Pricing Section - Beta Messaging
+- Changed headline from "Free" to "Early Access"
+- Changed subtext from "Forever. Really." to "Free during beta"
+- Updated bottom note to "No credit card. No trial period."
+- Removed "No ads, ever" from feature list
+
+#### FAQ Section - Polish
+- Removed "What does 'no deck flooding' mean?" Q&A
+- Added more vertical spacing between question and answer (`pt-2 pb-6`)
+
+#### Library Section - Content Update
+- Replaced Bad Bunny album card with "The Tale of Peter Rabbit" (Beatrix Potter)
+- Changed badge from "AVAILABLE NOW" to "COMING SOON"
+- Updated description for children's classic positioning
 
 ---
 

@@ -25,6 +25,9 @@ export default function useFlashcardSession(allCards, cardsPerSession = 15) {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyPress(e) {
+      // Skip hotkeys when user is typing in an input or textarea (e.g., feedback form)
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
       if (e.key === ' ' || e.key === 'Spacebar') {
         e.preventDefault()
         handleCardClick()

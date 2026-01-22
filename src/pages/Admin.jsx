@@ -150,6 +150,7 @@ export default function Admin() {
   const isLineDeepDive = location.pathname.startsWith('/admin/song-lines/') && location.pathname !== '/admin/song-lines'
   const isSlangActive = location.pathname === '/admin/slang' || location.pathname.startsWith('/admin/slang/')
   const isSlangDeepDive = location.pathname.startsWith('/admin/slang/') && location.pathname !== '/admin/slang'
+  const isFeedbackActive = location.pathname === '/admin/feedback'
 
   // Get current page name for breadcrumb
   const currentPage = isLemmaDeepDive ? 'Lemma Details'
@@ -164,6 +165,7 @@ export default function Admin() {
     : isLinesActive ? 'Lines'
     : isSlangDeepDive ? 'Slang Details'
     : isSlangActive ? 'Slang'
+    : isFeedbackActive ? 'Feedback'
     : 'Dashboard'
 
   return (
@@ -285,6 +287,17 @@ export default function Admin() {
             >
               Slang
             </Link>
+            <div className="border-l border-neutral-200 mx-2" />
+            <Link
+              to="/admin/feedback"
+              className={`py-3 text-sm border-b-2 transition-colors ${
+                isFeedbackActive
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+              }`}
+            >
+              Feedback
+            </Link>
           </div>
         </div>
       </nav>
@@ -351,6 +364,18 @@ export default function Admin() {
               </h3>
               <p className="text-sm text-neutral-500">
                 Manage slang terms, definitions, and cultural context
+              </p>
+            </Link>
+
+            <Link
+              to="/admin/feedback"
+              className="p-6 bg-white border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <h3 className="text-base font-medium text-neutral-900 mb-1">
+                Feedback
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Review and resolve user-reported flashcard issues
               </p>
             </Link>
           </div>
