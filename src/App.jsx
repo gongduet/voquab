@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import PublicRoute from './components/PublicRoute'
 import AdminRoute from './components/AdminRoute'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Home from './pages/Home'
@@ -44,17 +46,19 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/styletest" element={<StyleTest />} />
+          {/* Public landing page for unauthenticated users */}
           <Route
             path="/"
             element={
-              <ProtectedRoute>
-                <Navigate to="/dashboard" replace />
-              </ProtectedRoute>
+              <PublicRoute>
+                <Landing />
+              </PublicRoute>
             }
           />
+          {/* Auth routes (fallback for direct navigation) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/styletest" element={<StyleTest />} />
           <Route
             path="/dashboard"
             element={

@@ -85,10 +85,25 @@ export default {
           500: '#60a5fa',
           700: '#1d4ed8',
         },
+        // Landing page dark theme
+        landing: {
+          bg: '#0f172a',
+          'bg-secondary': '#1e293b',
+          'bg-accent': '#334155',
+          text: '#f8f5f0',
+          muted: '#94a3b8',
+          'muted-dark': '#64748b',
+          accent: '#d4a574',
+          'accent-hover': '#e5b885',
+          border: '#334155',
+        },
       },
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
         serif: ['Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],
+        // Landing page fonts
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        body: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
       },
     },
   },

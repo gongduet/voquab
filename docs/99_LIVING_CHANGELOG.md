@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 21, 2026 (Phrase editor JSON fix, batch vocabulary fix)
+**Last Updated:** January 21, 2026 (Landing page implementation)
 **Maintainer:** Peter + Claude
 
 ---
@@ -28,6 +28,81 @@ Working on final polish and testing before MVP launch.
 #### In Progress
 - Component library build-out
 - End-to-end testing
+
+---
+
+## 2026-01-21 - Marketing Landing Page
+
+### Added
+
+#### Complete Landing Page Implementation
+- **Feature:** New single-page marketing/landing page for unauthenticated users at `/`
+- **Design:** Dark theme with Cormorant Garamond (headlines) + Source Sans 3 (body) typography
+- **Color Palette:** Deep slate background (`#0f172a`), cream text (`#f8f5f0`), gold accent (`#d4a574`)
+
+#### Landing Page Sections (10 total)
+1. **Header** - Fixed navigation with scroll blur effect, desktop nav links, auth dropdown
+2. **Hero** - Headline "Read Spanish. For Real.", CTA buttons, phone mockup placeholder
+3. **Problem** - 3 pain points about traditional language apps
+4. **HowItWorks** - 3-step process (Pick a Book → Learn in Context → Graduate)
+5. **Experience** - Feature list with phone mockup placeholders
+6. **Journey** - Vocabulary mastery stages visualization with animated progress
+7. **Library** - Content cards (El Principito, Bad Bunny album, coming soon)
+8. **Pricing** - Free tier with feature checklist
+9. **FAQ** - 6 questions with accordion expand/collapse
+10. **Footer** - Logo, links, copyright
+
+#### Authentication Components
+- **AuthForm** - Shared inline email/password form with sign-in and sign-up modes
+- **AuthDropdown** - Desktop dropdown with auth form or logged-in user menu
+- **MobileMenu** - Hamburger menu with slide-out drawer containing nav links and auth form
+
+#### Infrastructure
+- **PublicRoute** - Route component that shows landing for unauthenticated users, redirects to `/dashboard` for authenticated
+- **useScrollAnimation** - IntersectionObserver hook for section fade-in animations
+- **PhoneMockup** - Reusable iPhone-style frame for screenshot placeholders
+
+#### Styling Updates
+- Added Google Fonts (Cormorant Garamond, Source Sans 3) to `index.html`
+- Extended Tailwind config with `landing.*` colors and `font-display`/`font-body` families
+- Added landing CSS utilities for smooth scroll, section animations
+
+### Changed
+
+#### Routing
+- `/` now shows Landing page for unauthenticated users (was redirect to `/login`)
+- `/` redirects to `/dashboard` for authenticated users
+- `/login` and `/signup` remain as fallback routes
+
+### Files Created
+```
+src/pages/Landing.jsx
+src/components/PublicRoute.jsx
+src/components/landing/
+  ├── index.js
+  ├── Header.jsx
+  ├── Hero.jsx
+  ├── Problem.jsx
+  ├── HowItWorks.jsx
+  ├── Experience.jsx
+  ├── Journey.jsx
+  ├── Library.jsx
+  ├── Pricing.jsx
+  ├── FAQ.jsx
+  ├── Footer.jsx
+  ├── AuthDropdown.jsx
+  ├── AuthForm.jsx
+  ├── MobileMenu.jsx
+  └── PhoneMockup.jsx
+src/hooks/landing/
+  └── useScrollAnimation.js
+```
+
+### Files Modified
+- `index.html` - Added Google Fonts, updated title and meta description
+- `tailwind.config.js` - Added landing colors and font families
+- `src/index.css` - Added landing CSS utilities
+- `src/App.jsx` - Updated routing to use PublicRoute for landing page
 
 ---
 
