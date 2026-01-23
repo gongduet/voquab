@@ -1,6 +1,6 @@
 # 30_FSRS_ARCHITECTURE.md
 
-**Last Updated:** January 3, 2026
+**Last Updated:** January 22, 2026
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -12,6 +12,8 @@
 
 > **Bug Fixes (Jan 3, 2026):** Fixed phrase scheduling (now saves `last_reviewed_at`), fixed "Again" button to properly update requeued card state, and fixed sentence display in review mode. See changelog for details.
 
+> **Fragment Flashcards (Jan 22, 2026):** Added `scheduleFragmentCard()` with lower retention (0.80 vs 0.94) and custom intervals for new fragments that skip the Learning phase. See [Fragment FSRS Scheduling](#fragment-fsrs-scheduling) section.
+
 ---
 
 ## TABLE OF CONTENTS
@@ -21,11 +23,12 @@
 4. [Core Components](#core-components)
 5. [Database Schema](#database-schema)
 6. [Service Layer](#service-layer)
-7. [Session Building](#session-building)
-8. [Progress Tracking](#progress-tracking)
-9. [UI Integration](#ui-integration)
-10. [Testing Checklist](#testing-checklist)
-11. [Future Optimizations](#future-optimizations)
+7. [Fragment FSRS Scheduling](#fragment-fsrs-scheduling)
+8. [Session Building](#session-building)
+9. [Progress Tracking](#progress-tracking)
+10. [UI Integration](#ui-integration)
+11. [Testing Checklist](#testing-checklist)
+12. [Future Optimizations](#future-optimizations)
 
 ---
 
@@ -345,6 +348,51 @@ export async function buildLearnSession(userId, sessionSize = 25, onProgress = n
   }
 }
 ```
+
+### Fragment Scheduling (NEW - Jan 22, 2026)
+
+**Purpose:** Separate FSRS scheduler for sentence fragments with lower retention target
+
+**Key Difference:** Fragments use `request_retention: 0.80` vs `0.94` for words/phrases
+
+**Rationale:** Fragments are a stepping stone between vocabulary and full reading. Users shouldn't spend excessive time re-reviewing fragments - one pass through with occasional spaced repetition is enough.
+
+**Interval Comparison:**
+
+| Rating | Word Intervals | Fragment Intervals |
+|--------|---------------|-------------------|
+| Got It (first) | ~7 days | ~14-21 days |
+| Got It (later) | ~28 days | ~45-60 days |
+| Easy | Fast graduation | Very fast graduation |
+
+**Implementation:**
+
+```javascript
+// src/config/fsrsConfig.js
+export const FSRS_CONFIG = {
+  REQUEST_RETENTION: 0.94,           // Words/phrases
+  FRAGMENT_REQUEST_RETENTION: 0.80,  // Fragments (longer intervals)
+  // ...
+}
+
+// src/services/fsrsService.js
+const fragmentParams = generatorParameters({
+  request_retention: FSRS_CONFIG.FRAGMENT_REQUEST_RETENTION,
+  enable_fuzz: FSRS_CONFIG.ENABLE_FUZZ
+})
+const fragmentScheduler = fsrs(fragmentParams)
+
+export function scheduleFragmentCard(card, rating) {
+  // Uses fragmentScheduler with lower retention
+  // Same logic as scheduleCard() but different intervals
+}
+```
+
+**Database:** Progress stored in `user_fragment_progress` table (see `02_DATABASE_SCHEMA.md`)
+
+**Session Builders:**
+- `buildFragmentReadSession()` - Sequential chapter reading
+- `buildFragmentReviewSession()` - Due fragments across unlocked chapters
 
 ---
 

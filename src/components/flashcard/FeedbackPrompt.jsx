@@ -12,6 +12,7 @@ import { supabase } from '../../lib/supabase'
 export default function FeedbackPrompt({
   lemmaId,
   phraseId,
+  fragmentId,
   cardSide,
   userId
 }) {
@@ -47,7 +48,7 @@ export default function FeedbackPrompt({
           user_id: userId,
           lemma_id: lemmaId || null,
           phrase_id: phraseId || null,
-          // Note: slang_id not in schema, but we capture it via lemma/phrase relationship
+          fragment_id: fragmentId || null,
           feedback_text: feedbackText.trim(),
           card_side: cardSide
         })
@@ -69,7 +70,7 @@ export default function FeedbackPrompt({
     } finally {
       setIsSubmitting(false)
     }
-  }, [feedbackText, isSubmitting, userId, lemmaId, phraseId, cardSide])
+  }, [feedbackText, isSubmitting, userId, lemmaId, phraseId, fragmentId, cardSide])
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Escape') {

@@ -46,7 +46,7 @@ export default function AdminRoute({ children }) {
 
   // Not logged in
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   // Logged in but not admin

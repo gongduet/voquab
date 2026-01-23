@@ -11,6 +11,11 @@ export default function FlashcardDisplay({
     )
   }
 
+  // Detect card type
+  const isFragment = card.card_type === 'fragment' || card.fragment_id
+  const isSlang = card.card_type === 'slang'
+  const isPhrase = card.card_type === 'phrase'
+
   // Extract display data - handle both new and legacy data structures
   const displayLemma = card.lemma || card.lemma_text || 'No word'
   const displayTranslation = card.english_definition || (Array.isArray(card.definitions) ? card.definitions.join(', ') : 'No translation')
@@ -34,16 +39,25 @@ export default function FlashcardDisplay({
   }
 
   const displayPOS = formatPartOfSpeech(card.part_of_speech)
-  const isSlang = card.card_type === 'slang'
 
   // Debug logging
-  console.log('🎴 Card data:', {
-    lemma: card.lemma,
-    lemma_text: card.lemma_text,
-    english_definition: card.english_definition,
-    definitions: card.definitions,
-    example_sentence: card.example_sentence
-  })
+  if (isFragment) {
+    console.log('🎴 Fragment card:', {
+      fragment_text: card.fragment_text,
+      fragment_translation: card.fragment_translation,
+      sentence_text: card.sentence_text,
+      start_word_position: card.start_word_position,
+      end_word_position: card.end_word_position
+    })
+  } else {
+    console.log('🎴 Card data:', {
+      lemma: card.lemma,
+      lemma_text: card.lemma_text,
+      english_definition: card.english_definition,
+      definitions: card.definitions,
+      example_sentence: card.example_sentence
+    })
+  }
 
   // Helper to escape special regex characters
   const escapeRegex = (string) => {
@@ -89,6 +103,32 @@ export default function FlashcardDisplay({
     })
   }
 
+  // Helper to highlight fragment text within the full sentence
+  const highlightFragmentInSentence = (sentence, fragmentText) => {
+    if (!sentence || !fragmentText) return sentence
+
+    // Escape special characters in fragment text for regex
+    const escapedFragment = escapeRegex(fragmentText)
+    const regex = new RegExp(`(${escapedFragment})`, 'gi')
+    const parts = sentence.split(regex)
+
+    return parts.map((part, index) => {
+      if (part.toLowerCase() === fragmentText.toLowerCase()) {
+        return (
+          <span key={index} className="font-bold text-slate-800">
+            {part}
+          </span>
+        )
+      }
+      return <span key={index}>{part}</span>
+    })
+  }
+
+  // Get the unique key for this card
+  const cardKey = isFragment
+    ? card.fragment_id
+    : (card.lemma_id || card.phrase_id || card.slang_id)
+
   return (
     <div className="max-w-2xl mx-auto">
       <style>{`
@@ -125,159 +165,266 @@ export default function FlashcardDisplay({
       {/* Card container with flip effect */}
       <div className="flip-card mb-8">
         <div
-          key={card.lemma_id || card.phrase_id || card.slang_id}
+          key={cardKey}
           onClick={onCardClick}
           className={`flip-card-inner ${isFlipped ? 'flipped' : ''} cursor-pointer`}
         >
-          {/* Front - Spanish Side */}
-          <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100 relative">
-            {/* Badge inside card - top right corner - styled to match header */}
-            {card.isNew && (
-              <span
-                className="absolute top-3 right-4"
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  fontFamily: 'Inter, sans-serif',
-                  color: '#15803d'
-                }}
-              >
-                {card.card_type === 'slang' ? 'New Slang' : card.card_type === 'phrase' ? 'New Phrase' : 'New Word'}
-              </span>
-            )}
-            {card.isExposure && (
-              <span
-                className="absolute top-3 right-4"
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  fontFamily: 'Inter, sans-serif',
-                  color: '#b45309'
-                }}
-              >
-                Exposure
-              </span>
-            )}
-            {/* Phrase badge - left side */}
-            {card.card_type === 'phrase' && !card.isNew && (
+          {/* ============================================ */}
+          {/* FRAGMENT CARD - Front (Spanish) */}
+          {/* ============================================ */}
+          {isFragment ? (
+            <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100 relative">
+              {/* Fragment badge - top left */}
               <span
                 className="absolute top-3 left-4"
                 style={{
                   fontSize: '14px',
                   fontWeight: '600',
                   fontFamily: 'Inter, sans-serif',
-                  color: '#7c3aed'
+                  color: '#d97706'
                 }}
               >
-                Phrase
+                Fragment
               </span>
-            )}
-            {/* Slang badge - left side */}
-            {card.card_type === 'slang' && !card.isNew && (
-              <span
-                className="absolute top-3 left-4"
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  fontFamily: 'Inter, sans-serif',
-                  color: '#dc2626'
-                }}
-              >
-                Slang
-              </span>
-            )}
 
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="mb-auto"></div>
-              <div>
-                <h1
-                  className="text-4xl font-bold text-slate-800 mb-4 tracking-tight lowercase break-words"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
+              {/* New badge if applicable */}
+              {card.isNew && (
+                <span
+                  className="absolute top-3 right-4"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#15803d'
+                  }}
                 >
-                  {displayLemma}
-                </h1>
-                {/* Region for slang cards */}
-                {isSlang && card.region && (
+                  New
+                </span>
+              )}
+
+              {/* Main content - Fragment text */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="mb-auto"></div>
+                <div className="px-4">
+                  <h1
+                    className="text-3xl font-bold text-slate-800 mb-4 tracking-tight break-words leading-relaxed"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {card.fragment_text || 'No fragment'}
+                  </h1>
                   <p style={{
                     color: '#94a3b8',
                     fontSize: '14px',
                     fontWeight: '500',
                     fontFamily: 'Inter, sans-serif',
-                    marginTop: '4px'
+                    marginTop: '8px'
                   }}>
-                    {card.region}
+                    Tap to reveal translation
                   </p>
-                )}
+                </div>
+                <div className="mb-auto"></div>
               </div>
-              <div className="mb-auto"></div>
+
+              {/* Full sentence context at bottom - fragment bolded */}
+              {card.sentence_text && (
+                <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+                  <p
+                    className="text-slate-500 text-lg leading-relaxed italic"
+                    style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
+                  >
+                    {highlightFragmentInSentence(card.sentence_text, card.fragment_text)}
+                  </p>
+                </div>
+              )}
             </div>
-
-            {/* Spanish sentence at bottom - only show if exists */}
-            {card.example_sentence && (
-              <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-                <p
-                  className="text-slate-500 text-lg leading-relaxed italic"
-                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
-                >
-                  {/* Use word_in_sentence (conjugated form) if available, otherwise fall back to lemma */}
-                  {highlightWordInSentence(card.example_sentence, card.word_in_sentence || displayLemma)}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Back - English Side */}
-          <div className="flip-card-back bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="mb-auto"></div>
-              <div>
-                <h1
-                  className="text-3xl font-bold text-slate-800 mb-4 break-words"
-                  style={{ fontFamily: 'Montserrat, sans-serif' }}
-                >
-                  {displayTranslation}
-                </h1>
-                {/* Part of speech - formatted as full word */}
-                {displayPOS && (
-                  <p style={{
-                    color: '#94a3b8',
+          ) : (
+            /* ============================================ */
+            /* WORD/PHRASE/SLANG CARD - Front (Spanish) */
+            /* ============================================ */
+            <div className="flip-card-front bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100 relative">
+              {/* Badge inside card - top right corner - styled to match header */}
+              {card.isNew && (
+                <span
+                  className="absolute top-3 right-4"
+                  style={{
                     fontSize: '14px',
-                    fontWeight: '500',
+                    fontWeight: '600',
                     fontFamily: 'Inter, sans-serif',
-                    marginTop: '4px'
-                  }}>
-                    {displayPOS}
+                    color: '#15803d'
+                  }}
+                >
+                  {card.card_type === 'slang' ? 'New Slang' : card.card_type === 'phrase' ? 'New Phrase' : 'New Word'}
+                </span>
+              )}
+              {card.isExposure && (
+                <span
+                  className="absolute top-3 right-4"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#b45309'
+                  }}
+                >
+                  Exposure
+                </span>
+              )}
+              {/* Phrase badge - left side */}
+              {isPhrase && !card.isNew && (
+                <span
+                  className="absolute top-3 left-4"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#7c3aed'
+                  }}
+                >
+                  Phrase
+                </span>
+              )}
+              {/* Slang badge - left side */}
+              {isSlang && !card.isNew && (
+                <span
+                  className="absolute top-3 left-4"
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#dc2626'
+                  }}
+                >
+                  Slang
+                </span>
+              )}
+
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="mb-auto"></div>
+                <div>
+                  <h1
+                    className="text-4xl font-bold text-slate-800 mb-4 tracking-tight lowercase break-words"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {displayLemma}
+                  </h1>
+                  {/* Region for slang cards */}
+                  {isSlang && card.region && (
+                    <p style={{
+                      color: '#94a3b8',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      fontFamily: 'Inter, sans-serif',
+                      marginTop: '4px'
+                    }}>
+                      {card.region}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-auto"></div>
+              </div>
+
+              {/* Spanish sentence at bottom - only show if exists */}
+              {card.example_sentence && (
+                <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+                  <p
+                    className="text-slate-500 text-lg leading-relaxed italic"
+                    style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
+                  >
+                    {/* Use word_in_sentence (conjugated form) if available, otherwise fall back to lemma */}
+                    {highlightWordInSentence(card.example_sentence, card.word_in_sentence || displayLemma)}
                   </p>
-                )}
-              </div>
-              <div className="mb-auto"></div>
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Cultural note for slang cards */}
-            {isSlang && card.cultural_note && (
-              <div className="mt-4 p-4 bg-purple-50 rounded-lg text-left">
-                <p
-                  className="text-purple-700 text-sm"
-                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.5' }}
-                >
-                  {card.cultural_note}
-                </p>
+          {/* ============================================ */}
+          {/* FRAGMENT CARD - Back (English) */}
+          {/* ============================================ */}
+          {isFragment ? (
+            <div className="flip-card-back bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
+              {/* Main content - Fragment translation */}
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="mb-auto"></div>
+                <div className="px-4">
+                  <h1
+                    className="text-3xl font-bold text-slate-800 mb-4 break-words leading-relaxed"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {card.fragment_translation || 'No translation'}
+                  </h1>
+                </div>
+                <div className="mb-auto"></div>
               </div>
-            )}
 
-            {/* English sentence at bottom - only show if exists */}
-            {card.example_sentence_translation && (
-              <div className={`pt-6 border-t border-slate-200 text-center ${isSlang && card.cultural_note ? 'mt-4' : 'mt-6'}`}>
-                <p
-                  className="text-slate-500 text-lg leading-relaxed italic"
-                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
-                >
-                  {/* No bolding for English - translations aren't always literal word matches */}
-                  {card.example_sentence_translation}
-                </p>
+              {/* Full sentence translation at bottom - only show on last fragment of sentence */}
+              {card.sentence_translation && card.isLastFragmentInSentence && (
+                <div className="pt-6 border-t border-slate-200 text-center mt-6">
+                  <p
+                    className="text-slate-500 text-lg leading-relaxed italic"
+                    style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
+                  >
+                    {card.sentence_translation}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ============================================ */
+            /* WORD/PHRASE/SLANG CARD - Back (English) */
+            /* ============================================ */
+            <div className="flip-card-back bg-white rounded-3xl shadow-2xl p-8 h-[550px] flex flex-col justify-between border border-slate-100">
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="mb-auto"></div>
+                <div>
+                  <h1
+                    className="text-3xl font-bold text-slate-800 mb-4 break-words"
+                    style={{ fontFamily: 'Montserrat, sans-serif' }}
+                  >
+                    {displayTranslation}
+                  </h1>
+                  {/* Part of speech - formatted as full word */}
+                  {displayPOS && (
+                    <p style={{
+                      color: '#94a3b8',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      fontFamily: 'Inter, sans-serif',
+                      marginTop: '4px'
+                    }}>
+                      {displayPOS}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-auto"></div>
               </div>
-            )}
-          </div>
+
+              {/* Cultural note for slang cards */}
+              {isSlang && card.cultural_note && (
+                <div className="mt-4 p-4 bg-purple-50 rounded-lg text-left">
+                  <p
+                    className="text-purple-700 text-sm"
+                    style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.5' }}
+                  >
+                    {card.cultural_note}
+                  </p>
+                </div>
+              )}
+
+              {/* English sentence at bottom - only show if exists */}
+              {card.example_sentence_translation && (
+                <div className={`pt-6 border-t border-slate-200 text-center ${isSlang && card.cultural_note ? 'mt-4' : 'mt-6'}`}>
+                  <p
+                    className="text-slate-500 text-lg leading-relaxed italic"
+                    style={{ fontFamily: 'Inter, sans-serif', lineHeight: '1.6' }}
+                  >
+                    {/* No bolding for English - translations aren't always literal word matches */}
+                    {card.example_sentence_translation}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

@@ -21,6 +21,14 @@ const params = generatorParameters({
 })
 const f = fsrs(params)
 
+// Initialize separate FSRS instance for fragments (lower retention = longer intervals)
+// Fragments are a stepping stone to reading, not a primary study activity
+const fragmentParams = generatorParameters({
+  request_retention: FSRS_CONFIG.FRAGMENT_REQUEST_RETENTION,
+  enable_fuzz: FSRS_CONFIG.ENABLE_FUZZ
+})
+const fragmentScheduler = fsrs(fragmentParams)
+
 /**
  * FSRS State enum mapping
  */
@@ -94,6 +102,120 @@ export function scheduleCard(card, rating) {
     last_reviewed_at: now.toISOString(),
     // Keep legacy fields updated for backward compatibility during migration
     total_reviews: (card.total_reviews || 0) + 1
+  }
+}
+
+/**
+ * Schedule a fragment card based on user response
+ *
+ * Uses the fragment-specific FSRS instance with lower retention (0.80 vs 0.94)
+ * This results in longer intervals - fragments are a stepping stone to reading,
+ * not a primary study activity.
+ *
+ * IMPORTANT: For NEW fragments (reps === 0), we skip the FSRS Learning phase
+ * entirely and go directly to Review state with long intervals. This is because
+ * fragments are comprehension-focused (not rote memorization), so the short
+ * Learning intervals (10 min) don't make sense.
+ *
+ * @param {Object} card - Fragment card with FSRS state
+ * @param {string|number} rating - User rating: 'again'|'hard'|'got-it'|'easy' or 1|2|3|4
+ * @returns {Object} - Updated card state with new stability, difficulty, due_date, etc.
+ */
+export function scheduleFragmentCard(card, rating) {
+  // Convert string rating to FSRS Rating enum
+  const fsrsRating = typeof rating === 'string'
+    ? ButtonToRating[rating] || Rating.Good
+    : rating
+
+  const now = new Date()
+  const isNewCard = !card.reps || card.reps === 0
+
+  // For NEW fragments: Skip Learning phase, go directly to Review intervals
+  // Fragments are comprehension-focused, not rote memory, so short Learning
+  // intervals (10 min) don't apply. Use custom intervals for first rating.
+  if (isNewCard) {
+    // Custom intervals for new fragments (skip Learning phase)
+    // These intervals are designed for 0.80 retention - longer than word intervals
+    let intervalDays
+    let newState = FSRSState.REVIEW  // Go directly to Review state
+    let newStability
+    let newDifficulty
+
+    switch (fsrsRating) {
+      case Rating.Again:  // 1 - Complete failure
+        intervalDays = 1 / 144  // 10 min (requeue within session)
+        newState = FSRSState.LEARNING
+        newStability = 0.5
+        newDifficulty = 7  // Higher difficulty for failed cards
+        break
+      case Rating.Hard:  // 2 - Recalled with difficulty
+        intervalDays = 3
+        newStability = 3
+        newDifficulty = 6
+        break
+      case Rating.Good:  // 3 - Recalled correctly (most common)
+        intervalDays = 14  // ~2 weeks for fragments
+        newStability = 14
+        newDifficulty = 5
+        break
+      case Rating.Easy:  // 4 - Effortless recall
+        intervalDays = 30  // ~1 month
+        newStability = 30
+        newDifficulty = 3  // Lower difficulty for easy cards
+        break
+      default:
+        intervalDays = 14
+        newStability = 14
+        newDifficulty = 5
+    }
+
+    const dueDate = new Date(now.getTime() + intervalDays * 24 * 60 * 60 * 1000)
+
+    return {
+      ...card,
+      stability: newStability,
+      difficulty: newDifficulty,
+      due_date: dueDate.toISOString(),
+      next_review_at: dueDate.toISOString(),
+      fsrs_state: newState,
+      reps: 1,
+      lapses: fsrsRating === Rating.Again ? 1 : 0,
+      last_seen_at: now.toISOString(),
+      last_review_at: now.toISOString()
+    }
+  }
+
+  // For REVIEWED fragments: Use normal FSRS scheduling
+  const fsrsCard = cardToFSRS(card)
+  const schedulingCards = fragmentScheduler.repeat(fsrsCard, now)
+  const result = schedulingCards[fsrsRating]
+
+  if (!result) {
+    console.error('FSRS fragment scheduling failed for rating:', rating)
+    return card
+  }
+
+  // Apply Hard interval cap (same as words)
+  let dueDate = result.card.due
+  if (fsrsRating === Rating.Hard && FSRS_CONFIG.HARD_INTERVAL_CAP_DAYS) {
+    const maxDue = new Date(now.getTime() + FSRS_CONFIG.HARD_INTERVAL_CAP_DAYS * 24 * 60 * 60 * 1000)
+    if (dueDate > maxDue) {
+      dueDate = maxDue
+    }
+  }
+
+  // Convert back to our database format
+  return {
+    ...card,
+    stability: result.card.stability,
+    difficulty: result.card.difficulty,
+    due_date: dueDate.toISOString(),
+    next_review_at: dueDate.toISOString(),  // Fragment table uses next_review_at
+    fsrs_state: result.card.state,
+    reps: result.card.reps,
+    lapses: result.card.lapses,
+    last_seen_at: now.toISOString(),
+    last_review_at: now.toISOString()  // Fragment table uses last_review_at
   }
 }
 
@@ -348,6 +470,7 @@ export function getTimeUntilDue(card) {
 
 export default {
   scheduleCard,
+  scheduleFragmentCard,
   isCardDue,
   shouldIncludeForExposure,
   getUserActivityLevel,

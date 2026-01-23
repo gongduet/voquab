@@ -153,7 +153,7 @@ export default function UserMenu({
   async function handleLogout() {
     setIsOpen(false)
     await signOut()
-    navigate('/login')
+    navigate('/')
   }
 
   const displayInitial = username ? username.charAt(0).toUpperCase() : 'U'

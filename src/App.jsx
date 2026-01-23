@@ -6,6 +6,7 @@ import AdminRoute from './components/AdminRoute'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ResetPassword from './pages/ResetPassword'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import ReadingMode from './pages/ReadingMode'
@@ -35,6 +36,8 @@ import SongStudy from './pages/SongStudy'
 import Library from './pages/Library'
 import BookDashboard from './pages/BookDashboard'
 import SongDashboard from './pages/SongDashboard'
+import FragmentFlashcards from './pages/FragmentFlashcards'
+import { FragmentMode } from './services/fragmentSessionBuilder'
 
 // Redirect component for song vocab routes → unified flashcards
 function SongVocabRedirect() {
@@ -59,6 +62,7 @@ function App() {
           {/* Auth routes (fallback for direct navigation) */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/styletest" element={<StyleTest />} />
           <Route
             path="/dashboard"
@@ -173,6 +177,24 @@ function App() {
             element={
               <ProtectedRoute>
                 <ReadingMode />
+              </ProtectedRoute>
+            }
+          />
+          {/* Fragment Flashcards - Read Mode (sequential chapter fragments) */}
+          <Route
+            path="/fragments/read/:chapterId"
+            element={
+              <ProtectedRoute>
+                <FragmentFlashcards mode={FragmentMode.READ} />
+              </ProtectedRoute>
+            }
+          />
+          {/* Fragment Flashcards - Review Mode (spaced repetition) */}
+          <Route
+            path="/fragments/review/:bookId"
+            element={
+              <ProtectedRoute>
+                <FragmentFlashcards mode={FragmentMode.REVIEW} />
               </ProtectedRoute>
             }
           />

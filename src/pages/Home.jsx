@@ -39,7 +39,7 @@ export default function Home() {
   const handleSignOut = async () => {
     const { error } = await signOut()
     if (!error) {
-      navigate('/login')
+      navigate('/')
     }
   }
 

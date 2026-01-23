@@ -1,6 +1,6 @@
 # 02_DATABASE_SCHEMA.md
 
-**Last Updated:** December 30, 2025
+**Last Updated:** January 22, 2026
 **Status:** Active
 **Owner:** Claude + Peter
 
@@ -672,6 +672,92 @@ WHERE encounter_percentage >= 1.0
 
 ---
 
+### user_fragment_progress
+
+Tracks FSRS-based progress for individual sentence fragments. Uses lower retention target (0.80 vs 0.94 for words) resulting in longer review intervals.
+
+```sql
+CREATE TABLE user_fragment_progress (
+  progress_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  fragment_id UUID NOT NULL REFERENCES sentence_fragments(fragment_id) ON DELETE CASCADE,
+
+  -- FSRS Scheduling
+  stability REAL DEFAULT 0,
+  difficulty REAL DEFAULT 0,
+  reps INTEGER DEFAULT 0,
+  lapses INTEGER DEFAULT 0,
+  fsrs_state SMALLINT DEFAULT 0, -- 0=New, 1=Learning, 2=Review, 3=Relearning
+  last_review_at TIMESTAMPTZ,
+  next_review_at TIMESTAMPTZ,
+  last_seen_at TIMESTAMPTZ,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(user_id, fragment_id)
+);
+
+CREATE INDEX idx_fragment_progress_user ON user_fragment_progress(user_id);
+CREATE INDEX idx_fragment_progress_due ON user_fragment_progress(user_id, next_review_at);
+CREATE INDEX idx_fragment_progress_state ON user_fragment_progress(user_id, fsrs_state);
+
+COMMENT ON TABLE user_fragment_progress IS 'FSRS-based progress for sentence fragments (lower retention = longer intervals)';
+```
+
+**FSRS Retention Setting:**
+- Fragments use `request_retention: 0.80` (vs 0.94 for words)
+- Result: ~14-21 day intervals on first "Got It" vs ~7 days for words
+- Philosophy: Fragments are a stepping stone, not meant for extensive re-review
+
+---
+
+### user_chapter_fragment_progress
+
+Tracks read mode completion for chapter fragments. Supports resume functionality.
+
+```sql
+CREATE TABLE user_chapter_fragment_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  chapter_id UUID NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+
+  -- Progress tracking
+  fragments_seen INTEGER DEFAULT 0,
+  total_fragments INTEGER NOT NULL DEFAULT 0,
+  last_fragment_order INTEGER DEFAULT 0,
+  last_sentence_order INTEGER DEFAULT 0,
+
+  -- Completion
+  is_read_complete BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMPTZ,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(user_id, chapter_id)
+);
+
+CREATE INDEX idx_chapter_frag_progress_user ON user_chapter_fragment_progress(user_id);
+CREATE INDEX idx_chapter_frag_progress_chapter ON user_chapter_fragment_progress(chapter_id);
+
+COMMENT ON TABLE user_chapter_fragment_progress IS 'Tracks read mode completion for chapter fragments';
+```
+
+**Fragment unlock logic:**
+```sql
+-- Fragments unlock when 95% of chapter vocabulary is introduced
+-- (mastered + familiar + learning) / total_vocab >= 0.95
+```
+
+**Button states in UI:**
+1. "Fragments Locked" - vocab < 95%
+2. "Start Fragments" - vocab >= 95%, fragments_seen = 0
+3. "Resume (N/M)" - vocab >= 95%, fragments in progress
+4. "Read Chapter" - is_read_complete = true
+
+---
+
 ## USER MANAGEMENT TABLES
 
 ### user_profiles
@@ -778,6 +864,63 @@ WHERE user_id = ?
   AND reviewed_at >= NOW() - INTERVAL '35 days'
 GROUP BY DATE(reviewed_at);
 ```
+
+---
+
+### user_feedback
+
+User-submitted feedback on flashcard content errors. Allows users to report translation issues, incorrect definitions, etc.
+
+```sql
+CREATE TABLE user_feedback (
+  feedback_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  -- Who submitted
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+  -- What they're reporting (one of these will be populated)
+  lemma_id UUID REFERENCES lemmas(lemma_id) ON DELETE SET NULL,
+  phrase_id UUID REFERENCES phrases(phrase_id) ON DELETE SET NULL,
+  sentence_id UUID REFERENCES sentences(sentence_id) ON DELETE SET NULL,
+  fragment_id UUID REFERENCES sentence_fragments(fragment_id) ON DELETE SET NULL,
+
+  -- The feedback
+  feedback_text TEXT NOT NULL,
+  card_side TEXT CHECK (card_side IN ('front', 'back')),
+
+  -- Resolution status
+  resolution_status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (resolution_status IN ('pending', 'fixed', 'wont_fix')),
+  is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+
+  -- Admin response
+  admin_notes TEXT,
+  resolved_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  resolved_at TIMESTAMPTZ,
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_feedback_user ON user_feedback(user_id);
+CREATE INDEX idx_feedback_lemma ON user_feedback(lemma_id);
+CREATE INDEX idx_feedback_phrase ON user_feedback(phrase_id);
+CREATE INDEX idx_feedback_fragment ON user_feedback(fragment_id);
+CREATE INDEX idx_feedback_status ON user_feedback(resolution_status);
+CREATE INDEX idx_feedback_created ON user_feedback(created_at DESC);
+
+COMMENT ON TABLE user_feedback IS 'User-submitted feedback on flashcard content errors';
+```
+
+**Purpose:** Enables users to report issues directly from flashcard sessions. Admins can review and resolve feedback from the admin dashboard.
+
+**Content Types:**
+- `lemma_id` - Feedback about a word/lemma flashcard
+- `phrase_id` - Feedback about a phrase flashcard
+- `fragment_id` - Feedback about a sentence fragment flashcard
+- `sentence_id` - Feedback about a sentence (future use)
 
 ---
 
@@ -1666,6 +1809,7 @@ ALTER TABLE user_phrase_progress
 
 ## REVISION HISTORY
 
+- 2026-01-22: **Fragment Feedback Support** - Added `fragment_id` column to `user_feedback` table to allow users to report issues with fragment translations. Added `user_feedback` table documentation with all columns. (Claude)
 - 2025-12-30: **Chapter Unlock Performance Optimization** - Added chapter_id column to phrase_occurrences (NOT NULL, with index), created chapter_vocabulary_stats table for cached vocab totals, added get_user_chapter_progress and refresh_chapter_vocabulary_stats RPC functions. Reduced chapter unlock calculation from 61 API calls to 3. (Claude)
 - 2025-12-29: **RPC Functions** - Added section documenting get_book_progress, get_song_progress, get_book_chapters_progress server-side functions for efficient progress queries (Claude)
 - 2025-12-25: **Lyrics Database POC** - Added 10 new tables for lyrics-based learning: songs, song_sections, song_lines, slang_terms, song_slang, song_lemmas, song_phrases, user_slang_progress, user_line_progress, user_song_progress (Claude)

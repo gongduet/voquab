@@ -6,6 +6,19 @@
 - **Scheduling**: FSRS algorithm for spaced repetition
 - **Styling**: CSS Modules
 
+## Documentation Navigation
+
+For comprehensive project context, start with `docs/DOCUMENTATION_INDEX.md`.
+
+**Quick Reference by Task:**
+- Database questions → `docs/02_DATABASE_SCHEMA.md`
+- FSRS/flashcard logic → `docs/30_FSRS_ARCHITECTURE.md`
+- Reading mode → `docs/31_SENTENCE_COMPREHENSION.md`
+- Fragment flashcards → `docs/32_FRAGMENT_FLASHCARDS.md`
+- Admin tools → `docs/22_ADMIN_DASHBOARD.md`
+- Content import → `docs/03_CONTENT_PIPELINE.md`
+- Recent changes → `docs/99_LIVING_CHANGELOG.md`
+
 ## Project Overview
 
 Voquab is a Spanish language learning app. Users learn vocabulary by reading "El Principito" (The Little Prince) with fragment-by-fragment comprehension and FSRS-based flashcard review.

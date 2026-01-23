@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Lock, BookOpen, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Lock, BookOpen, CheckCircle, ChevronDown, ChevronUp, FileText } from 'lucide-react'
 
 /**
  * ChapterCarousel - Collapsible chapter grid with smart defaults
@@ -106,6 +106,7 @@ export default function ChapterCarousel({
                 }
               }}
               onStudy={() => navigate(`/flashcards?chapter=${chapter.chapter_number}`)}
+              onFragments={() => navigate(`/fragments/read/${chapter.chapter_id}`)}
             />
           )
         })}
@@ -117,7 +118,7 @@ export default function ChapterCarousel({
 /**
  * Compact chapter card with improved visual states
  */
-function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
+function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy, onFragments }) {
   const {
     chapter_number,
     title,
@@ -126,12 +127,19 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
     mastered = 0,
     familiar = 0,
     learning = 0,
-    notSeen = 0,
     isUnlocked = false,
-    isNextToUnlock = false
+    isNextToUnlock = false,
+    // Fragment properties
+    fragmentsUnlocked = false,
+    fragmentsBlockedByPrevChapter = false,
+    prevChapterNumber = null,
+    totalFragments = 0,
+    fragmentsSeen = 0,
+    isFragmentsComplete = false
   } = chapter
 
   const progress = total_lemmas > 0 ? Math.round((introduced / total_lemmas) * 100) : 0
+  const fragmentProgress = totalFragments > 0 ? Math.round((fragmentsSeen / totalFragments) * 100) : 0
 
   // Visual states - softer styling
   const getCardStyles = () => {
@@ -194,7 +202,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
         </div>
       </div>
 
-      {/* Progress bar - 4-level stacked */}
+      {/* Vocabulary Progress bar - 4-level stacked */}
       <div className="mt-2">
         <div className="flex justify-between text-[10px] mb-1">
           <span className={isUnlocked || isNextToUnlock ? 'text-neutral-500' : 'text-neutral-300'}>
@@ -210,31 +218,95 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
           mastered={mastered}
           familiar={familiar}
           learning={learning}
-          notSeen={notSeen}
           total={total_lemmas}
           isLocked={!isUnlocked && !isNextToUnlock}
         />
       </div>
 
-      {/* Single compact action button */}
+      {/* Fragment Progress bar - only show when fragments are unlocked */}
+      {fragmentsUnlocked && totalFragments > 0 && (
+        <div className="mt-1.5">
+          <div className="flex justify-between text-[10px] mb-1">
+            <span className="text-neutral-500 flex items-center gap-1">
+              <FileText className="w-3 h-3" />
+              {fragmentsSeen}/{totalFragments}
+            </span>
+            <span className={`font-bold ${isFragmentsComplete ? 'text-amber-700' : 'text-amber-500'}`}>
+              {fragmentProgress}%
+            </span>
+          </div>
+          <FragmentProgressBar
+            seen={fragmentsSeen}
+            total={totalFragments}
+            isComplete={isFragmentsComplete}
+          />
+        </div>
+      )}
+
+      {/* Action buttons - vocab study or fragment actions */}
       {(isUnlocked || isNextToUnlock) && (
-        <button
-          onClick={(e) => { e.stopPropagation(); isNextToUnlock ? onStudy() : onNavigate() }}
-          className={`
-            w-full mt-2 py-1.5 text-xs font-semibold rounded-lg transition-colors
-            ${isNextToUnlock
-              ? 'bg-secondary-500 text-white'
-              : isCurrent
-                ? 'bg-primary-500 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-            }
-          `}
-          style={{
-            backgroundColor: isNextToUnlock ? '#f59e0b' : isCurrent ? '#0ea5e9' : undefined
-          }}
-        >
-          {isNextToUnlock ? 'Study' : isCompleted ? 'Review' : 'Continue'}
-        </button>
+        <>
+          {/* Vocabulary button - show when not complete or when it's next to unlock */}
+          {(isNextToUnlock || (!isCompleted && !fragmentsUnlocked)) && (
+            <button
+              onClick={(e) => { e.stopPropagation(); isNextToUnlock ? onStudy() : onNavigate() }}
+              className={`
+                w-full mt-2 py-1.5 text-xs font-semibold rounded-lg transition-colors
+                ${isNextToUnlock
+                  ? 'bg-secondary-500 text-white'
+                  : isCurrent
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                }
+              `}
+              style={{
+                backgroundColor: isNextToUnlock ? '#f59e0b' : isCurrent ? '#0ea5e9' : undefined
+              }}
+            >
+              {isNextToUnlock ? 'Study' : 'Continue'}
+            </button>
+          )}
+
+          {/* Fragment button - show when vocabulary is complete (>=95%) AND previous chapter fragments complete */}
+          {fragmentsUnlocked && totalFragments > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); isFragmentsComplete ? onNavigate() : onFragments() }}
+              className={`
+                w-full mt-2 py-1.5 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1
+                ${isFragmentsComplete
+                  ? 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                  : 'bg-amber-500 text-white hover:bg-amber-600'
+                }
+              `}
+            >
+              <FileText className="w-3 h-3" />
+              {isFragmentsComplete
+                ? 'Read Chapter'
+                : fragmentsSeen === 0
+                  ? 'Start Fragments'
+                  : `Resume (${fragmentsSeen}/${totalFragments})`
+              }
+            </button>
+          )}
+
+          {/* Fragments blocked by previous chapter - show disabled message */}
+          {fragmentsBlockedByPrevChapter && totalFragments > 0 && (
+            <div className="w-full mt-2 py-1.5 text-xs font-medium rounded-lg bg-neutral-100 text-neutral-400 flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" />
+              Complete Ch. {prevChapterNumber} first
+            </div>
+          )}
+
+          {/* Review button for completed chapters without fragments unlocked yet (vocab not at 95%) */}
+          {isCompleted && !fragmentsUnlocked && !fragmentsBlockedByPrevChapter && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onNavigate() }}
+              className="w-full mt-2 py-1.5 text-xs font-semibold rounded-lg transition-colors bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+            >
+              Review
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -243,7 +315,7 @@ function ChapterCard({ chapter, isCurrent, isCompleted, onNavigate, onStudy }) {
 /**
  * Stacked progress bar showing 4 levels of mastery
  */
-function StackedProgressBar({ mastered, familiar, learning, notSeen, total, isLocked }) {
+function StackedProgressBar({ mastered, familiar, learning, total, isLocked }) {
   if (total === 0) return null
 
   const masteredPct = (mastered / total) * 100
@@ -295,6 +367,33 @@ function StackedProgressBar({ mastered, familiar, learning, notSeen, total, isLo
         />
       )}
       {/* notSeen is the background, no need to render */}
+    </div>
+  )
+}
+
+/**
+ * Simple progress bar for fragment reading progress
+ * Uses amber/gold tones to differentiate from vocabulary bar
+ */
+function FragmentProgressBar({ seen, total, isComplete }) {
+  if (total === 0) return null
+
+  const seenPct = (seen / total) * 100
+
+  // Colors - amber/gold tones
+  const colors = {
+    seen: isComplete ? '#92400e' : '#d97706', // amber-800 when complete, amber-600 otherwise
+    notSeen: '#fef3c7' // amber-100 background
+  }
+
+  return (
+    <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: colors.notSeen }}>
+      {seenPct > 0 && (
+        <div
+          className="h-full transition-all duration-300"
+          style={{ width: `${seenPct}%`, backgroundColor: colors.seen }}
+        />
+      )}
     </div>
   )
 }

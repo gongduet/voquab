@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, ChevronDown, ChevronUp, BookOpen } from 'lucide-react'
 
 /**
  * SessionSummary - Notion-inspired session completion screen
@@ -14,7 +14,11 @@ export default function SessionSummary({
   dueCount = 0,
   newAvailable = 0,
   onNewSession,
-  onDashboard
+  onDashboard,
+  // Fragment-specific props
+  onContinueReading,        // Callback to load next fragment section
+  isChapterComplete = false, // True when all fragments in chapter are done
+  isSavingProgress = false  // True while progress is being saved to DB
 }) {
   const navigate = useNavigate()
   const [showAllCards, setShowAllCards] = useState(false)
@@ -242,6 +246,44 @@ export default function SessionSummary({
           className="mt-auto pt-6 space-y-3"
           style={{ borderTop: '1px solid #e7e5e4' }}
         >
+          {/* Continue Reading - Fragment Read mode only */}
+          {(onContinueReading || isSavingProgress) && (
+            isChapterComplete ? (
+              <div
+                className="w-full text-center py-4 rounded-xl"
+                style={{ backgroundColor: '#f0fdf4', border: '1px solid #86efac' }}
+              >
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <CheckCircle className="w-5 h-5" style={{ color: '#22c55e' }} />
+                  <span className="font-semibold" style={{ color: '#166534', fontSize: '14px' }}>
+                    Chapter Complete!
+                  </span>
+                </div>
+                <p style={{ color: '#15803d', fontSize: '12px' }}>
+                  You&apos;ve read all fragments in this chapter
+                </p>
+              </div>
+            ) : isSavingProgress ? (
+              <button
+                disabled
+                className="w-full text-white font-medium py-3.5 rounded-xl shadow-sm flex items-center justify-center gap-2 opacity-70 cursor-not-allowed"
+                style={{ backgroundColor: '#f59e0b', fontSize: '14px' }}
+              >
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving progress...
+              </button>
+            ) : (
+              <button
+                onClick={onContinueReading}
+                className="w-full text-white font-medium py-3.5 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                style={{ backgroundColor: '#f59e0b', fontSize: '14px' }}
+              >
+                <BookOpen className="w-4 h-4" />
+                Continue Reading
+              </button>
+            )
+          )}
+
           {(hasMoreToReview || hasNewToLearn) && (
             <button
               onClick={handleNewSession}
@@ -259,13 +301,13 @@ export default function SessionSummary({
             onClick={handleDashboard}
             className="w-full font-medium py-3.5 rounded-xl transition-all active:scale-[0.99]"
             style={{
-              backgroundColor: (hasMoreToReview || hasNewToLearn) ? 'transparent' : '#0ea5e9',
-              color: (hasMoreToReview || hasNewToLearn) ? '#525252' : 'white',
-              border: (hasMoreToReview || hasNewToLearn) ? '1px solid #d6d3d1' : 'none',
+              backgroundColor: (hasMoreToReview || hasNewToLearn || onContinueReading) ? 'transparent' : '#0ea5e9',
+              color: (hasMoreToReview || hasNewToLearn || onContinueReading) ? '#525252' : 'white',
+              border: (hasMoreToReview || hasNewToLearn || onContinueReading) ? '1px solid #d6d3d1' : 'none',
               fontSize: '14px'
             }}
           >
-            {(hasMoreToReview || hasNewToLearn) ? 'Back to Dashboard' : 'Return to Dashboard'}
+            {(hasMoreToReview || hasNewToLearn || onContinueReading) ? 'Back to Dashboard' : 'Return to Dashboard'}
           </button>
         </div>
       </div>

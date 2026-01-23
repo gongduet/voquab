@@ -1,28 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
 
-export default function Signup() {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
+export default function ResetPassword() {
+  const navigate = useNavigate()
+  const { updatePassword } = useAuth()
+
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showConfirmation, setShowConfirmation] = useState(false)
-  const { signUp } = useAuth()
-  const navigate = useNavigate()
+  const [success, setSuccess] = useState(false)
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
+
+  // Listen for PASSWORD_RECOVERY event and check session
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setIsRecoveryMode(true)
+          setCheckingSession(false)
+        } else if (event === 'SIGNED_IN' && session) {
+          // User might be in recovery mode if they have a session
+          setCheckingSession(false)
+        }
+      }
+    )
+
+    // Check current session state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // If there's a session, allow password update
+        setIsRecoveryMode(true)
+      }
+      setCheckingSession(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    if (!username || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields')
-      return
-    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -37,57 +60,78 @@ export default function Signup() {
     setError('')
     setLoading(true)
 
-    const { data, error: signUpError } = await signUp(email, password, username)
+    const { error: updateError } = await updatePassword(password)
 
-    if (signUpError) {
-      setError(signUpError.message)
+    if (updateError) {
+      setError(updateError.message)
       setLoading(false)
       return
     }
 
-    if (data?.user) {
-      // Check if email confirmation is required
-      if (!data.session) {
-        // No session means email confirmation is required
-        setShowConfirmation(true)
-        setLoading(false)
-        return
-      }
-      // Session exists, user is logged in directly
-      navigate('/dashboard')
-    }
-
+    setSuccess(true)
     setLoading(false)
+
+    // Redirect to dashboard after 2 seconds
+    setTimeout(() => navigate('/dashboard'), 2000)
   }
 
-  // Show "check your email" confirmation after successful signup
-  if (showConfirmation) {
+  // Loading state while checking session
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-landing-bg px-4">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-landing-accent mx-auto" />
+          <p className="mt-4 text-landing-muted font-body">Verifying...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // No valid recovery session
+  if (!isRecoveryMode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-landing-bg px-4">
         <div className="w-full max-w-md bg-landing-bg-secondary rounded-xl border border-landing-border p-8 text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-landing-accent/20 flex items-center justify-center">
-            <span className="text-3xl">&#x2709;&#xFE0F;</span>
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
+            <span className="text-3xl">&#x26A0;&#xFE0F;</span>
           </div>
           <h2 className="font-display text-2xl font-semibold text-landing-text mb-3">
-            Check your email
+            Invalid or Expired Link
           </h2>
           <p className="text-landing-muted font-body mb-6">
-            We sent a confirmation link to <strong className="text-landing-text">{email}</strong>
-          </p>
-          <p className="text-landing-muted font-body text-sm mb-6">
-            Click the link in your email to activate your account.
+            This password reset link is invalid or has expired. Please request a new one.
           </p>
           <Link
             to="/login"
-            className="text-landing-accent hover:text-landing-accent-hover font-body text-sm transition-colors"
+            className="inline-block px-6 py-3 bg-landing-accent text-landing-bg rounded-lg font-body font-semibold hover:bg-landing-accent-hover transition-colors"
           >
-            Back to sign in
+            Back to Sign In
           </Link>
         </div>
       </div>
     )
   }
 
+  // Success state
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-landing-bg px-4">
+        <div className="w-full max-w-md bg-landing-bg-secondary rounded-xl border border-landing-border p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+            <CheckCircle className="w-8 h-8 text-green-400" />
+          </div>
+          <h2 className="font-display text-2xl font-semibold text-landing-text mb-3">
+            Password Updated
+          </h2>
+          <p className="text-landing-muted font-body">
+            Redirecting to dashboard...
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Password reset form
   return (
     <div className="min-h-screen flex items-center justify-center bg-landing-bg px-4">
       <div className="w-full max-w-md bg-landing-bg-secondary rounded-xl border border-landing-border p-8">
@@ -97,10 +141,10 @@ export default function Signup() {
             Voquab
           </Link>
           <h2 className="font-display text-xl font-semibold text-landing-text mt-6">
-            Create your account
+            Set new password
           </h2>
           <p className="text-landing-muted font-body text-sm mt-2">
-            Start learning languages with Voquab
+            Enter your new password below
           </p>
         </div>
 
@@ -112,59 +156,21 @@ export default function Signup() {
             </div>
           )}
 
-          {/* Username */}
-          <div>
-            <label htmlFor="username" className="block text-sm font-body font-medium text-landing-text mb-2">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 bg-landing-bg border border-landing-border rounded-lg text-landing-text placeholder-landing-muted-dark focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-transparent"
-              placeholder="Choose a username"
-              disabled={loading}
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-body font-medium text-landing-text mb-2">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-landing-bg border border-landing-border rounded-lg text-landing-text placeholder-landing-muted-dark focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-transparent"
-              placeholder="Enter your email"
-              disabled={loading}
-            />
-          </div>
-
-          {/* Password */}
+          {/* New Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-body font-medium text-landing-text mb-2">
-              Password
+              New Password
             </label>
             <div className="relative">
               <input
                 id="password"
-                name="password"
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-landing-bg border border-landing-border rounded-lg text-landing-text placeholder-landing-muted-dark focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-transparent"
-                placeholder="Create a password (min. 6 characters)"
+                placeholder="Enter new password"
+                required
+                minLength={6}
                 disabled={loading}
               />
               <button
@@ -186,14 +192,12 @@ export default function Signup() {
             <div className="relative">
               <input
                 id="confirmPassword"
-                name="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
-                autoComplete="new-password"
-                required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 bg-landing-bg border border-landing-border rounded-lg text-landing-text placeholder-landing-muted-dark focus:outline-none focus:ring-2 focus:ring-landing-accent focus:border-transparent"
-                placeholder="Confirm your password"
+                placeholder="Confirm new password"
+                required
                 disabled={loading}
               />
               <button
@@ -214,18 +218,18 @@ export default function Signup() {
             className="w-full py-3 bg-landing-accent text-landing-bg rounded-lg font-body font-semibold hover:bg-landing-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Updating...' : 'Update Password'}
           </button>
         </form>
 
-        {/* Sign In Link */}
+        {/* Back to Login Link */}
         <div className="text-center pt-6 border-t border-landing-border mt-6">
-          <p className="text-landing-muted font-body text-sm">
-            Already have an account?{' '}
-            <Link to="/login" className="text-landing-accent hover:text-landing-accent-hover font-semibold transition-colors">
-              Sign in
-            </Link>
-          </p>
+          <Link
+            to="/login"
+            className="text-landing-accent hover:text-landing-accent-hover font-body text-sm transition-colors"
+          >
+            Back to Sign In
+          </Link>
         </div>
       </div>
     </div>

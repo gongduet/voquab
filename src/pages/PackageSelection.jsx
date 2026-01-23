@@ -23,7 +23,7 @@ export default function PackageSelection() {
   async function loadData() {
     try {
       if (!user) {
-        navigate('/login')
+        navigate('/')
         return
       }
 

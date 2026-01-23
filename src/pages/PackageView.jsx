@@ -25,7 +25,7 @@ export default function PackageView() {
   async function loadPackage() {
     try {
       if (!user) {
-        navigate('/login')
+        navigate('/')
         return
       }
 

@@ -1,7 +1,7 @@
 # 28_CHANGELOG.md
 
 **Document Type:** LIVING DOCUMENT (Updated Continuously)
-**Last Updated:** January 21, 2026 (Flashcard feedback system)
+**Last Updated:** January 22, 2026 (Fragment flashcard system)
 **Maintainer:** Peter + Claude
 
 ---
@@ -31,6 +31,97 @@ Working on final polish and testing before MVP launch.
 
 ---
 
+## 2026-01-22 - Fragment Flashcard System
+
+### Added
+
+#### Sentence Fragment Flashcards
+- **Feature:** Complete flashcard system for sentence fragments - the building blocks between vocabulary and full reading
+- **Two Modes:**
+  - **Read Mode** (`/fragments/read/:chapterId`) - Sequential progression through chapter fragments, extends to paragraph boundaries
+  - **Review Mode** (`/fragments/review/:bookId`) - FSRS-based spaced repetition for due fragments
+- **Unlock Logic:** Fragments unlock when 95% of chapter vocabulary is introduced
+
+#### Fragment FSRS Scheduling
+- **Lower Retention:** Fragments use `request_retention: 0.80` (vs 0.94 for words)
+- **Result:** Longer intervals between reviews - fragments are a "stepping stone" to full reading, not meant for extensive re-review
+- **New Function:** `scheduleFragmentCard()` in `fsrsService.js` - separate FSRS scheduler instance
+
+#### Database Tables
+- **`user_fragment_progress`** - Individual fragment FSRS tracking (stability, difficulty, reps, lapses, state, next_review_at)
+- **`user_chapter_fragment_progress`** - Chapter-level read mode progress (fragments_seen, is_read_complete)
+- **RPC Functions:** `get_fragments_due_count`, `get_chapter_fragment_stats`, `get_book_fragment_stats`
+
+#### Dashboard Integration
+- **Fragments Due Button:** Orange button on BookDashboard when fragments are due for review
+- **Chapter Cards:** Fragment progress bar (amber/gold colors) below vocabulary progress
+- **Button States:** "Start Fragments" → "Resume (N/M)" → "Read Chapter" (when complete)
+
+#### Routes
+- `/fragments/read/:chapterId` - Read mode flashcards
+- `/fragments/review/:bookId` - Review mode flashcards
+
+### Technical Details
+
+#### Files Created
+```
+supabase/migrations/20260122_fragment_progress.sql
+src/pages/FragmentFlashcards.jsx
+src/hooks/flashcard/useFragmentSession.js
+src/hooks/flashcard/useFragmentProgressTracking.js
+src/services/fragmentSessionBuilder.js
+```
+
+#### Files Modified
+```
+src/App.jsx (routes)
+src/config/fsrsConfig.js (FRAGMENT_REQUEST_RETENTION)
+src/services/fsrsService.js (scheduleFragmentCard)
+src/components/flashcard/FlashcardDisplay.jsx (fragment card type)
+src/pages/BookDashboard.jsx (fragments due button + data)
+src/components/dashboard/ChapterCarousel.jsx (fragment progress + buttons)
+src/components/flashcard/FeedbackPrompt.jsx (fragment_id prop)
+src/components/flashcard/SessionSummary.jsx (saving progress state)
+```
+
+### Fixed (Evening Session)
+
+#### 1. FSRS Scheduling: 10 Minutes → 14 Days
+- **Problem:** "Got It" on a new fragment showed "10 min" interval instead of 14-21 days
+- **Root Cause:** Standard FSRS Learning state with short intervals before graduating to Review
+- **Fix:** New fragments now skip Learning phase entirely, go directly to Review state with custom intervals (Hard=3d, Got It=14d, Easy=30d)
+
+#### 2. "Continue Reading" Shows Duplicate Fragments
+- **Problem:** Clicking "Continue Reading" showed fragments from the previous session again
+- **Root Cause:** `getLastCardInfo()` returned last card in queue order, not maximum chapter position. When cards are requeued via "Again", queue order doesn't match chapter order.
+- **Fix:** Now finds maximum `sentence_order` and `fragment_order` across all cards
+
+#### 3. Race Condition on "Continue Reading"
+- **Problem:** User could click "Continue Reading" before progress save completed, causing duplicate fragments
+- **Fix:** Added `progressSaved` state tracking. Button shows "Saving progress..." spinner until DB save completes.
+
+#### 4. Wrong Remaining Count in Summary
+- **Problem:** Summary showed original count (e.g., "20 more") instead of remaining after session
+- **Fix:** Calculate remaining by subtracting session progress from total
+
+#### 5. Rating Buttons Only Visible After Flip
+- **Problem:** Users had to flip card before rating buttons appeared
+- **Fix:** Removed conditional rendering - buttons now visible on both sides
+
+#### 6. Sentence Translation Spoilers
+- **Problem:** Full sentence translation appeared on every fragment, spoiling meaning of subsequent fragments
+- **Fix:** Added `isLastFragmentInSentence` flag - only show translation on final fragment of each sentence
+
+#### 7. Sequential Chapter Unlock
+- **Problem:** All chapters with 95% vocab showed "Start Fragments" simultaneously
+- **Fix:** Chapter N fragments now require Chapter N-1 fragments to be complete
+
+#### 8. FeedbackPrompt for Fragments
+- **Problem:** Users couldn't report fragment translation errors
+- **Fix:** Added `fragment_id` column to `user_feedback` table, updated FeedbackPrompt component
+
+---
+
 ## 2026-01-21 - Flashcard Feedback System
 
 ### Added
@@ -46,12 +137,18 @@ Working on final polish and testing before MVP launch.
 - **Route:** `/admin/feedback`
 - **Stats:** Dashboard cards showing total, pending, fixed, won't fix counts
 - **Filters:** Status (pending/fixed/wont_fix), archived state, search by feedback text
-- **Actions:** Mark Fixed, Mark Won't Fix, Archive/Unarchive, Add admin notes
+- **Status workflow:** pending → fixed/won't fix (with revert capability)
+- **Actions:** Mark Fixed, Mark Won't Fix, Revert to Pending, Archive/Unarchive
+- **Admin notes:** Optional notes field for each feedback item
 - **Navigation:** Links to lemma/phrase edit pages for quick fixes
 
 #### Database
 - **Table:** `user_feedback` with RLS policies for user insert and admin full access
 - **Indexes:** On user_id, lemma_id, phrase_id, resolution_status, is_archived, created_at
+
+### Fixed
+- **Hotkeys:** Flashcard keyboard shortcuts (spacebar, 1-4) disabled while typing in feedback textarea
+- **Text wrapping:** "Won't Fix" status badge and action button no longer wrap to two lines
 
 ### Files Created
 ```
@@ -65,6 +162,7 @@ supabase/migrations/20260121_user_feedback.sql
 src/pages/Flashcards.jsx (added FeedbackPrompt integration)
 src/pages/Admin.jsx (added Feedback nav tab and home card)
 src/App.jsx (added /admin/feedback route)
+src/hooks/flashcard/useFlashcardSession.js (hotkey fix for input focus)
 ```
 
 ---

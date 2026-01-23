@@ -13,8 +13,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { getBookProgress, getBookChaptersProgress } from '../services/progressService'
+import { getFragmentsDueCount, getBookFragmentStats } from '../services/fragmentSessionBuilder'
 import { DashboardHeader, HeroStats, ChapterCarousel } from '../components/dashboard'
-import { Book, ChevronLeft, BookOpen, RotateCcw, Sparkles } from 'lucide-react'
+import { Book, ChevronLeft, BookOpen, RotateCcw, Sparkles, FileText } from 'lucide-react'
 
 /**
  * Format date to local YYYY-MM-DD string
@@ -85,6 +86,8 @@ export default function BookDashboard() {
   const [chapters, setChapters] = useState([])
   const [streak, setStreak] = useState(0)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [fragmentsDueCount, setFragmentsDueCount] = useState(0)
+  const [fragmentStats, setFragmentStats] = useState([])
 
   useEffect(() => {
     if (!user?.id || !bookId) return
@@ -92,8 +95,8 @@ export default function BookDashboard() {
     async function fetchData() {
       setLoading(true)
 
-      // Parallel fetch: book metadata, progress, chapters, streak, admin status
-      const [metaResult, progress, chaptersData, streakValue, settingsResult] = await Promise.all([
+      // Parallel fetch: book metadata, progress, chapters, streak, admin status, fragment data, chapter IDs
+      const [metaResult, progress, chaptersData, streakValue, settingsResult, fragDueCount, fragStats, chapterIdsResult] = await Promise.all([
         supabase
           .from('books')
           .select('title, author, total_chapters')
@@ -106,34 +109,93 @@ export default function BookDashboard() {
           .from('user_settings')
           .select('is_admin')
           .eq('user_id', user.id)
-          .single()
+          .single(),
+        getFragmentsDueCount(user.id, bookId),
+        getBookFragmentStats(user.id, bookId),
+        // Fetch chapter_id for each chapter (needed for fragment routes)
+        supabase
+          .from('chapters')
+          .select('chapter_id, chapter_number')
+          .eq('book_id', bookId)
+          .order('chapter_number')
       ])
+
+      // Build chapter_id lookup by chapter_number
+      const chapterIdMap = new Map()
+      if (chapterIdsResult.data) {
+        chapterIdsResult.data.forEach(ch => {
+          chapterIdMap.set(ch.chapter_number, ch.chapter_id)
+        })
+      }
+
+      // Merge chapter_id into chaptersData
+      const chaptersWithIds = chaptersData.map(ch => ({
+        ...ch,
+        chapter_id: chapterIdMap.get(ch.chapterNumber)
+      }))
 
       setBookMeta(metaResult.data)
       setBookProgress(progress)
-      setChapters(chaptersData)
+      setChapters(chaptersWithIds)
       setStreak(streakValue)
       setIsAdmin(settingsResult.data?.is_admin || false)
+      setFragmentsDueCount(fragDueCount || 0)
+      setFragmentStats(fragStats || [])
       setLoading(false)
     }
 
     fetchData()
   }, [user?.id, bookId])
 
+  // Build fragment stats lookup map by chapter_number
+  const fragmentStatsMap = new Map()
+  fragmentStats.forEach(fs => {
+    fragmentStatsMap.set(fs.chapter_number, fs)
+  })
+
   // Transform chapters for ChapterCarousel
-  const carouselChapters = chapters.map((ch, idx) => ({
-    chapter_number: ch.chapterNumber,
-    title: ch.title,
-    total_lemmas: ch.totalVocab, // Now includes lemmas + phrases from RPC
-    introduced: ch.mastered + ch.familiar + ch.learning,
-    mastered: ch.mastered,
-    familiar: ch.familiar,
-    learning: ch.learning,
-    notSeen: ch.notSeen,
-    isUnlocked: ch.isUnlocked,
-    isNextToUnlock: !ch.isUnlocked && idx > 0 && chapters[idx - 1]?.isUnlocked &&
-      ((chapters[idx - 1].mastered + chapters[idx - 1].familiar + chapters[idx - 1].learning) / chapters[idx - 1].totalVocab) >= 0.95
-  }))
+  const carouselChapters = chapters.map((ch, idx) => {
+    const vocabProgress = (ch.mastered + ch.familiar + ch.learning) / ch.totalVocab
+    const isVocabComplete = vocabProgress >= 0.95
+    const fragStats = fragmentStatsMap.get(ch.chapterNumber)
+
+    // Get previous chapter's fragment completion status
+    const prevChapterFragStats = idx > 0 ? fragmentStatsMap.get(chapters[idx - 1]?.chapterNumber) : null
+    const prevChapterFragmentsComplete = idx === 0 ? true : (prevChapterFragStats?.is_read_complete || false)
+
+    // Fragment unlock gating:
+    // - Chapter 1: Vocab >= 95%
+    // - Chapter N (N > 1): Vocab >= 95% AND previous chapter fragments complete
+    const fragmentsUnlocked = isVocabComplete && prevChapterFragmentsComplete
+
+    // Check if fragments are blocked by previous chapter (for UI messaging)
+    const fragmentsBlockedByPrevChapter = isVocabComplete && !prevChapterFragmentsComplete
+
+    return {
+      chapter_number: ch.chapterNumber,
+      chapter_id: ch.chapter_id,
+      title: ch.title,
+      total_lemmas: ch.totalVocab, // Now includes lemmas + phrases from RPC
+      introduced: ch.mastered + ch.familiar + ch.learning,
+      mastered: ch.mastered,
+      familiar: ch.familiar,
+      learning: ch.learning,
+      notSeen: ch.notSeen,
+      isUnlocked: ch.isUnlocked,
+      isNextToUnlock: !ch.isUnlocked && idx > 0 && chapters[idx - 1]?.isUnlocked &&
+        ((chapters[idx - 1].mastered + chapters[idx - 1].familiar + chapters[idx - 1].learning) / chapters[idx - 1].totalVocab) >= 0.95,
+      // Fragment data
+      fragmentsUnlocked,
+      fragmentsBlockedByPrevChapter,
+      prevChapterNumber: idx > 0 ? chapters[idx - 1]?.chapterNumber : null,
+      totalFragments: fragStats?.total_fragments || 0,
+      fragmentsSeen: fragStats?.fragments_seen || 0,
+      fragmentsLearning: fragStats?.fragments_learning || 0,
+      fragmentsReview: fragStats?.fragments_review || 0,
+      isFragmentsComplete: fragStats?.is_read_complete || false,
+      lastFragmentOrder: fragStats?.last_fragment_order || 0
+    }
+  })
 
   // Find current chapter (first unlocked that's not complete)
   const currentChapterIndex = carouselChapters.findIndex(ch =>
@@ -230,6 +292,19 @@ export default function BookDashboard() {
             Learn New ({bookProgress?.newCount || 0})
           </button>
         </div>
+
+        {/* Fragments Due Button - only show when fragments are due */}
+        {fragmentsDueCount > 0 && (
+          <div className="px-4 pt-3">
+            <button
+              onClick={() => navigate(`/fragments/review/${bookId}`)}
+              className="w-full py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 bg-orange-500 text-white hover:bg-orange-600"
+            >
+              <FileText size={18} />
+              Fragments Due ({fragmentsDueCount})
+            </button>
+          </div>
+        )}
 
         {/* Continue Reading Button */}
         <div className="px-4 pt-3">
